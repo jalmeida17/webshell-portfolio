@@ -103,13 +103,17 @@ a:hover {
 }
 
 #bars {
-  font-family: 'Pixelify Sans', sans-serif;
-  font-size: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
   position: -webkit-sticky;
   position: sticky;
   width: 100%;
   top: 0;
+  left: 0;
+  right: 0;
   background-color: var(--bg);
+  margin: 0;
+  padding: 0;
 }
 
 #bar-1 {
@@ -117,32 +121,47 @@ a:hover {
   background-color: var(--border);
   color: var(--bg);
   line-height: 36px;
-  padding-left: 10px;
+  text-align: center;
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#maximize-window {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  padding: 2px 6px;
+}
+
+#maximize-window:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 #bar-2 {
-  height: 4px;
-  background-color: var(--border);
-  margin-top: 1px;
+  display: none;
 }
 
 #bar-3 {
-  height: 3px;
-  background-color: var(--border);
-  margin-top: 2px;
+  display: none;
 }
 
 #bar-4 {
-  height: 2px;
-  background-color: var(--border);
-  margin-top: 3px;
+  display: none;
 }
 
 
 #bar-5 {
-  height: 1px;
-  background-color: var(--border);
-  margin-top: 4px;
+  display: none;
 }
 
 #terminal {
@@ -156,9 +175,6 @@ a:hover {
 }
 
 .command {
-  text-shadow:
-    0 0 7px #fff,
-    0 0 151px var(--border);
   color: #FD9BDB;
 }
 

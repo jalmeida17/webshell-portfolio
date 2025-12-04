@@ -1,10 +1,11 @@
 import command from '../config.json' assert {type: 'json'};
-import { HELP } from "./commands/help";
-import { BANNER } from "./commands/banner";
-import { ABOUT } from "./commands/about"
-import { DEFAULT } from "./commands/default";
-import { PROJECTS } from "./commands/projects";
-import { createWhoami } from "./commands/whoami";
+import { createHelp } from "./commands/help";
+import { createBanner } from "./commands/banner";
+import { createAbout } from "./commands/about"
+import { createDefault } from "./commands/default";
+import { createProject } from "./commands/projects";
+import { createCareer } from "./commands/career";
+import { setLanguage, t } from './translations';
 
 //mutWriteLines gets deleted and reassigned
 let mutWriteLines = document.getElementById("write-lines");
@@ -15,6 +16,14 @@ let isSudo = false;
 let isPasswordInput = false;
 let passwordCounter = 0;
 let bareMode = false;
+let isLanguageSelection = true;
+
+let HELP: string[] = [];
+let BANNER: string[] = [];
+let ABOUT: string[] = [];
+let DEFAULT: string[] = [];
+let PROJECTS: string[] = [];
+let CAREER: string[] = [];
 
 //WRITELINESCOPY is used to during the "clear" command
 const WRITELINESCOPY = mutWriteLines;
@@ -28,10 +37,9 @@ const PRE_USER = document.getElementById("pre-user");
 const HOST = document.getElementById("host");
 const USER = document.getElementById("user");
 const PROMPT = document.getElementById("prompt");
-const COMMANDS = ["help", "about", "projects", "whoami", "repo", "banner", "clear"];
+const COMMANDS = ["help", "about", "projects", "banner", "clear", "lang"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
-const REPO_LINK = command.repoLink;
 
 const scrollToBottom = () => {
   const MAIN = document.getElementById("main");
@@ -76,6 +84,13 @@ function enterKey() {
   const resetInput = "";
   let newUserInput;
   userInput = USERINPUT.value;
+
+  // Handle language selection
+  if (isLanguageSelection) {
+    handleLanguageSelection(userInput.toLowerCase().trim());
+    USERINPUT.value = resetInput;
+    return;
+  }
 
   if (bareMode) {
     newUserInput = userInput;
@@ -143,7 +158,46 @@ function arrowKeys(e : string) {
   }
 }
 
+function handleLanguageSelection(input: string) {
+  if (input === 'en' || input === 'fr') {
+    setLanguage(input);
+    isLanguageSelection = false;
+    
+    // Initialize translations
+    HELP = createHelp();
+    BANNER = createBanner();
+    ABOUT = createAbout();
+    DEFAULT = createDefault();
+    PROJECTS = createProject();
+    CAREER = createCareer();
+    
+    // Display banner
+    writeLines(BANNER);
+  } else if (input.trim().length !== 0) {
+    writeLines([t().languageSelection.invalid, "<br>"]);
+  }
+}
+
 function commandHandler(input : string) {
+  // Handle lang command with parameter
+  if(input.startsWith("lang ")) {
+    const lang = input.split(" ")[1];
+    if (lang === 'en' || lang === 'fr') {
+      setLanguage(lang);
+      // Reinitialize all translated content
+      HELP = createHelp();
+      BANNER = createBanner();
+      ABOUT = createAbout();
+      DEFAULT = createDefault();
+      PROJECTS = createProject();
+      CAREER = createCareer();
+      writeLines(["<br>", t().languageChange.switchedTo, "<br>"]);
+    } else {
+      writeLines(["<br>", t().languageChange.usage, "<br>"]);
+    }
+    return;
+  }
+
   if(input.startsWith("rm -rf") && input.trim() !== "rm -rf") {
     if (isSudo) {
       if(input === "rm -rf src" && !bareMode) {
@@ -158,24 +212,24 @@ function commandHandler(input : string) {
 
         easterEggStyles();
         setTimeout(() => {
-          writeLines(["What made you think that was a good idea?", "<br>"]);
+          writeLines([t().easterEgg.badIdea, "<br>"]);
         }, 200)
 
         setTimeout(() => {
-          writeLines(["Now everything is ruined.", "<br>"]);
+          writeLines([t().easterEgg.ruined, "<br>"]);
         }, 1200)
 
         } else if (input === "rm -rf src" && bareMode) {
-          writeLines(["there's no more src folder.", "<br>"])
+          writeLines([t().easterEgg.noSrcFolder, "<br>"])
         } else {
           if(bareMode) {
-            writeLines(["What else are you trying to delete?", "<br>"])
+            writeLines([t().easterEgg.whatElse, "<br>"])
           } else {
-            writeLines(["<br>", "Directory not found.", "type <span class='command'>'ls'</span> for a list of directories.", "<br>"]);
+            writeLines(["<br>", t().rmRf.directoryNotFound, t().rmRf.typeLS, "<br>"]);
           }
         } 
       } else {
-        writeLines(["Permission not granted.", "<br>"]);
+        writeLines([t().rmRf.permissionNotGranted, "<br>"]);
     }
     return
   }
@@ -198,37 +252,31 @@ function commandHandler(input : string) {
       break;
     case 'help':
       if(bareMode) {
-        writeLines(["maybe restarting your browser will fix this.", "<br>"])
+        writeLines(["<br>",t().easterEgg.typeHelp, "<br>"])
         break;
       }
       writeLines(HELP);
       break;
-    case 'whoami':      
-      if(bareMode) {
-        writeLines([`${command.username}`, "<br>"])
-        break;
-      }
-      writeLines(createWhoami());
-      break;
     case 'about':
       if(bareMode) {
-        writeLines(["Nothing to see here.", "<br>"])
+        writeLines([t().easterEgg.nothing, "<br>"])
         break;
       }
       writeLines(ABOUT);
       break;
     case 'projects':
       if(bareMode) {
-        writeLines(["I don't want you to break the other projects.", "<br>"])
+        writeLines([t().easterEgg.noProjects, "<br>"])
         break;
       }
       writeLines(PROJECTS);
       break;
-    case 'repo':
-      writeLines(["Redirecting to github.com...", "<br>"]);
-      setTimeout(() => {
-        window.open(REPO_LINK, '_blank');
-      }, 500);
+    case 'career':
+      if(bareMode) {
+        writeLines([t().easterEgg.nothing, "<br>"])
+        break;
+      }
+      writeLines(CAREER);
       break;
     case 'linkedin':
       //add stuff here
@@ -241,19 +289,19 @@ function commandHandler(input : string) {
       break;
     case 'rm -rf':
       if (bareMode) {
-        writeLines(["don't try again.", "<br>"])
+        writeLines([t().easterEgg.dontTry, "<br>"])
         break;
       }
 
       if (isSudo) {
-        writeLines(["Usage: <span class='command'>'rm -rf &lt;dir&gt;'</span>", "<br>"]);
+        writeLines([t().rmRf.usage, "<br>"]);
       } else {
-        writeLines(["Permission not granted.", "<br>"])
+        writeLines([t().rmRf.permissionNotGranted, "<br>"])
       }
         break;
     case 'sudo':
       if(bareMode) {
-        writeLines(["no.", "<br>"])
+        writeLines([t().easterEgg.no, "<br>"])
         break;
       }
       if(!PASSWORD) return
@@ -276,12 +324,19 @@ function commandHandler(input : string) {
       if (isSudo) {
         writeLines(["src", "<br>"]);
       } else {
-        writeLines(["Permission not granted.", "<br>"]);
+        writeLines([t().ls.permissionNotGranted, "<br>"]);
       }
+      break;
+    case 'lang':
+      if(bareMode) {
+        writeLines([t().easterEgg.typeHelp, "<br>"])
+        break;
+      }
+      writeLines(["<br>", t().languageChange.currentLanguage, t().languageChange.usage, "<br>"]);
       break;
     default:
       if(bareMode) {
-        writeLines(["type 'help'", "<br>"])
+        writeLines([t().easterEgg.typeHelp, "<br>"])
         break;
       }
 
@@ -322,7 +377,7 @@ function revertPasswordChanges() {
 function passwordHandler() {
   if (passwordCounter === 2) {
     if (!INPUT_HIDDEN || !mutWriteLines || !PASSWORD) return
-    writeLines(["<br>", "INCORRECT PASSWORD.", "PERMISSION NOT GRANTED.", "<br>"])
+    writeLines(["<br>", t().sudo.incorrectPassword, t().sudo.permissionNotGranted, "<br>"])
     revertPasswordChanges();
     passwordCounter = 0;
     return
@@ -330,7 +385,7 @@ function passwordHandler() {
 
   if (PASSWORD_INPUT.value === SUDO_PASSWORD) {
     if (!mutWriteLines || !mutWriteLines.parentNode) return
-    writeLines(["<br>", "PERMISSION GRANTED.", "Try <span class='command'>'rm -rf'</span>", "<br>"])
+    writeLines(["<br>", t().sudo.permissionGranted, t().sudo.tryRmRf, "<br>"])
     revertPasswordChanges();
     isSudo = true;
     return
@@ -343,6 +398,7 @@ function passwordHandler() {
 function easterEggStyles() {   
   const bars = document.getElementById("bars");
   const body = document.body;
+  const html = document.documentElement;
   const main = document.getElementById("main");
   const span = document.getElementsByTagName("span");
 
@@ -350,8 +406,12 @@ function easterEggStyles() {
   bars.innerHTML = "";
   bars.remove()
 
-  if (main) main.style.border = "none";
+  if (main) {
+    main.style.border = "none";
+    main.style.backgroundColor = "black";
+  }
 
+  html.style.backgroundColor = "black";
   body.style.backgroundColor = "black";
   body.style.fontFamily = "VT323, monospace";
   body.style.fontSize = "20px";
@@ -386,8 +446,8 @@ const initEventListeners = () => {
     PRE_USER.innerText = command.username;
   } 
 
-    window.addEventListener('load', () => {
-    writeLines(BANNER);
+  window.addEventListener('load', () => {
+    showLanguageSelection();
   });
   
   USERINPUT.addEventListener('keypress', userInputHandler);
@@ -401,4 +461,89 @@ const initEventListeners = () => {
   console.log(`%cPassword: ${command.password}`, "color: red; font-size: 20px;");
 }
 
+function showLanguageSelection() {
+  const langSelection = [
+    "<br>",
+    t().languageSelection.prompt,
+    "<br>",
+    "  1. 'en' - " + t().languageSelection.english,
+    "  2. 'fr' - " + t().languageSelection.french,
+    "<br>"
+  ];
+  writeLines(langSelection);
+}
+
 initEventListeners();
+
+// Maximize window button functionality
+const maximizeButton = document.getElementById("maximize-window");
+const mainElement = document.getElementById("main");
+const barElement = document.getElementById("bar-1");
+let isMaximized = false;
+
+if (maximizeButton && mainElement) {
+  maximizeButton.addEventListener("click", () => {
+    if (isMaximized) {
+      // Restore to custom size - center it
+      mainElement.style.width = "50%";
+      mainElement.style.height = "80%";
+      mainElement.style.position = "absolute";
+      mainElement.style.left = "50%";
+      mainElement.style.top = "50%";
+      mainElement.style.transform = "translate(-50%, -50%)";
+      mainElement.style.margin = "";
+      mainElement.style.marginTop = "";
+      mainElement.style.flex = "";
+      maximizeButton.textContent = "🗖";
+      isMaximized = false;
+    } else {
+      // Maximize
+      mainElement.style.width = "";
+      mainElement.style.height = "";
+      mainElement.style.position = "";
+      mainElement.style.left = "";
+      mainElement.style.top = "";
+      mainElement.style.transform = "";
+      mainElement.style.margin = "";
+      mainElement.style.marginTop = "";
+      mainElement.style.flex = "";
+      maximizeButton.textContent = "🗗";
+      isMaximized = true;
+    }
+  });
+}
+
+// Drag functionality when window is not maximized
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+if (barElement && mainElement) {
+  barElement.addEventListener("mousedown", (e) => {
+    if (isMaximized || e.target === maximizeButton) return;
+    
+    isDragging = true;
+    
+    // Get current position
+    const rect = mainElement.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging || isMaximized) return;
+    
+    e.preventDefault();
+    
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+    
+    mainElement.style.left = `${newLeft}px`;
+    mainElement.style.top = `${newTop}px`;
+    mainElement.style.transform = "none";
+  });
+
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+  });
+}

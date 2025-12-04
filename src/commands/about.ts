@@ -1,13 +1,14 @@
 import command from '../../config.json' assert {type: 'json'};
+import { t } from '../translations';
 
-const createAbout = () : string[] => {
+export const createAbout = () : string[] => {
   const about : string[] = [];
 
   const SPACE = "&nbsp;";
 
-  const EMAIL = "Email";
-  const GITHUB = "Github";
-  const LINKEDIN = "Linkedin";
+  const EMAIL = t().about.email;
+  const GITHUB = t().about.github;
+  const LINKEDIN = t().about.linkedin;
   
   const email = `<i class='fa-solid fa-envelope'></i> ${EMAIL}`;   
   const github = `<i class='fa-brands fa-github'></i> ${GITHUB}`;
@@ -15,7 +16,7 @@ const createAbout = () : string[] => {
   let string = "";
 
   about.push("<br>");
-  about.push(command.aboutGreeting);
+  about.push(t().about.greeting);
   about.push("<br>");
   string += SPACE.repeat(2);
   string += email;
