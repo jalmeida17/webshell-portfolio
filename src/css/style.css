@@ -44,7 +44,7 @@ main {
   box-sizing: border-box;
   height: 100%;
   border: var(--border) solid 2px;
-  border-radius: 2px;
+  border-radius: 8px 8px 2px 2px;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -127,6 +127,10 @@ a:hover {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 #maximize-window {
@@ -145,23 +149,6 @@ a:hover {
 
 #maximize-window:hover {
   background: rgba(255, 255, 255, 0.1);
-}
-
-#bar-2 {
-  display: none;
-}
-
-#bar-3 {
-  display: none;
-}
-
-#bar-4 {
-  display: none;
-}
-
-
-#bar-5 {
-  display: none;
 }
 
 #terminal {

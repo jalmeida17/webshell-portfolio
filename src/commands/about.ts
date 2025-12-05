@@ -28,14 +28,14 @@ export const createAbout = () : string[] => {
   string += SPACE.repeat(2);
   string += github;
   string += SPACE.repeat(17 - GITHUB.length);
-  string += `<a target='_blank' href='https://github.com/${command.social.github}'>github/${command.social.github}</a>`;
+  string += `<a target='_blank' href='https://github.com/${command.social.github}'>https://github.com/${command.social.github}</a>`;
   about.push(string);
 
   string = '';
   string += SPACE.repeat(2);
   string += linkedin;
   string += SPACE.repeat(17 - LINKEDIN.length);  
-  string += `<a target='_blank' href='https://www.linkedin.com/in/${command.social.linkedin}'>linkedin/${command.social.linkedin}</a>`;
+  string += `<a target='_blank' href='https://www.linkedin.com/in/${command.social.linkedin}'>https://www.linkedin.com/in/${command.social.linkedin}</a>`;
   about.push(string);
 
   about.push("<br>");

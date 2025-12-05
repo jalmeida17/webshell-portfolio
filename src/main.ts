@@ -513,6 +513,14 @@ if (maximizeButton && mainElement) {
   });
 }
 
+// Double-click on topbar to maximize/restore
+if (barElement && mainElement && maximizeButton) {
+  barElement.addEventListener("dblclick", () => {
+    // Trigger the maximize button click
+    maximizeButton.click();
+  });
+}
+
 // Drag functionality when window is not maximized
 let isDragging = false;
 let offsetX = 0;
