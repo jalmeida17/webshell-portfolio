@@ -41,6 +41,16 @@ const COMMANDS = ["help", "about", "projects", "banner", "clear", "lang"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
+// Typing sound functionality
+const playTypingSound = () => {
+  // Create a new audio instance each time to allow overlapping sounds
+  const sound = new Audio('/res/key_press.wav');
+  sound.volume = 0.3; // Adjust volume (0.0 to 1.0)
+  sound.play().catch(() => {
+    // Silently fail if audio can't play (e.g., autoplay restrictions)
+  });
+};
+
 const scrollToBottom = () => {
   const MAIN = document.getElementById("main");
   if(!MAIN) return
@@ -51,9 +61,15 @@ const scrollToBottom = () => {
 function userInputHandler(e : KeyboardEvent) {
   const key = e.key;
 
+  // Play typing sound for printable characters and backspace
+  if (key.length === 1 || key === 'Backspace') {
+    playTypingSound();
+  }
+
   switch(key) {
     case "Enter":
       e.preventDefault();
+      playTypingSound();
       if (!isPasswordInput) {
         enterKey();
       } else {
