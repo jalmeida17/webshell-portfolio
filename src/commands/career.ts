@@ -12,7 +12,6 @@ export const createCareer = () : string[] => {
   career.push("<br>");
   
   // Employment details
-  career.push(t().career.type);
   career.push(t().career.period);
   career.push(t().career.location);
   career.push("<br>");

@@ -14,9 +14,12 @@
   "social": {
     "email": "joa.almeidasantos@gmail.com",
     "github": "jalmeida17",
-    "linkedin": "jo%C3%A3o-almeida-santos-315b7b300/"
+    "linkedin": "jo%C3%A3o-almeida-santos-315b7b300/",
+    "discord": "yazh17#6007",
+    "steam": "76561198876096005",
+    "phone": "+33767392800"
   },
-  "aboutGreeting": "Hey! what's up? You're new here ain't you? Here are my socials :",
+  "aboutGreeting": "Hi, I'm Joao ! I'm a Full Stack Developer passionate about coding and tech in general.",
   "projects": [
     [
       "GofeR",

@@ -9,10 +9,16 @@ export const createAbout = () : string[] => {
   const EMAIL = t().about.email;
   const GITHUB = t().about.github;
   const LINKEDIN = t().about.linkedin;
+  const DISCORD = t().about.discord;
+  const STEAM = t().about.steam;
+  const PHONE = t().about.phone;
   
   const email = `<i class='fa-solid fa-envelope'></i> ${EMAIL}`;   
   const github = `<i class='fa-brands fa-github'></i> ${GITHUB}`;
   const linkedin = `<i class='fa-brands fa-linkedin'></i> ${LINKEDIN}`;
+  const discord = `<i class='fa-brands fa-discord'></i> ${DISCORD}`;
+  const steam = `<i class='fa-brands fa-steam'></i> ${STEAM}`;
+  const phone = `<i class='fa-solid fa-phone'></i> ${PHONE}`;
   let string = "";
 
   about.push("<br>");
@@ -37,6 +43,28 @@ export const createAbout = () : string[] => {
   string += SPACE.repeat(17 - LINKEDIN.length);  
   string += `<a target='_blank' href='https://www.linkedin.com/in/${command.social.linkedin}'>https://www.linkedin.com/in/${command.social.linkedin}</a>`;
   about.push(string);
+  
+  string = '';
+  string += SPACE.repeat(2);
+  string += steam;
+  string += SPACE.repeat(17 - STEAM.length);  
+  string += `<a target='_blank' href='https://steamcommunity.com/profiles/${command.social.steam}'>https://steamcommunity.com/profiles/${command.social.steam}</a>`;
+  about.push(string);
+
+  string = '';
+  string += SPACE.repeat(2);
+  string += phone;
+  string += SPACE.repeat(17 - PHONE.length);  
+  string += `<a target='_blank' href='callto:${command.social.phone}'>${command.social.phone}</a>`;
+  about.push(string);
+  
+  string = '';
+  string += SPACE.repeat(2);
+  string += discord;
+  string += SPACE.repeat(17 - DISCORD.length);  
+  string += `<span>${command.social.discord}</span>`;
+  about.push(string);
+
 
   about.push("<br>");
   return about

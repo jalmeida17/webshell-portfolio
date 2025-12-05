@@ -11,6 +11,9 @@ export interface Translations {
     email: string;
     github: string;
     linkedin: string;
+    discord: string;
+    steam: string;
+    phone: string;
   };
   projects: {
     files: string;
@@ -18,7 +21,6 @@ export interface Translations {
   career: {
     title: string;
     company: string;
-    type: string;
     period: string;
     location: string;
     description1: string;
@@ -86,10 +88,13 @@ export const translations: Record<string, Translations> = {
       ],
     },
     about: {
-      greeting: "Hey! what's up? You're new here ain't you? Here are my socials :",
+      greeting: "Hi, I'm Joao ! I'm a Full Stack Developer passionate about coding and tech in general.",
       email: "Email",
       github: "Github",
       linkedin: "Linkedin",
+      discord: "Discord",
+      steam: "Steam",
+      phone: "Phone"
     },
     projects: {
       files: "File(s)",
@@ -97,7 +102,6 @@ export const translations: Record<string, Translations> = {
     career: {
       title: "Full Stack Developer - Internship",
       company: "Clauger",
-      type: "Part-time",
       period: "August 2024 - Present",
       location: "Brignais, Auvergne-Rhône-Alpes, France",
       description1: "Fullstack Developer at Clauger, focused on developing and maintaining",
@@ -163,10 +167,13 @@ export const translations: Record<string, Translations> = {
       ],
     },
     about: {
-      greeting: "Salut ! Quoi de neuf ? Tu es nouveau ici n'est-ce pas ? Voici mes réseaux sociaux :",
+      greeting: "Salut, je suis Joao ! Je suis un développeur Full Stack passionné par l'informatique.",
       email: "Email",
       github: "Github",
       linkedin: "Linkedin",
+      discord: "Discord",
+      steam: "Steam",
+      phone: "Téléphone"
     },
     projects: {
       files: "Fichier(s)",
@@ -174,7 +181,6 @@ export const translations: Record<string, Translations> = {
     career: {
       title: "Développeur Full Stack - Alternance",
       company: "Clauger",
-      type: "Temps partiel",
       period: "Août 2024 - Présent",
       location: "Brignais, Auvergne-Rhône-Alpes, France",
       description1: "Développeur Fullstack chez Clauger, axé sur le développement et la maintenance",
