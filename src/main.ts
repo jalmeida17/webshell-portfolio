@@ -618,8 +618,31 @@ function openCareerWindow() {
 
 initEventListeners();
 
+// Sidebar dock terminal icon functionality
+const terminalIcon = document.getElementById('terminal-icon');
+
+if (terminalIcon) {
+  terminalIcon.addEventListener('click', () => {
+    const mainEl = document.getElementById('main');
+    if (mainEl) {
+      if (mainEl.style.display === 'none') {
+        // Open terminal
+        mainEl.style.display = 'flex';
+        mainEl.style.flexDirection = 'column';
+        terminalIcon.classList.add('active');
+        USERINPUT.focus();
+      } else {
+        // Close terminal
+        mainEl.style.display = 'none';
+        terminalIcon.classList.remove('active');
+      }
+    }
+  });
+}
+
 // Maximize window button functionality
 const maximizeButton = document.getElementById("maximize-window");
+const closeButton = document.getElementById("close-window");
 const mainElement = document.getElementById("main");
 const barElement = document.getElementById("bar-1");
 let isMaximized = false;
@@ -628,6 +651,14 @@ let isMaximized = false;
 if (mainElement) {
   mainElement.addEventListener('mousedown', () => {
     bringToFront(mainElement);
+  });
+}
+
+// Close button functionality
+if (closeButton && mainElement && terminalIcon) {
+  closeButton.addEventListener('click', () => {
+    mainElement.style.display = 'none';
+    terminalIcon.classList.remove('active');
   });
 }
 

@@ -12,13 +12,26 @@
 </head>
 
 <body>
+  <div id="mobile-block">
+    <div id="mobile-message">
+      <i class="fa-solid fa-desktop" style="font-size: 64px; margin-bottom: 20px;"></i>
+      <h1>Desktop Only</h1>
+      <p>This portfolio is optimized for desktop</p>
+      <p>Please visit this website on a PC</p>
+    </div>
+  </div>
   <div id="desktop-topbar">
     <div id="desktop-clock"></div>
     <button id="sound-toggle" title="Toggle Sound"><i class="fa-solid fa-volume-high"></i></button>
   </div>
-  <main id="main" style="width: 50%; height: 80%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+  <div id="sidebar-dock">
+    <div id="terminal-icon" class="dock-icon active">
+      <i class="fa-solid fa-terminal"></i>
+    </div>
+  </div>
+  <main id="main" style="width: 50%; height: 80%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column;">
     <div id="bars">
-      <div id="bar-1">visitor@jalmeida17:$ ~<button id="maximize-window" >🗖</button></div>
+      <div id="bar-1">visitor@jalmeida17:$ ~<button id="maximize-window" >🗖</button><button id="close-window">×</button></div>
     </div>
     <br>
     <div id="terminal">
