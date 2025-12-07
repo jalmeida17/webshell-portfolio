@@ -1,10 +1,9 @@
 import command from '../../config.json' assert {type: 'json'};
-import { t } from '../translations';
 
 export const createProject = () : string[] => {
   let string = "";
   const projects : string[] = [];
-  const files = `${command.projects.length} ${t().projects.files}`;
+  const files = `${command.projects.length} File(s)`;
   const SPACE = "&nbsp;";
 
   projects.push("<br>")

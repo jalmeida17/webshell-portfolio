@@ -1,5 +1,3 @@
-import { t } from '../translations';
-
 export const createCareer = () : string[] => {
   const career : string[] = [];
   const SPACE = "&nbsp;";
@@ -7,22 +5,22 @@ export const createCareer = () : string[] => {
   career.push("<br>");
   
   // Job title and company
-  career.push("<span class='command'>" + t().career.title + "</span>");
-  career.push(t().career.company);
+  career.push("<span class='command'>Full Stack Developer - Internship</span>");
+  career.push("Clauger");
   career.push("<br>");
   
   // Employment details
-  career.push(t().career.period);
-  career.push(t().career.location);
+  career.push("August 2024 - Present");
+  career.push("Brignais, Auvergne-Rhône-Alpes, France");
   career.push("<br>");
   
   // Description
-  career.push(t().career.description1);
-  career.push(t().career.description2);
+  career.push("Fullstack Developer at Clauger, focused on developing and maintaining");
+  career.push("web applications using modern technologies.");
   career.push("<br>");
   
   // Technologies
-  career.push("<span class='command'>" + t().career.technologies + "</span>");
+  career.push("<span class='command'>Technologies:</span>");
   career.push("Angular" + SPACE.repeat(4) + ".NET" + SPACE.repeat(4) + "C#");
   career.push("MariaDB" + SPACE.repeat(4) + "SQL" + SPACE.repeat(4) + "DevOps");
   career.push("PrimeNG" + SPACE.repeat(4) + "Git");

@@ -1,17 +1,16 @@
 import command from '../../config.json' assert {type: 'json'};
-import { t } from '../translations';
 
 export const createAbout = () : string[] => {
   const about : string[] = [];
 
   const SPACE = "&nbsp;";
 
-  const EMAIL = t().about.email;
-  const GITHUB = t().about.github;
-  const LINKEDIN = t().about.linkedin;
-  const DISCORD = t().about.discord;
-  const STEAM = t().about.steam;
-  const PHONE = t().about.phone;
+  const EMAIL = "Email";
+  const GITHUB = "Github";
+  const LINKEDIN = "Linkedin";
+  const DISCORD = "Discord";
+  const STEAM = "Steam";
+  const PHONE = "Phone";
   
   const email = `<i class='fa-solid fa-envelope'></i> ${EMAIL}`;   
   const github = `<i class='fa-brands fa-github'></i> ${GITHUB}`;
@@ -22,7 +21,7 @@ export const createAbout = () : string[] => {
   let string = "";
 
   about.push("<br>");
-  about.push(t().about.greeting);
+  about.push("Hi, I'm Joao ! I'm a Full Stack Developer passionate about coding and tech in general.");
   about.push("<br>");
   string += SPACE.repeat(2);
   string += email;

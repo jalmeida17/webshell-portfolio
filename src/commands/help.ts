@@ -1,11 +1,18 @@
-import { t } from '../translations';
-
 export const createHelp = () : string[] => {
   const help : string[] = []
+  const SPACE = "&nbsp;";
   help.push("<br>")
 
-  t().help.commands.forEach((ele) => {
-    const SPACE = "&nbsp;";
+  const commands = [
+    ["'about'", "Who made this website?"],
+    ["'projects'", "Maybe there's something interesting."],
+    ["'career'", "View my professional experience."],
+    ["'sudo'", "???"],
+    ["'banner'", "Display the banner."],
+    ["'clear'", "Clear the terminal."],
+  ];
+
+  commands.forEach((ele) => {
     let string = "";
     string += SPACE.repeat(2);
     string += "<span class='command'>";

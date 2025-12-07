@@ -1,5 +1,4 @@
 import command from '../../config.json' assert {type: 'json'};
-import { t } from '../translations';
 
 export const createBanner = () : string[] => {
   const banner : string[] = [];
@@ -19,8 +18,8 @@ export const createBanner = () : string[] => {
     banner.push(eleToPush);
   });  
   banner.push("<br>");
-  banner.push(t().banner.welcome);
-  banner.push(t().banner.typeHelp);
+  banner.push("Welcome to my Portfolio");
+  banner.push("Type <span class='command'>'help'</span> for a list of all available commands.");
   banner.push("<br>");
   return banner;
 }

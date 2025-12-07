@@ -1,10 +1,8 @@
-import { t } from '../translations';
-
 export const createDefault = () : string[] => {
   const defaultMsgArr = [
     "<br>",
-    t().default.notFound,
-    t().default.typeHelp,
+    "Command not found.",
+    "Type <span class='command'>'help'</span> to see list of available commands.",
     "<br>"
   ]  
   
