@@ -24,8 +24,14 @@
 html,
 body {
   color: var(--text);
-  background-color: var(--bg);
+  background-image: url('/res/ubuntu.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   height: 100%;
+  width: 100%;
+  margin: 0;
   font-size: 16px;
   display: block;
 }
@@ -37,6 +43,10 @@ html {
 body {
   padding: 16px;
   box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 main {
@@ -49,6 +59,12 @@ main {
   overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  z-index: 10;
+  position: relative;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
 }
 
 main::-webkit-scrollbar {

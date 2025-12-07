@@ -42,10 +42,13 @@ const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
 // Typing sound functionality
+const typingSound = new Audio('/res/key_press.wav');
+typingSound.volume = 0.3; // Adjust volume (0.0 to 1.0)
+
 const playTypingSound = () => {
-  // Create a new audio instance each time to allow overlapping sounds
-  const sound = new Audio('/res/key_press.wav');
-  sound.volume = 0.3; // Adjust volume (0.0 to 1.0)
+  // Clone the audio to allow multiple simultaneous plays without interference
+  const sound = typingSound.cloneNode() as HTMLAudioElement;
+  sound.volume = 0.3;
   sound.play().catch(() => {
     // Silently fail if audio can't play (e.g., autoplay restrictions)
   });
@@ -69,7 +72,6 @@ function userInputHandler(e : KeyboardEvent) {
   switch(key) {
     case "Enter":
       e.preventDefault();
-      playTypingSound();
       if (!isPasswordInput) {
         enterKey();
       } else {
@@ -571,3 +573,60 @@ if (barElement && mainElement) {
     isDragging = false;
   });
 }
+
+// Desktop-style selection box
+let selectionBox: HTMLDivElement | null = null;
+let isSelecting = false;
+let selectionStartX = 0;
+let selectionStartY = 0;
+
+document.addEventListener("mousedown", (e) => {
+  // Only start selection on body/html, not on main terminal or its children
+  const target = e.target as HTMLElement;
+  const mainEl = document.getElementById("main");
+  
+  // Check if click is outside the main terminal
+  if (mainEl && !mainEl.contains(target) && (target === document.body || target === document.documentElement)) {
+    isSelecting = true;
+    selectionStartX = e.clientX;
+    selectionStartY = e.clientY;
+    
+    // Create selection box
+    selectionBox = document.createElement("div");
+    selectionBox.style.position = "fixed";
+    selectionBox.style.border = "1px solid rgba(255, 255, 255, 0.5)";
+    selectionBox.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    selectionBox.style.pointerEvents = "none";
+    selectionBox.style.zIndex = "1";
+    selectionBox.style.left = `${selectionStartX}px`;
+    selectionBox.style.top = `${selectionStartY}px`;
+    selectionBox.style.width = "0px";
+    selectionBox.style.height = "0px";
+    document.body.appendChild(selectionBox);
+  }
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (!isSelecting || !selectionBox) return;
+  
+  const currentX = e.clientX;
+  const currentY = e.clientY;
+  
+  const width = Math.abs(currentX - selectionStartX);
+  const height = Math.abs(currentY - selectionStartY);
+  const left = Math.min(currentX, selectionStartX);
+  const top = Math.min(currentY, selectionStartY);
+  
+  selectionBox.style.left = `${left}px`;
+  selectionBox.style.top = `${top}px`;
+  selectionBox.style.width = `${width}px`;
+  selectionBox.style.height = `${height}px`;
+});
+
+document.addEventListener("mouseup", () => {
+  if (isSelecting && selectionBox) {
+    document.body.removeChild(selectionBox);
+    selectionBox = null;
+    isSelecting = false;
+  }
+});
