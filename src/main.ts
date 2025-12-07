@@ -46,6 +46,8 @@ const typingSound = new Audio('/res/key_press.wav');
 typingSound.volume = 0.3; // Adjust volume (0.0 to 1.0)
 
 const playTypingSound = () => {
+  if (!soundEnabled) return;
+  
   // Clone the audio to allow multiple simultaneous plays without interference
   const sound = typingSound.cloneNode() as HTMLAudioElement;
   sound.volume = 0.3;
@@ -466,6 +468,8 @@ const initEventListeners = () => {
 
   window.addEventListener('load', () => {
     showLanguageSelection();
+    updateDesktopClock();
+    setInterval(updateDesktopClock, 1000);
   });
   
   USERINPUT.addEventListener('keypress', userInputHandler);
@@ -477,6 +481,35 @@ const initEventListeners = () => {
   });
 
   console.log(`%cPassword: ${command.password}`, "color: red; font-size: 20px;");
+}
+
+// Desktop top bar functionality
+let soundEnabled = true;
+
+function updateDesktopClock() {
+  const clockElement = document.getElementById('desktop-clock');
+  if (!clockElement) return;
+  
+  const now = new Date();
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  const monthName = months[now.getMonth()];
+  const day = now.getDate();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  
+  clockElement.textContent = `${day} ${monthName} ${hours}:${minutes}`;
+}
+
+const soundToggle = document.getElementById('sound-toggle');
+if (soundToggle) {
+  soundToggle.addEventListener('click', () => {
+    soundEnabled = !soundEnabled;
+    const icon = soundToggle.querySelector('i');
+    if (icon) {
+      icon.className = soundEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+    }
+  });
 }
 
 function showLanguageSelection() {
