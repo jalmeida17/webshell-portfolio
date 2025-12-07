@@ -1,6 +1,5 @@
 export const createNews = () : string[] => {
   const news : string[] = [];
-  const SPACE = "&nbsp;";
 
   news.push("<br>");
   news.push("<span class='command'>📰 Today's Tech & Science Headlines</span>");

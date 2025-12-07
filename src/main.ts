@@ -5,7 +5,6 @@ import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
 import { PROJECTS as PROJECTS_DATA } from "./commands/projects";
 import { createCareer } from "./commands/career";
-import { NEWS } from "./commands/news";
 import { EDUCATION } from "./commands/education";
 import { SKILLS } from "./commands/skills";
 
