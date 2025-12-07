@@ -46,7 +46,6 @@ export const createProjects = () : string[] => {
   projects.push("<br>");
   
   projects.push("<span class='command'>Key Achievements:</span>");
-  projects.push("• Enterprise-grade Windows Forms application");
   projects.push("• Secure authentication with SHA2-256 encryption");
   projects.push("• Professional PDF prescription export with iText7");
   projects.push("• Docker containerization for database services");
