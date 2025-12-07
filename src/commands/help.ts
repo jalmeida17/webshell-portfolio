@@ -8,6 +8,7 @@ export const createHelp = () : string[] => {
     ["'projects'", "Maybe there's something interesting."],
     ["'career'", "View my professional experience."],
     ["'education'", "View my education background."],
+    ["'skills'", "View my technical & soft skills."],
     ["'news'", "Today's tech & science headlines."],
     ["'banner'", "Display the banner."],
     ["'clear'", "Clear the terminal."],

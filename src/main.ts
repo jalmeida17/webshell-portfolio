@@ -7,6 +7,7 @@ import { createProject } from "./commands/projects";
 import { createCareer } from "./commands/career";
 import { NEWS } from "./commands/news";
 import { EDUCATION } from "./commands/education";
+import { SKILLS } from "./commands/skills";
 
 //mutWriteLines gets deleted and reassigned
 let mutWriteLines = document.getElementById("write-lines");
@@ -24,6 +25,7 @@ const ABOUT = createAbout();
 const DEFAULT = createDefault();
 const PROJECTS = createProject();
 const CAREER = createCareer();
+const SKILLS_DATA = SKILLS;
 
 //WRITELINESCOPY is used to during the "clear" command
 const WRITELINESCOPY = mutWriteLines;
@@ -37,7 +39,7 @@ const PRE_USER = document.getElementById("pre-user");
 const HOST = document.getElementById("host");
 const USER = document.getElementById("user");
 const PROMPT = document.getElementById("prompt");
-const COMMANDS = ["help", "about", "projects", "banner", "clear"];
+const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
@@ -259,6 +261,13 @@ function commandHandler(input : string) {
         break;
       }
       openEducationWindow();
+      break;
+    case 'skills':
+      if(bareMode) {
+        writeLines(["No skills to show.", "<br>"])
+        break;
+      }
+      openSkillsWindow();
       break;
     case 'news':
       if(bareMode) {
@@ -768,6 +777,441 @@ function openEducationWindow() {
     background: ${command.colors.background};
     color: ${command.colors.foreground};
     border: none;
+    outline: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    margin-top: 10px;
+  `;
+  terminalInput.placeholder = 'Press Enter to close...';
+
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+    }
+  });
+
+  content.appendChild(terminalInput);
+
+  newTerminal.appendChild(topBar);
+  newTerminal.appendChild(content);
+  document.body.appendChild(newTerminal);
+
+  setTimeout(() => terminalInput.focus(), 100);
+}
+
+function openSkillsWindow() {
+  const mainElement = document.getElementById('main');
+  if (!mainElement) return;
+
+  // Determine position - alternate between left and right
+  const existingNewTerminals = document.querySelectorAll('.new-terminal');
+  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+  
+  const newTerminal = document.createElement('div');
+  newTerminal.className = 'new-terminal';
+  windowZIndex++;
+  newTerminal.style.cssText = `
+    position: fixed;
+    width: 50%;
+    height: 75%;
+    ${position}: 5%;
+    top: 5%;
+    background: ${command.colors.background};
+    border: 2px solid ${command.colors.border.color};
+    border-radius: 8px 8px 2px 2px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+  `;
+
+  newTerminal.addEventListener('mousedown', () => {
+    bringToFront(newTerminal);
+  });
+
+  const topBar = document.createElement('div');
+  topBar.style.cssText = `
+    height: 36px;
+    background: ${command.colors.border.color};
+    color: #FFFFFF;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+    cursor: move;
+  `;
+  topBar.textContent = `visitor@jalmeida17:$ ~/skills`;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 24px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+
+  closeBtn.addEventListener('click', (e: MouseEvent) => {
+    e.stopPropagation();
+    document.body.removeChild(newTerminal);
+  });
+
+  topBar.appendChild(closeBtn);
+
+  // Dragging functionality
+  let isDraggingNew = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  topBar.addEventListener('mousedown', (e) => {
+    if (e.target === closeBtn) return;
+    isDraggingNew = true;
+    const rect = newTerminal.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingNew) return;
+    e.preventDefault();
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+    newTerminal.style.left = `${newLeft}px`;
+    newTerminal.style.top = `${newTop}px`;
+    newTerminal.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDraggingNew = false;
+  });
+
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    color: ${command.colors.foreground};
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    line-height: 1.8;
+  `;
+
+  // Add green prompt at the top
+  const promptLine = document.createElement('div');
+  promptLine.innerHTML = `<span style="color: #4AF626;">visitor@jalmeida17</span>:<span style="color: #298FDD;">~</span>$ skills`;
+  promptLine.style.marginBottom = '10px';
+  content.appendChild(promptLine);
+
+  const skillsContent = document.createElement('div');
+  skillsContent.innerHTML = SKILLS_DATA.join('<br>');
+  content.appendChild(skillsContent);
+
+  const terminalInput = document.createElement('input');
+  terminalInput.type = 'text';
+  terminalInput.style.cssText = `
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: ${command.colors.foreground};
+    outline: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    margin-top: 10px;
+  `;
+  terminalInput.placeholder = 'Press Enter to close...';
+
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+    }
+  });
+
+  content.appendChild(terminalInput);
+
+  newTerminal.appendChild(topBar);
+  newTerminal.appendChild(content);
+  document.body.appendChild(newTerminal);
+
+  setTimeout(() => terminalInput.focus(), 100);
+}
+
+function openSoftSkillsWindow() {
+  const mainElement = document.getElementById('main');
+  if (!mainElement) return;
+
+  const existingNewTerminals = document.querySelectorAll('.new-terminal');
+  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+  
+  const newTerminal = document.createElement('div');
+  newTerminal.className = 'new-terminal';
+  windowZIndex++;
+  newTerminal.style.cssText = `
+    position: fixed;
+    width: 40%;
+    height: 60%;
+    ${position}: 5%;
+    top: 5%;
+    background: ${command.colors.background};
+    border: 2px solid ${command.colors.border.color};
+    border-radius: 8px 8px 2px 2px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+  `;
+
+  newTerminal.addEventListener('mousedown', () => {
+    bringToFront(newTerminal);
+  });
+
+  const topBar = document.createElement('div');
+  topBar.style.cssText = `
+    height: 36px;
+    background: ${command.colors.border.color};
+    color: #FFFFFF;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+    cursor: move;
+  `;
+  topBar.textContent = `visitor@jalmeida17:$ ~/softskills`;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 24px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+
+  closeBtn.addEventListener('click', (e: MouseEvent) => {
+    e.stopPropagation();
+    document.body.removeChild(newTerminal);
+  });
+
+  topBar.appendChild(closeBtn);
+
+  let isDraggingNew = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  topBar.addEventListener('mousedown', (e) => {
+    if (e.target === closeBtn) return;
+    isDraggingNew = true;
+    const rect = newTerminal.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingNew) return;
+    e.preventDefault();
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+    newTerminal.style.left = `${newLeft}px`;
+    newTerminal.style.top = `${newTop}px`;
+    newTerminal.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDraggingNew = false;
+  });
+
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    color: ${command.colors.foreground};
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    line-height: 1.8;
+  `;
+
+  const promptLine = document.createElement('div');
+  promptLine.innerHTML = `<span style="color: #4AF626;">visitor@jalmeida17</span>:<span style="color: #298FDD;">~</span>$ softskills`;
+  promptLine.style.marginBottom = '10px';
+  content.appendChild(promptLine);
+
+  const softSkillsContent = document.createElement('div');
+  softSkillsContent.innerHTML = SOFT_SKILLS_DATA.join('<br>');
+  content.appendChild(softSkillsContent);
+
+  const terminalInput = document.createElement('input');
+  terminalInput.type = 'text';
+  terminalInput.style.cssText = `
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: ${command.colors.foreground};
+    outline: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    margin-top: 10px;
+  `;
+  terminalInput.placeholder = 'Press Enter to close...';
+
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+    }
+  });
+
+  content.appendChild(terminalInput);
+
+  newTerminal.appendChild(topBar);
+  newTerminal.appendChild(content);
+  document.body.appendChild(newTerminal);
+
+  setTimeout(() => terminalInput.focus(), 100);
+}
+
+function openLanguagesWindow() {
+  const mainElement = document.getElementById('main');
+  if (!mainElement) return;
+
+  const existingNewTerminals = document.querySelectorAll('.new-terminal');
+  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+  
+  const newTerminal = document.createElement('div');
+  newTerminal.className = 'new-terminal';
+  windowZIndex++;
+  newTerminal.style.cssText = `
+    position: fixed;
+    width: 35%;
+    height: 55%;
+    ${position}: 5%;
+    top: 5%;
+    background: ${command.colors.background};
+    border: 2px solid ${command.colors.border.color};
+    border-radius: 8px 8px 2px 2px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+  `;
+
+  newTerminal.addEventListener('mousedown', () => {
+    bringToFront(newTerminal);
+  });
+
+  const topBar = document.createElement('div');
+  topBar.style.cssText = `
+    height: 36px;
+    background: ${command.colors.border.color};
+    color: #FFFFFF;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+    cursor: move;
+  `;
+  topBar.textContent = `visitor@jalmeida17:$ ~/languages`;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    font-size: 24px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+
+  closeBtn.addEventListener('click', (e: MouseEvent) => {
+    e.stopPropagation();
+    document.body.removeChild(newTerminal);
+  });
+
+  topBar.appendChild(closeBtn);
+
+  let isDraggingNew = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  topBar.addEventListener('mousedown', (e) => {
+    if (e.target === closeBtn) return;
+    isDraggingNew = true;
+    const rect = newTerminal.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingNew) return;
+    e.preventDefault();
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+    newTerminal.style.left = `${newLeft}px`;
+    newTerminal.style.top = `${newTop}px`;
+    newTerminal.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDraggingNew = false;
+  });
+
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    color: ${command.colors.foreground};
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    line-height: 1.8;
+  `;
+
+  const promptLine = document.createElement('div');
+  promptLine.innerHTML = `<span style="color: #4AF626;">visitor@jalmeida17</span>:<span style="color: #298FDD;">~</span>$ languages`;
+  promptLine.style.marginBottom = '10px';
+  content.appendChild(promptLine);
+
+  const languagesContent = document.createElement('div');
+  languagesContent.innerHTML = LANGUAGES_DATA.join('<br>');
+  content.appendChild(languagesContent);
+
+  const terminalInput = document.createElement('input');
+  terminalInput.type = 'text';
+  terminalInput.style.cssText = `
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: ${command.colors.foreground};
     outline: none;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 16px;
