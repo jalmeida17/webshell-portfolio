@@ -813,8 +813,8 @@ function openSkillsWindow() {
   windowZIndex++;
   newTerminal.style.cssText = `
     position: fixed;
-    width: 50%;
-    height: 75%;
+    width: 65%;
+    height: 85%;
     ${position}: 5%;
     top: 5%;
     background: ${command.colors.background};
@@ -900,33 +900,34 @@ function openSkillsWindow() {
   content.style.cssText = `
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
     color: ${command.colors.foreground};
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 1.8;
+    display: flex;
+    flex-direction: column;
   `;
 
   // Add green prompt at the top
   const promptLine = document.createElement('div');
   promptLine.innerHTML = `<span style="color: #4AF626;">visitor@jalmeida17</span>:<span style="color: #298FDD;">~</span>$ skills`;
-  promptLine.style.marginBottom = '10px';
+  promptLine.style.cssText = 'padding: 15px 20px 0 20px; margin-bottom: 10px;';
   content.appendChild(promptLine);
 
   const skillsContent = document.createElement('div');
-  skillsContent.innerHTML = SKILLS_DATA.join('<br>');
+  skillsContent.style.cssText = 'flex: 1; overflow-y: auto;';
+  skillsContent.innerHTML = SKILLS_DATA;
   content.appendChild(skillsContent);
 
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
   terminalInput.style.cssText = `
-    width: 100%;
+    width: calc(100% - 40px);
     background: transparent;
     border: none;
     color: ${command.colors.foreground};
     outline: none;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 16px;
+    padding: 15px 20px;
     margin-top: 10px;
   `;
   terminalInput.placeholder = 'Press Enter to close...';
