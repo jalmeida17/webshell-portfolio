@@ -21,7 +21,7 @@ export const createAbout = () : string[] => {
   let string = "";
 
   about.push("<br>");
-  about.push("Hi, I'm Joao ! I'm a Full Stack Developer passionate about coding and tech in general.");
+  about.push("Hi, I'm Joao ! I'm a Full Stack Developer passionate about coding and tech in general. Here are my socials if you want to reach out !");
   about.push("<br>");
   string += SPACE.repeat(2);
   string += email;
@@ -33,21 +33,21 @@ export const createAbout = () : string[] => {
   string += SPACE.repeat(2);
   string += github;
   string += SPACE.repeat(17 - GITHUB.length);
-  string += `<a target='_blank' href='https://github.com/${command.social.github}'>https://github.com/${command.social.github}</a>`;
+  string += `<a target='_blank' href='https://github.com/${command.social.github}'>github.com/${command.social.github}</a>`;
   about.push(string);
 
   string = '';
   string += SPACE.repeat(2);
   string += linkedin;
   string += SPACE.repeat(17 - LINKEDIN.length);  
-  string += `<a target='_blank' href='https://www.linkedin.com/in/${command.social.linkedin}'>https://www.linkedin.com/in/${command.social.linkedin}</a>`;
+  string += `<a target='_blank' href='https://www.linkedin.com/in/${command.social.linkedin}'>linkedin.com/in/${command.social.linkedin}</a>`;
   about.push(string);
   
   string = '';
   string += SPACE.repeat(2);
   string += steam;
   string += SPACE.repeat(17 - STEAM.length);  
-  string += `<a target='_blank' href='https://steamcommunity.com/profiles/${command.social.steam}'>https://steamcommunity.com/profiles/${command.social.steam}</a>`;
+  string += `<a target='_blank' href='https://steamcommunity.com/profiles/${command.social.steam}'>steam/${command.social.steam}</a>`;
   about.push(string);
 
   string = '';

@@ -6,9 +6,8 @@ export const createCareer = () : string[] => {
   
   // Job title and company
   career.push("<span class='command'>Full Stack Developer - Internship</span>");
-  career.push("Clauger");
+  career.push("<img src='/res/logo-clauger.png' style='width: 100px; height: 30px; object-fit: contain; background: white; padding: 8px; border-radius: 8px; vertical-align: middle; margin-top: 20px; margin-bottom: 5px; display: inline-block;'>");
   career.push("<br>");
-  
   // Employment details
   career.push("August 2024 - Present");
   career.push("Brignais, Auvergne-Rhône-Alpes, France");

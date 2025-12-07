@@ -5,6 +5,7 @@ import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
 import { createProject } from "./commands/projects";
 import { createCareer } from "./commands/career";
+import { NEWS } from "./commands/news";
 
 //mutWriteLines gets deleted and reassigned
 let mutWriteLines = document.getElementById("write-lines");
@@ -235,7 +236,7 @@ function commandHandler(input : string) {
         writeLines(["Nothing to see here.", "<br>"])
         break;
       }
-      writeLines(ABOUT);
+      openAboutWindow();
       break;
     case 'projects':
       if(bareMode) {
@@ -250,6 +251,13 @@ function commandHandler(input : string) {
         break;
       }
       openCareerWindow();
+      break;
+    case 'news':
+      if(bareMode) {
+        writeLines(["No news for you.", "<br>"])
+        break;
+      }
+      openNewsWindow();
       break;
     case 'linkedin':
       //add stuff here
@@ -614,7 +622,350 @@ function openCareerWindow() {
   setTimeout(() => terminalInput.focus(), 100);
 }
 
+async function openNewsWindow() {
+  const mainElement = document.getElementById('main');
+  if (!mainElement) return;
 
+  const newTerminal = document.createElement('div');
+  newTerminal.className = 'new-terminal';
+  windowZIndex++;
+  newTerminal.style.cssText = `
+    position: fixed;
+    width: 50%;
+    height: 80%;
+    right: 5%;
+    top: 10%;
+    background: ${command.colors.background};
+    border: 2px solid ${command.colors.border.color};
+    border-radius: 8px 8px 2px 2px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+  `;
+
+  newTerminal.addEventListener('mousedown', () => {
+    bringToFront(newTerminal);
+  });
+
+  const topBar = document.createElement('div');
+  topBar.style.cssText = `
+    height: 36px;
+    background: ${command.colors.border.color};
+    color: #FFFFFF;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+  `;
+  topBar.textContent = `visitor@jalmeida17:$ ~/news`;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 2px 6px;
+    transition: background 0.2s;
+    border-radius: 3px;
+  `;
+  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
+  closeBtn.onclick = () => document.body.removeChild(newTerminal);
+  topBar.appendChild(closeBtn);
+
+  // Dragging functionality
+  let isDraggingNew = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  topBar.addEventListener('mousedown', (e) => {
+    if (e.target === closeBtn) return;
+    isDraggingNew = true;
+    const rect = newTerminal.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingNew) return;
+    e.preventDefault();
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+    newTerminal.style.left = `${newLeft}px`;
+    newTerminal.style.top = `${newTop}px`;
+    newTerminal.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDraggingNew = false;
+  });
+
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    padding: 20px;
+    color: ${command.colors.foreground};
+    overflow-y: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    line-height: 20px;
+  `;
+
+  let newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
+  newsHTML += '<br>';
+  newsHTML += `<p style="animation: none;"><span style="color: #70FDFF; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
+  newsHTML += '<br>';
+  newsHTML += '<p style="animation: none; color: #888;">Fetching latest news...</p>';
+  
+  content.innerHTML = newsHTML;
+
+  newTerminal.appendChild(topBar);
+  newTerminal.appendChild(content);
+  document.body.appendChild(newTerminal);
+
+  // Fetch RSS feeds
+  try {
+    const feeds = [
+      { category: '🔧 Development', url: 'https://github.blog/feed/', color: '#70FDFF' },
+      { category: '💻 Tech', url: 'https://techcrunch.com/feed/', color: '#FE6BC9' },
+      { category: '🔬 Science', url: 'https://www.sciencealert.com/rss', color: '#70FDFF' },
+      { category: '🤖 AI', url: 'https://venturebeat.com/feed/', color: '#FE6BC9' },
+      { category: '🎨 Design', url: 'https://www.smashingmagazine.com/feed/', color: '#70FDFF' }
+    ];
+
+    newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
+    newsHTML += '<br>';
+    newsHTML += `<p style="animation: none;"><span style="color: #70FDFF; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
+    newsHTML += '<br>';
+
+    for (const feed of feeds) {
+      newsHTML += `<p style="animation: none; margin-top: 10px;"><span style="color: ${feed.color}; font-weight: bold;">${feed.category}</span></p>`;
+      
+      try {
+        // you're a bitch if you use my api key lol
+        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=1`);
+        const data = await response.json();
+        
+        if (data.status === 'ok' && data.items && data.items.length > 0) {
+          const item = data.items[0];
+          const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
+          
+          // Get description/content preview
+          let description = '';
+          if (item.description) {
+            // Strip HTML tags and get first 150 characters
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = item.description;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            description = textContent.length > 150 ? textContent.substring(0, 150) + '...' : textContent;
+          }
+          
+          newsHTML += `<p style="animation: none; margin-left: 10px;">• <a href="${item.link}" target="_blank" style="color: ${command.colors.foreground}; text-decoration: underline;">${title}</a></p>`;
+          if (description) {
+            newsHTML += `<p style="animation: none; margin-left: 20px; color: #888; font-size: 13px; font-style: italic;">${description}</p>`;
+          }
+        } else {
+          newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Unable to fetch feed (API limit or feed issue)</p>`;
+        }
+      } catch (err) {
+        newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Failed to load (${err instanceof Error ? err.message : 'unknown error'})</p>`;
+      }
+      
+      newsHTML += '<br>';
+    }
+
+    content.innerHTML = newsHTML;
+  } catch (error) {
+    content.innerHTML += '<p style="animation: none; color: #ff6b6b;">Failed to fetch news feeds.</p>';
+  }
+
+  const terminalInput = document.createElement('input');
+  terminalInput.type = 'text';
+  terminalInput.style.cssText = `
+    width: 100%;
+    background: ${command.colors.background};
+    color: ${command.colors.foreground};
+    border: none;
+    outline: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    margin-top: 10px;
+  `;
+  terminalInput.placeholder = 'Press Enter to close...';
+
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+    }
+  });
+
+  content.appendChild(terminalInput);
+  setTimeout(() => terminalInput.focus(), 100);
+}
+
+function openAboutWindow() {
+  const mainElement = document.getElementById('main');
+  if (!mainElement) return;
+
+  // Open to the right
+  const newTerminal = document.createElement('div');
+  newTerminal.className = 'new-terminal';
+  windowZIndex++;
+  newTerminal.style.cssText = `
+    position: fixed;
+    width: 40%;
+    height: 70%;
+    right: 5%;
+    top: 15%;
+    background: ${command.colors.background};
+    border: 2px solid ${command.colors.border.color};
+    border-radius: 8px 8px 2px 2px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+  `;
+
+  // Bring to front when clicked
+  newTerminal.addEventListener('mousedown', () => {
+    bringToFront(newTerminal);
+  });
+
+  const topBar = document.createElement('div');
+  topBar.style.cssText = `
+    height: 36px;
+    background: ${command.colors.border.color};
+    color: #FFFFFF;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+  `;
+  topBar.textContent = `visitor@jalmeida17:$ ~/about`;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 2px 6px;
+    transition: background 0.2s;
+    border-radius: 3px;
+  `;
+  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
+  closeBtn.onclick = () => document.body.removeChild(newTerminal);
+  topBar.appendChild(closeBtn);
+
+  // Dragging functionality
+  let isDraggingNew = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  topBar.addEventListener('mousedown', (e) => {
+    if (e.target === closeBtn) return;
+    isDraggingNew = true;
+    const rect = newTerminal.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingNew) return;
+    e.preventDefault();
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+    newTerminal.style.left = `${newLeft}px`;
+    newTerminal.style.top = `${newTop}px`;
+    newTerminal.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDraggingNew = false;
+  });
+
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    padding: 20px;
+    color: ${command.colors.foreground};
+    overflow-y: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    line-height: 22px;
+  `;
+
+  // Add about content with prompt
+  const textContainer = document.createElement('div');
+  textContainer.style.cssText = `
+    width: 100%;
+  `;
+  
+  let aboutHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/about</p>`;
+  let imageAdded = false;
+  ABOUT.forEach((line, index) => {
+    // Add image before the "Hi, I'm Joao" line (index 1 in the array)
+    if (index === 1 && !imageAdded) {
+      aboutHTML += `<div style="margin: 15px 0;"><img src="/res/profile.png" style="width: 150px; height: 150px; border-radius: 8px; border: 2px solid ${command.colors.border.color}; object-fit: cover;"></div>`;
+      imageAdded = true;
+    }
+    
+    if (line === '<br>') {
+      aboutHTML += '<br>';
+    } else {
+      aboutHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
+    }
+  });
+  
+  textContainer.innerHTML = aboutHTML;
+  content.appendChild(textContainer);
+
+  // Add input for closing
+  const terminalInput = document.createElement('input');
+  terminalInput.type = 'text';
+  terminalInput.style.cssText = `
+    width: 100%;
+    background: ${command.colors.background};
+    color: ${command.colors.foreground};
+    border: none;
+    outline: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    margin-top: 10px;
+  `;
+  terminalInput.placeholder = 'Press Enter to close...';
+
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+    }
+  });
+
+  content.appendChild(terminalInput);
+
+  newTerminal.appendChild(topBar);
+  newTerminal.appendChild(content);
+  document.body.appendChild(newTerminal);
+
+  setTimeout(() => terminalInput.focus(), 100);
+}
 
 initEventListeners();
 

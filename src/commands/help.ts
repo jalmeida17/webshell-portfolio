@@ -7,6 +7,7 @@ export const createHelp = () : string[] => {
     ["'about'", "Who made this website?"],
     ["'projects'", "Maybe there's something interesting."],
     ["'career'", "View my professional experience."],
+    ["'news'", "Today's tech & science headlines."],
     ["'sudo'", "???"],
     ["'banner'", "Display the banner."],
     ["'clear'", "Clear the terminal."],
