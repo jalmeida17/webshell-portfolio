@@ -1,56 +1,68 @@
 {
   "ascii": [
-    "███████╗██╗  ██╗███████╗██╗     ██╗",
-    "██╔════╝██║  ██║██╔════╝██║     ██║",
-    "███████╗███████║█████╗  ██║     ██║",
-    "╚════██║██╔══██║██╔══╝  ██║     ██║",
-    "███████║██║  ██║███████╗███████╗███████╗",
-    "╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝"
+    "     ██╗ ██████╗  █████╗  ██████╗      █████╗ ██╗     ███╗   ███╗███████╗██╗██████╗  █████╗ ",
+    "     ██║██╔═══██╗██╔══██╗██╔═══██╗    ██╔══██╗██║     ████╗ ████║██╔════╝██║██╔══██╗██╔══██╗",
+    "     ██║██║   ██║███████║██║   ██║    ███████║██║     ██╔████╔██║█████╗  ██║██║  ██║███████║",
+    "██   ██║██║   ██║██╔══██║██║   ██║    ██╔══██║██║     ██║╚██╔╝██║██╔══╝  ██║██║  ██║██╔══██║",
+    "╚█████╔╝╚██████╔╝██║  ██║╚██████╔╝    ██║  ██║███████╗██║ ╚═╝ ██║███████╗██║██████╔╝██║  ██║",
+    " ╚════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝     ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝╚══════╝╚═╝╚═════╝ ╚═╝  ╚═╝"
   ],
-  "title": "WebShell",
+  "title": "JoaoShell",
   "username": "visitor",
-  "hostname": "webshell",
-  "password": "050823",
-  "repoLink": "https://github.com/nasan016/webshell",
+  "hostname": "jalmeida17",
+  "password": "rootpassword",
   "social": {
-    "email": "your@email.com",
-    "github": "yourgithub",
-    "linkedin": "you"
+    "email": "joa.almeidasantos@gmail.com",
+    "github": "jalmeida17",
+    "linkedin": "jo%C3%A3o-almeida-santos-315b7b300/",
+    "discord": "yazh17#6007",
+    "steam": "76561198876096005",
+    "phone": "+33767392800"
   },
-  "aboutGreeting": "Hi stranger. Welcome to WebShell.",
+  "aboutGreeting": "Hi, I'm Joao ! I'm a Full Stack Developer passionate about coding and tech in general.",
   "projects": [
     [
-      "GofeR",
-      "Vue.js reactivity in Go.",
-      "https://github.com/nasan016/gofer"
+      "Galaxy Swiss Bourdin",
+      "Full-stack bill management application with Angular, Node.js, MongoDB & AWS.",
+      "https://github.com/jalmeida17/bts-gsbfrontend-angular"
     ],
     [
-      "WebShell",
-      "Terminal styled website.",
-      "https://github.com/nasan016/webshell"
+      "GSB WinForm",
+      "Medical prescription management system built with .NET & MySQL.",
+      "https://github.com/jalmeida17/bts-gsb-winform"
+    ],
+    [
+      "WebShell Portfolio",
+      "Ubuntu-themed terminal portfolio website you're viewing right now!",
+      "https://github.com/jalmeida17/webshell-portfolio"
+    ],
+    [
+      "WoW Portfolio",
+      "3D portfolio using Three.js & World of Warcraft assets (Unfinished).",
+      "https://github.com/jalmeida17/wow-portfolio"
     ]
   ],
   "colors": {
-    "background": "#0C0623",
-    "foreground": "#F8DDE5",
-    "banner": "#FF9951",
+    "background": "#300A24",
+    "foreground": "#FFFFFF",
+    "banner": "#E95420",
     "border": {
       "visible": true,
-      "color": "#FFADE2"
+      "color": "#3C3B37"
     },
     "prompt": {
-      "default": "#A5A7A7",
-      "user": "#FE6BC9",
-      "host": "#70FDFF",
-      "input": "#FF7685"
+      "default": "#FFFFFF",
+      "user": "#8AE234",
+      "host": "#8AE234",
+      "input": "#FFFFFF"
     },
     "link": {
-      "text": "#B6AAEE",
-      "highlightColor": "#FFADE2",
-      "highlightText": "#0C0623"
+      "text": "#3465A4",
+      "highlightColor": "#E95420",
+      "highlightText": "#FFFFFF"
     },
     "commands": {
-      "textColor": "#FD9BDB"
+      "textColor": "#E95420"
     }
   }
 }

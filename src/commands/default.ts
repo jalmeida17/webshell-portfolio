@@ -1,8 +1,8 @@
-const createDefault = () : string[] => {
+export const createDefault = () : string[] => {
   const defaultMsgArr = [
     "<br>",
-    "COMMAND NOT FOUND",
-    "Type <span class='command'>'help'</span> to get started.",
+    "Command not found.",
+    "Type <span class='command'>'help'</span> to see list of available commands.",
     "<br>"
   ]  
   
