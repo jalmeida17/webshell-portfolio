@@ -375,21 +375,38 @@ function easterEggStyles() {
   const html = document.documentElement;
   const main = document.getElementById("main");
   const span = document.getElementsByTagName("span");
+  const sidebar = document.getElementById("sidebar-dock");
+  const topbar = document.getElementById("desktop-topbar");
 
   if (!bars) return
   bars.innerHTML = "";
   bars.remove()
 
+  // Hide sidebar and topbar
+  if (sidebar) sidebar.style.display = "none";
+  if (topbar) topbar.style.display = "none";
+
   if (main) {
     main.style.border = "none";
     main.style.backgroundColor = "black";
+    main.style.boxShadow = "none";
+    main.style.position = "fixed";
+    main.style.left = "0";
+    main.style.top = "0";
+    main.style.width = "100%";
+    main.style.height = "100%";
+    main.style.transform = "none";
+    main.style.borderRadius = "0";
   }
 
   html.style.backgroundColor = "black";
+  html.style.backgroundImage = "none";
   body.style.backgroundColor = "black";
+  body.style.backgroundImage = "none";
   body.style.fontFamily = "VT323, monospace";
   body.style.fontSize = "20px";
   body.style.color = "white";
+  body.style.padding = "0";
 
   for (let i = 0; i < span.length; i++) {
     span[i].style.color = "white";
