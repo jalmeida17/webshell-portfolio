@@ -3,7 +3,7 @@ import { createHelp } from "./commands/help";
 import { createBanner } from "./commands/banner";
 import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
-import { createProject } from "./commands/projects";
+import { PROJECTS as PROJECTS_DATA } from "./commands/projects";
 import { createCareer } from "./commands/career";
 import { NEWS } from "./commands/news";
 import { EDUCATION } from "./commands/education";
@@ -23,7 +23,6 @@ const HELP = createHelp();
 const BANNER = createBanner();
 const ABOUT = createAbout();
 const DEFAULT = createDefault();
-const PROJECTS = createProject();
 const CAREER = createCareer();
 const SKILLS_DATA = SKILLS;
 
@@ -39,7 +38,7 @@ const PRE_USER = document.getElementById("pre-user");
 const HOST = document.getElementById("host");
 const USER = document.getElementById("user");
 const PROMPT = document.getElementById("prompt");
-const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news"];
+const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news", "cv"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
@@ -246,7 +245,7 @@ function commandHandler(input : string) {
         writeLines(["I don't want you to break the other projects.", "<br>"])
         break;
       }
-      writeLines(PROJECTS);
+      openProjectsWindow();
       break;
     case 'career':
       if(bareMode) {
@@ -275,6 +274,17 @@ function commandHandler(input : string) {
         break;
       }
       openNewsWindow();
+      break;
+    case 'cv':
+      if(bareMode) {
+        writeLines(["No CV for you.", "<br>"])
+        break;
+      }
+      const link = document.createElement('a');
+      link.href = '/res/cv.pdf';
+      link.download = 'CV_Joao_Almeida.pdf';
+      link.click();
+      writeLines(["Downloading CV...", "<br>"]);
       break;
     case 'linkedin':
       //add stuff here
@@ -647,6 +657,17 @@ function openCareerWindow() {
     }
   });
 
+  // Global keydown listener for this window
+  const careerKeydownHandler = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+      document.removeEventListener('keydown', careerKeydownHandler);
+    }
+  };
+  document.addEventListener('keydown', careerKeydownHandler);
+
   content.appendChild(terminalInput);
 
   newTerminal.appendChild(topBar);
@@ -791,6 +812,17 @@ function openEducationWindow() {
     }
   });
 
+  // Global keydown listener for this window
+  const educationKeydownHandler = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+      document.removeEventListener('keydown', educationKeydownHandler);
+    }
+  };
+  document.addEventListener('keydown', educationKeydownHandler);
+
   content.appendChild(terminalInput);
 
   newTerminal.appendChild(topBar);
@@ -813,10 +845,10 @@ function openSkillsWindow() {
   windowZIndex++;
   newTerminal.style.cssText = `
     position: fixed;
-    width: 65%;
-    height: 85%;
+    width: 40%;
+    height: 70%;
     ${position}: 5%;
-    top: 5%;
+    top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
@@ -899,35 +931,37 @@ function openSkillsWindow() {
   const content = document.createElement('div');
   content.style.cssText = `
     flex: 1;
-    overflow-y: auto;
+    padding: 20px;
     color: ${command.colors.foreground};
+    overflow-y: auto;
     font-family: 'IBM Plex Mono', monospace;
-    display: flex;
-    flex-direction: column;
+    font-size: 16px;
+    line-height: 22px;
   `;
+  
+  // Add skills content with prompt
+  let skillsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/skills</p>`;
+  SKILLS_DATA.forEach((line) => {
+    if (line === '<br>') {
+      skillsHTML += '<br>';
+    } else {
+      skillsHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
+    }
+  });
+  
+  content.innerHTML = skillsHTML;
 
-  // Add green prompt at the top
-  const promptLine = document.createElement('div');
-  promptLine.innerHTML = `<span style="color: #4AF626;">visitor@jalmeida17</span>:<span style="color: #298FDD;">~</span>$ skills`;
-  promptLine.style.cssText = 'padding: 15px 20px 0 20px; margin-bottom: 10px;';
-  content.appendChild(promptLine);
-
-  const skillsContent = document.createElement('div');
-  skillsContent.style.cssText = 'flex: 1; overflow-y: auto;';
-  skillsContent.innerHTML = SKILLS_DATA;
-  content.appendChild(skillsContent);
-
+  // Add input for closing
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
   terminalInput.style.cssText = `
-    width: calc(100% - 40px);
-    background: transparent;
-    border: none;
+    width: 100%;
+    background: ${command.colors.background};
     color: ${command.colors.foreground};
+    border: none;
     outline: none;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 16px;
-    padding: 15px 20px;
     margin-top: 10px;
   `;
   terminalInput.placeholder = 'Press Enter to close...';
@@ -939,6 +973,17 @@ function openSkillsWindow() {
     }
   });
 
+  // Global keydown listener for this window
+  const skillsKeydownHandler = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+      document.removeEventListener('keydown', skillsKeydownHandler);
+    }
+  };
+  document.addEventListener('keydown', skillsKeydownHandler);
+
   content.appendChild(terminalInput);
 
   newTerminal.appendChild(topBar);
@@ -948,7 +993,7 @@ function openSkillsWindow() {
   setTimeout(() => terminalInput.focus(), 100);
 }
 
-function openSoftSkillsWindow() {
+function openProjectsWindow() {
   const mainElement = document.getElementById('main');
   if (!mainElement) return;
 
@@ -961,9 +1006,9 @@ function openSoftSkillsWindow() {
   newTerminal.style.cssText = `
     position: fixed;
     width: 40%;
-    height: 60%;
+    height: 70%;
     ${position}: 5%;
-    top: 5%;
+    top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
@@ -988,7 +1033,7 @@ function openSoftSkillsWindow() {
     user-select: none;
     cursor: move;
   `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/softskills`;
+  topBar.textContent = `visitor@jalmeida17:$ ~/projects`;
 
   const closeBtn = document.createElement('button');
   closeBtn.textContent = '×';
@@ -1045,174 +1090,34 @@ function openSoftSkillsWindow() {
   const content = document.createElement('div');
   content.style.cssText = `
     flex: 1;
-    overflow-y: auto;
     padding: 20px;
     color: ${command.colors.foreground};
+    overflow-y: auto;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 16px;
-    line-height: 1.8;
+    line-height: 22px;
   `;
-
-  const promptLine = document.createElement('div');
-  promptLine.innerHTML = `<span style="color: #4AF626;">visitor@jalmeida17</span>:<span style="color: #298FDD;">~</span>$ softskills`;
-  promptLine.style.marginBottom = '10px';
-  content.appendChild(promptLine);
-
-  const softSkillsContent = document.createElement('div');
-  softSkillsContent.innerHTML = SOFT_SKILLS_DATA.join('<br>');
-  content.appendChild(softSkillsContent);
-
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: transparent;
-    border: none;
-    color: ${command.colors.foreground};
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
-  terminalInput.placeholder = 'Press Enter to close...';
-
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
-
-  content.appendChild(terminalInput);
-
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-
-  setTimeout(() => terminalInput.focus(), 100);
-}
-
-function openLanguagesWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
   
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
-  windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed;
-    width: 35%;
-    height: 55%;
-    ${position}: 5%;
-    top: 5%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
-  `;
-
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  // Add projects content with prompt
+  let projectsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/projects</p>`;
+  PROJECTS_DATA.forEach((line) => {
+    if (line === '<br>') {
+      projectsHTML += '<br>';
+    } else {
+      projectsHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
+    }
   });
+  
+  content.innerHTML = projectsHTML;
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-    cursor: move;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/languages`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    font-size: 24px;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-
-  closeBtn.addEventListener('click', (e: MouseEvent) => {
-    e.stopPropagation();
-    document.body.removeChild(newTerminal);
-  });
-
-  topBar.appendChild(closeBtn);
-
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
-  });
-
-  const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 1.8;
-  `;
-
-  const promptLine = document.createElement('div');
-  promptLine.innerHTML = `<span style="color: #4AF626;">visitor@jalmeida17</span>:<span style="color: #298FDD;">~</span>$ languages`;
-  promptLine.style.marginBottom = '10px';
-  content.appendChild(promptLine);
-
-  const languagesContent = document.createElement('div');
-  languagesContent.innerHTML = LANGUAGES_DATA.join('<br>');
-  content.appendChild(languagesContent);
-
+  // Add input for closing
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
   terminalInput.style.cssText = `
     width: 100%;
-    background: transparent;
-    border: none;
+    background: ${command.colors.background};
     color: ${command.colors.foreground};
+    border: none;
     outline: none;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 16px;
@@ -1226,6 +1131,17 @@ function openLanguagesWindow() {
       document.body.removeChild(newTerminal);
     }
   });
+
+  // Global keydown listener for this window
+  const projectsKeydownHandler = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+      document.removeEventListener('keydown', projectsKeydownHandler);
+    }
+  };
+  document.addEventListener('keydown', projectsKeydownHandler);
 
   content.appendChild(terminalInput);
 
@@ -1240,15 +1156,18 @@ async function openNewsWindow() {
   const mainElement = document.getElementById('main');
   if (!mainElement) return;
 
+  const existingNewTerminals = document.querySelectorAll('.new-terminal');
+  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
     position: fixed;
-    width: 50%;
-    height: 80%;
-    right: 5%;
-    top: 10%;
+    width: 40%;
+    height: 70%;
+    ${position}: 5%;
+    top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
@@ -1329,13 +1248,13 @@ async function openNewsWindow() {
     color: ${command.colors.foreground};
     overflow-y: auto;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 16px;
+    line-height: 22px;
   `;
 
   let newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
   newsHTML += '<br>';
-  newsHTML += `<p style="animation: none;"><span style="color: #70FDFF; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
+  newsHTML += `<p style="animation: none;"><span style="color: #E95420; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
   newsHTML += '<br>';
   newsHTML += '<p style="animation: none; color: #888;">Fetching latest news...</p>';
   
@@ -1348,16 +1267,16 @@ async function openNewsWindow() {
   // Fetch RSS feeds
   try {
     const feeds = [
-      { category: '🔧 Development', url: 'https://github.blog/feed/', color: '#70FDFF' },
-      { category: '💻 Tech', url: 'https://techcrunch.com/feed/', color: '#FE6BC9' },
-      { category: '🔬 Science', url: 'https://www.sciencealert.com/rss', color: '#70FDFF' },
-      { category: '🤖 AI', url: 'https://venturebeat.com/feed/', color: '#FE6BC9' },
-      { category: '🎨 Design', url: 'https://www.smashingmagazine.com/feed/', color: '#70FDFF' }
+      { category: '🔧 Development', url: 'https://github.blog/feed/', color: '#E95420' },
+      { category: '💻 Tech', url: 'https://techcrunch.com/feed/', color: '#E95420' },
+      { category: '🔬 Science', url: 'https://www.sciencealert.com/rss', color: '#E95420' },
+      { category: '🤖 AI', url: 'https://venturebeat.com/feed/', color: '#E95420' },
+      { category: '🎨 Design', url: 'https://www.smashingmagazine.com/feed/', color: '#E95420' }
     ];
 
     newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
     newsHTML += '<br>';
-    newsHTML += `<p style="animation: none;"><span style="color: #70FDFF; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
+    newsHTML += `<p style="animation: none;"><span style="color: #E95420; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
     newsHTML += '<br>';
 
     for (const feed of feeds) {
@@ -1421,6 +1340,17 @@ async function openNewsWindow() {
       document.body.removeChild(newTerminal);
     }
   });
+
+  // Global keydown listener for this window
+  const newsKeydownHandler = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+      document.removeEventListener('keydown', newsKeydownHandler);
+    }
+  };
+  document.addEventListener('keydown', newsKeydownHandler);
 
   content.appendChild(terminalInput);
   setTimeout(() => terminalInput.focus(), 100);
@@ -1571,6 +1501,17 @@ function openAboutWindow() {
       document.body.removeChild(newTerminal);
     }
   });
+
+  // Global keydown listener for this window
+  const aboutKeydownHandler = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+      document.removeEventListener('keydown', aboutKeydownHandler);
+    }
+  };
+  document.addEventListener('keydown', aboutKeydownHandler);
 
   content.appendChild(terminalInput);
 

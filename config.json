@@ -22,14 +22,24 @@
   "aboutGreeting": "Hi, I'm Joao ! I'm a Full Stack Developer passionate about coding and tech in general.",
   "projects": [
     [
-      "GofeR",
-      "Vue.js reactivity in Go.",
-      "https://github.com/nasan016/gofer"
+      "Galaxy Swiss Bourdin",
+      "Full-stack bill management application with Angular, Node.js, MongoDB & AWS.",
+      "https://github.com/jalmeida17/bts-gsbfrontend-angular"
     ],
     [
-      "WebShell",
-      "Terminal styled website.",
-      "https://github.com/nasan016/webshell"
+      "GSB WinForm",
+      "Medical prescription management system built with .NET & MySQL.",
+      "https://github.com/jalmeida17/bts-gsb-winform"
+    ],
+    [
+      "WebShell Portfolio",
+      "Ubuntu-themed terminal portfolio website you're viewing right now!",
+      "https://github.com/jalmeida17/webshell-portfolio"
+    ],
+    [
+      "WoW Portfolio",
+      "3D portfolio using Three.js & World of Warcraft assets (Unfinished).",
+      "https://github.com/jalmeida17/wow-portfolio"
     ]
   ],
   "colors": {

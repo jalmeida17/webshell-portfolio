@@ -1,186 +1,59 @@
-export const createSkillsHTML = () : string => {
-  return `
-    <style>
-      .skills-container {
-        padding: 25px;
-        font-family: 'Ubuntu', 'IBM Plex Mono', monospace;
-      }
-      
-      .skills-section {
-        margin-bottom: 35px;
-      }
-      
-      .skills-section-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #E95420;
-        margin-bottom: 20px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #E95420;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      
-      .skills-badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 12px;
-      }
-      
-      .skill-badge {
-        background: rgba(233, 84, 32, 0.15);
-        border: 1.5px solid rgba(233, 84, 32, 0.4);
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 14px;
-        color: #FFFFFF;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 500;
-      }
-      
-      .skill-badge i {
-        font-size: 16px;
-      }
-      
+export const createSkills = () : string[] => {
+  const skills : string[] = [];
+  const SPACE = "&nbsp;";
 
-      
-
-    </style>
-    
-    <div class="skills-container">
-      <!-- Technical Skills -->
-      <div class="skills-section">
-        <div class="skills-section-title">
-          <i class="fa-solid fa-code"></i>
-          Technical Skills
-        </div>
-        
-        <!-- Programming Languages -->
-        <div style="margin-bottom: 25px;">
-          <h3 style="color: #FFFFFF; font-size: 16px; margin-bottom: 8px; font-weight: 600;">
-            <i class="fa-solid fa-terminal"></i> Programming Languages
-          </h3>
-          <div class="skills-badges">
-            <span class="skill-badge"><i class="fa-brands fa-js" style="color: #F7DF1E;"></i> JavaScript</span>
-            <span class="skill-badge"><i class="fa-brands fa-js" style="color: #3178C6;"></i> TypeScript</span>
-            <span class="skill-badge"><i class="fa-solid fa-hashtag" style="color: #9B4F96;"></i> C#</span>
-            <span class="skill-badge"><i class="fa-brands fa-python" style="color: #3776AB;"></i> Python</span>
-            <span class="skill-badge"><i class="fa-brands fa-html5" style="color: #E34F26;"></i> HTML5</span>
-            <span class="skill-badge"><i class="fa-brands fa-css3-alt" style="color: #1572B6;"></i> CSS3</span>
+  skills.push("<br>");
   
-          </div>
-        </div>
-        
-        <!-- Frameworks & Libraries -->
-        <div style="margin-bottom: 25px;">
-          <h3 style="color: #FFFFFF; font-size: 16px; margin-bottom: 8px; font-weight: 600;">
-            <i class="fa-solid fa-cubes"></i> Frameworks & Libraries
-          </h3>
-          <div class="skills-badges">
-            <span class="skill-badge"><i class="fa-brands fa-react" style="color: #61DAFB;"></i> React.js</span>
-            <span class="skill-badge"><i class="fa-brands fa-angular" style="color: #DD0031;"></i> Angular</span>
-            <span class="skill-badge"><i class="fa-brands fa-node-js" style="color: #339933;"></i> Node.js</span>
-            <span class="skill-badge"><i class="fa-solid fa-code" style="color: #512BD4;"></i> .NET / ASP.NET</span>
-            <span class="skill-badge"><i class="fa-solid fa-layer-group" style="color: #FFD166;"></i> PrimeNG</span>
-          </div>
-        </div>
-        
-        <!-- Databases -->
-        <div style="margin-bottom: 25px;">
-          <h3 style="color: #FFFFFF; font-size: 16px; margin-bottom: 8px; font-weight: 600;">
-            <i class="fa-solid fa-database"></i> Databases
-          </h3>
-          <div class="skills-badges">
-            <span class="skill-badge"><i class="fa-solid fa-database" style="color: #4479A1;"></i> MariaDB</span>
-            <span class="skill-badge"><i class="fa-solid fa-leaf" style="color: #47A248;"></i> MongoDB</span>
-            <span class="skill-badge"><i class="fa-solid fa-database" style="color: #4479A1;"></i> SQL</span>
-          </div>
-        </div>
-        
-        <!-- Cloud & DevOps -->
-        <div style="margin-bottom: 25px;">
-          <h3 style="color: #FFFFFF; font-size: 16px; margin-bottom: 8px; font-weight: 600;">
-            <i class="fa-solid fa-cloud"></i> Cloud & DevOps
-          </h3>
-          <div class="skills-badges">
-            <span class="skill-badge"><i class="fa-brands fa-git-alt" style="color: #F05032;"></i> Git</span>
-            <span class="skill-badge"><i class="fa-brands fa-github" style="color: #FFFFFF;"></i> GitHub</span>
-            <span class="skill-badge"><i class="fa-brands fa-aws" style="color: #FF9900;"></i> AWS</span>
-            <span class="skill-badge"><i class="fa-brands fa-microsoft" style="color: #00A4EF;"></i> Azure</span>
-            <span class="skill-badge"><i class="fa-solid fa-bolt" style="color: #FFD166;"></i> Power Automate</span>
-            <span class="skill-badge"><i class="fa-brands fa-windows" style="color: #00A4EF;"></i> Power BI</span>
-            <span class="skill-badge"><i class="fa-solid fa-infinity" style="color: #E95420;"></i> DevOps</span>
-          </div>
-        </div>
-        
-        <!-- Other Tools & Technologies -->
-        <div style="margin-bottom: 25px;">
-          <h3 style="color: #FFFFFF; font-size: 16px; margin-bottom: 8px; font-weight: 600;">
-            <i class="fa-solid fa-toolbox"></i> Other Tools & Technologies
-          </h3>
-          <div class="skills-badges">
-            <span class="skill-badge"><i class="fa-brands fa-google" style="color: #4285F4;"></i> Google Workspace</span>
-            <span class="skill-badge"><i class="fa-solid fa-robot" style="color: #9B59B6;"></i> Generative AI</span>
-            <span class="skill-badge"><i class="fa-solid fa-film" style="color: #E74C3C;"></i> Video Editing</span>
-            <span class="skill-badge"><i class="fa-brands fa-youtube" style="color: #FF0000;"></i> Content Creation</span>
-            <span class="skill-badge"><i class="fa-solid fa-laptop" style="color: #95A5A6;"></i> Hardware</span>
-            <span class="skill-badge"><i class="fa-solid fa-microchip" style="color: #34495E;"></i> BIOS</span>
-            <span class="skill-badge"><i class="fa-solid fa-palette" style="color: #E91E63;"></i> Canva</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Soft Skills -->
-      <div class="skills-section">
-        <div class="skills-section-title">
-          <i class="fa-solid fa-users"></i>
-          Soft Skills
-        </div>
-        
-        <div class="skills-badges">
-          <span class="skill-badge" style="background: rgba(74, 246, 38, 0.15); border-color: rgba(74, 246, 38, 0.4);">
-            <i class="fa-solid fa-users" style="color: #4AF626;"></i> Team Working
-          </span>
-          <span class="skill-badge" style="background: rgba(74, 246, 38, 0.15); border-color: rgba(74, 246, 38, 0.4);">
-            <i class="fa-solid fa-medal" style="color: #4AF626;"></i> Disciplined
-          </span>
-          <span class="skill-badge" style="background: rgba(74, 246, 38, 0.15); border-color: rgba(74, 246, 38, 0.4);">
-            <i class="fa-solid fa-clock" style="color: #4AF626;"></i> Patient
-          </span>
-          <span class="skill-badge" style="background: rgba(74, 246, 38, 0.15); border-color: rgba(74, 246, 38, 0.4);">
-            <i class="fa-solid fa-smile" style="color: #4AF626;"></i> Easygoing
-          </span>
-        </div>
-      </div>
-      
-      <!-- Languages -->
-      <div class="skills-section">
-        <div class="skills-section-title">
-          <i class="fa-solid fa-globe"></i>
-          Languages
-        </div>
-        
-        <div class="skills-badges">
-          <span class="skill-badge" style="background: rgba(41, 143, 221, 0.15); border-color: rgba(41, 143, 221, 0.4);">
-            🇬🇧 English <span style="color: #4AF626; margin-left: 5px; font-weight: 700;">95%</span>
-          </span>
-          <span class="skill-badge" style="background: rgba(41, 143, 221, 0.15); border-color: rgba(41, 143, 221, 0.4);">
-            🇫🇷 French <span style="color: #4AF626; margin-left: 5px; font-weight: 700;">90%</span>
-          </span>
-          <span class="skill-badge" style="background: rgba(41, 143, 221, 0.15); border-color: rgba(41, 143, 221, 0.4);">
-            🇵🇹 Portuguese <span style="color: #4AF626; margin-left: 5px; font-weight: 700;">85%</span>
-          </span>
-          <span class="skill-badge" style="background: rgba(41, 143, 221, 0.15); border-color: rgba(41, 143, 221, 0.4);">
-            🇪🇸 Spanish <span style="color: #4AF626; margin-left: 5px; font-weight: 700;">70%</span>
-          </span>
-        </div>
-      </div>
-    </div>
-  `;
+  // Programming Languages
+  skills.push("<span class='command'><u>Programming Languages</u></span>");
+  skills.push("<i class='fa-brands fa-js'></i> JavaScript" + SPACE.repeat(4) + "<i class='fa-brands fa-js'></i> TypeScript" + SPACE.repeat(4) + "<i class='fa-solid fa-hashtag'></i> C#");
+  skills.push("<i class='fa-brands fa-python'></i> Python" + SPACE.repeat(4) + "<i class='fa-brands fa-html5'></i> HTML5" + SPACE.repeat(4) + "<i class='fa-brands fa-css3-alt'></i> CSS3");
+  skills.push("<br>");
+  
+  // Frameworks & Libraries
+  skills.push("<span class='command'><u>Frameworks & Libraries</u></span>");
+  skills.push("<i class='fa-brands fa-react'></i> React.js" + SPACE.repeat(4) + "<i class='fa-brands fa-angular'></i> Angular" + SPACE.repeat(4) + "<i class='fa-brands fa-node-js'></i> Node.js");
+  skills.push("<i class='fa-solid fa-code'></i> .NET / ASP.NET" + SPACE.repeat(4) + "<i class='fa-solid fa-layer-group'></i> PrimeNG");
+  skills.push("<br>");
+  
+  // Databases
+  skills.push("<span class='command'><u>Databases</u></span>");
+  skills.push("<i class='fa-solid fa-database'></i> MariaDB" + SPACE.repeat(4) + "<i class='fa-solid fa-leaf'></i> MongoDB" + SPACE.repeat(4) + "<i class='fa-solid fa-database'></i> SQL");
+  skills.push("<br>");
+  
+  // Cloud & DevOps
+  skills.push("<span class='command'><u>Cloud & DevOps</u></span>");
+  skills.push("<i class='fa-brands fa-git-alt'></i> Git" + SPACE.repeat(4) + "<i class='fa-brands fa-github'></i> GitHub" + SPACE.repeat(4) + "<i class='fa-brands fa-aws'></i> AWS");
+  skills.push("<i class='fa-brands fa-microsoft'></i> Azure" + SPACE.repeat(4) + "<i class='fa-solid fa-bolt'></i> Power Automate" + SPACE.repeat(4) + "<i class='fa-brands fa-windows'></i> Power BI");
+  skills.push("<i class='fa-solid fa-infinity'></i> DevOps");
+  skills.push("<br>");
+  
+  // Other Tools
+  skills.push("<span class='command'><u>Other Tools & Technologies</u></span>");
+  skills.push("<i class='fa-brands fa-google'></i> Google Workspace" + SPACE.repeat(4) + "<i class='fa-solid fa-robot'></i> Generative AI" + SPACE.repeat(4) + "<i class='fa-solid fa-film'></i> Video Editing");
+  skills.push("<i class='fa-brands fa-youtube'></i> Content Creation" + SPACE.repeat(4) + "<i class='fa-solid fa-laptop'></i> Hardware" + SPACE.repeat(4) + "<i class='fa-solid fa-microchip'></i> BIOS");
+  skills.push("<i class='fa-solid fa-palette'></i> Canva");
+  skills.push("<br>");
+  skills.push("―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――");
+  skills.push("<br>");
+  
+  // Soft Skills
+  skills.push("<span class='command'><u>Soft Skills</u></span>");
+  skills.push("<i class='fa-solid fa-users'></i> Team Working" + SPACE.repeat(4) + "<i class='fa-solid fa-medal'></i> Disciplined");
+  skills.push("<i class='fa-solid fa-clock'></i> Patient" + SPACE.repeat(4) + "<i class='fa-solid fa-smile'></i> Easygoing");
+  skills.push("<br>");
+  skills.push("―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――");
+  skills.push("<br>");
+  
+  // Languages
+  skills.push("<span class='command'><u>Languages</u></span>");
+  skills.push("🇬🇧 English .......... 95%");
+  skills.push("🇫🇷 French ........... 90%");
+  skills.push("🇵🇹 Portuguese ....... 85%");
+  skills.push("🇪🇸 Spanish .......... 70%");
+  skills.push("<br>");
+  
+  return skills;
 }
 
-export const SKILLS = createSkillsHTML();
+export const SKILLS = createSkills();
