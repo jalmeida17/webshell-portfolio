@@ -7,10 +7,11 @@ export const createHelp = () : string[] => {
     ["'about'", "Who made this website?"],
     ["'projects'", "Maybe there's something interesting."],
     ["'career'", "View my professional experience."],
+    ["'education'", "View my education background."],
     ["'news'", "Today's tech & science headlines."],
-    ["'sudo'", "???"],
     ["'banner'", "Display the banner."],
     ["'clear'", "Clear the terminal."],
+    ["'sudo'", "???"],
   ];
 
   commands.forEach((ele) => {
