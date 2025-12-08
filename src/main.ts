@@ -37,7 +37,7 @@ const PRE_USER = document.getElementById("pre-user");
 const HOST = document.getElementById("host");
 const USER = document.getElementById("user");
 const PROMPT = document.getElementById("prompt");
-const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news", "cv"];
+const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news", "cv", "gui"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
@@ -284,6 +284,13 @@ function commandHandler(input : string) {
       link.download = 'CV_Joao_Almeida.pdf';
       link.click();
       writeLines(["Downloading CV...", "<br>"]);
+      break;
+    case 'gui':
+      if(bareMode) {
+        writeLines(["No GUI for you.", "<br>"])
+        break;
+      }
+      window.location.href = 'gui.html';
       break;
     case 'linkedin':
       //add stuff here

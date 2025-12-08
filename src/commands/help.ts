@@ -11,6 +11,7 @@ export const createHelp = () : string[] => {
     ["'skills'", "Technical & soft skills."],
     ["'news'", "Today's tech & science headlines."],
     ["'cv'", "Download my CV."],
+    ["'gui'", "Simple AI Made GUI."],
     ["'banner'", "Display the banner."],
     ["'clear'", "Clear the terminal."],
     ["'sudo'", "???"],

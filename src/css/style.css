@@ -87,6 +87,30 @@ body {
   font-size: clamp(48px, 10vw, 64px) !important;
 }
 
+#gui-version-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 12px 32px;
+  background: #FFFFFF;
+  color: #000000;
+  text-decoration: none;
+  border: 2px solid #FFFFFF;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+#gui-version-btn:hover {
+  background: #000000;
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+}
+
+#gui-version-btn:active {
+  transform: scale(0.98);
+}
+
 @media (max-width: 1024px), (pointer: coarse) {
   #mobile-block {
     display: flex !important;
@@ -294,6 +318,7 @@ a:hover {
   width: 100%;
   margin: 0;
   padding: 0;
+  padding-top: 4px;
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
