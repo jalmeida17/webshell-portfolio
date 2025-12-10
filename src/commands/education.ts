@@ -5,7 +5,7 @@ export const createEducation = () : string[] => {
   education.push("<br>");
   
   // First education entry
-  education.push("<span class='command'>BTS SIO - SLAM</span>");
+  education.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>BTS SIO - SLAM</span>");
   education.push("NEXA DIGITAL SCHOOL");
   education.push("<br>");
   
@@ -35,7 +35,7 @@ export const createEducation = () : string[] => {
   education.push("<br>");
   
   // Second education entry
-  education.push("<span class='command'>BAC Général - NSI & AMC (European Section)</span>");
+  education.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>BAC Général - NSI & AMC (European Section)</span>");
   education.push("Lycée Polyvalent Aragon Picasso");
   education.push("<br>");
   

@@ -41,21 +41,6 @@ const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "car
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
-// Typing sound functionality
-const typingSound = new Audio('/res/key_press.wav');
-typingSound.volume = 0.3; // Adjust volume (0.0 to 1.0)
-
-const playTypingSound = () => {
-  if (!soundEnabled) return;
-  
-  // Clone the audio to allow multiple simultaneous plays without interference
-  const sound = typingSound.cloneNode() as HTMLAudioElement;
-  sound.volume = 0.3;
-  sound.play().catch(() => {
-    // Silently fail if audio can't play (e.g., autoplay restrictions)
-  });
-};
-
 const scrollToBottom = () => {
   const MAIN = document.getElementById("main");
   if(!MAIN) return
@@ -65,11 +50,6 @@ const scrollToBottom = () => {
 
 function userInputHandler(e : KeyboardEvent) {
   const key = e.key;
-
-  // Play typing sound for printable characters and backspace
-  if (key.length === 1 || key === 'Backspace') {
-    playTypingSound();
-  }
 
   switch(key) {
     case "Enter":
@@ -478,6 +458,7 @@ const initEventListeners = () => {
   
   USERINPUT.addEventListener('keypress', userInputHandler);
   USERINPUT.addEventListener('keydown', userInputHandler);
+  USERINPUT.addEventListener('input', scrollToBottom);
   PASSWORD_INPUT.addEventListener('keypress', userInputHandler);
 
   window.addEventListener('click', (e) => {
@@ -491,30 +472,42 @@ const initEventListeners = () => {
 }
 
 // Desktop top bar functionality
-let soundEnabled = true;
-
 function updateDesktopClock() {
   const clockElement = document.getElementById('desktop-clock');
   if (!clockElement) return;
-  
+
   const now = new Date();
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
+
   const monthName = months[now.getMonth()];
   const day = now.getDate();
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
-  
+
   clockElement.textContent = `${day} ${monthName} ${hours}:${minutes}`;
 }
 
-const soundToggle = document.getElementById('sound-toggle');
-if (soundToggle) {
-  soundToggle.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    const icon = soundToggle.querySelector('i');
+// Sound toggle functionality
+let isMuted = false;
+const soundToggleBtn = document.getElementById('sound-toggle');
+
+if (soundToggleBtn) {
+  soundToggleBtn.addEventListener('click', () => {
+    isMuted = !isMuted;
+
+    // Mute/unmute the music player if it's playing
+    if (currentAudio) {
+      currentAudio.muted = isMuted;
+    }
+
+    // Update icon
+    const icon = soundToggleBtn.querySelector('i');
     if (icon) {
-      icon.className = soundEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+      if (isMuted) {
+        icon.className = 'fa-solid fa-volume-xmark';
+      } else {
+        icon.className = 'fa-solid fa-volume-high';
+      }
     }
   });
 }
@@ -1466,23 +1459,43 @@ function openAboutWindow() {
   textContainer.style.cssText = `
     width: 100%;
   `;
-  
+
   let aboutHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/about</p>`;
+
+  // Use ASCII art from config.json, formatted the same way as the banner
+  let asciiArtHTML = '';
+  command.ascii.forEach((ele) => {
+    let bannerString = "";
+    for (let i = 0; i < ele.length; i++) {
+      if (ele[i] === " ") {
+        bannerString += "&nbsp;";
+      } else {
+        bannerString += ele[i];
+      }
+    }
+    asciiArtHTML += `<pre style="margin: 0;">${bannerString}</pre>`;
+  });
+
   let imageAdded = false;
   ABOUT.forEach((line, index) => {
-    // Add image before the "Hi, I'm Joao" line (index 1 in the array)
+    // Add image and ASCII art side by side before the "Hi, I'm Joao" line (index 1 in the array)
     if (index === 1 && !imageAdded) {
-      aboutHTML += `<div style="margin: 15px 0;"><img src="/res/profile.png" style="width: 150px; height: 150px; border-radius: 8px; border: 2px solid ${command.colors.border.color}; object-fit: cover;"></div>`;
+      aboutHTML += `
+        <div style="display: flex; gap: 20px; margin: 15px 0; align-items: center;">
+          <img src="/res/profile.png" style="width: 150px; height: 150px; border-radius: 8px; border: 2px solid ${command.colors.border.color}; object-fit: cover;">
+          <div style="color: ${command.colors.banner}; font-family: 'IBM Plex Mono', monospace;">${asciiArtHTML}</div>
+        </div>
+      `;
       imageAdded = true;
     }
-    
+
     if (line === '<br>') {
       aboutHTML += '<br>';
     } else {
       aboutHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
     }
   });
-  
+
   textContainer.innerHTML = aboutHTML;
   content.appendChild(textContainer);
 
@@ -1591,12 +1604,12 @@ if (maximizeButton && mainElement) {
       isMaximized = false;
     } else {
       // Maximize
-      mainElement.style.width = "";
+      mainElement.style.width = "95%";
       mainElement.style.height = "";
       mainElement.style.position = "";
-      mainElement.style.left = "";
-      mainElement.style.top = "";
-      mainElement.style.transform = "";
+      mainElement.style.left = "52%";
+      mainElement.style.top = "50%";
+      mainElement.style.transform = "translate(-50%, -50%)";
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
@@ -1705,3 +1718,433 @@ document.addEventListener("mouseup", () => {
     isSelecting = false;
   }
 });
+
+// Music Player functionality
+let musicPlayerWindow: HTMLDivElement | null = null;
+let currentAudio: HTMLAudioElement | null = null;
+let isPlaying = false;
+let currentTrackIndex = 0;
+
+// Playlist
+const playlist: Array<{title: string, artist: string, album: string, file: string, cover?: string}> = [
+  {
+    title: "Nightcall",
+    artist: "Kavinsky",
+    album: "10th Record Makers",
+    file: "/musics/Kavinsky - Nightcall.mp3",
+    cover: "/musics/nightcall.png"
+  },
+  {
+    title: "Illegal",
+    artist: "PinkPantheress",
+    album: "Fancy That",
+    file: "/musics/PinkPantheress - Illegal.mp3",
+    cover: "/musics/illegal.png"
+  }
+];
+
+const musicPlayerIcon = document.getElementById('music-player-icon');
+
+if (musicPlayerIcon) {
+  musicPlayerIcon.addEventListener('click', () => {
+    if (musicPlayerWindow && document.body.contains(musicPlayerWindow)) {
+      // Close music player
+      document.body.removeChild(musicPlayerWindow);
+      musicPlayerWindow = null;
+      musicPlayerIcon.classList.remove('active');
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+    } else {
+      // Open music player
+      openMusicPlayer();
+      musicPlayerIcon.classList.add('active');
+    }
+  });
+}
+
+function openMusicPlayer() {
+  musicPlayerWindow = document.createElement('div');
+  musicPlayerWindow.className = 'music-player-window';
+  windowZIndex++;
+  musicPlayerWindow.style.cssText = `
+    position: fixed;
+    width: 600px;
+    height: 120px;
+    left: 50%;
+    bottom: 60px;
+    transform: translateX(-50%);
+    background: linear-gradient(to bottom, #3C3C3C 0%, #2A2A2A 100%);
+    border: 1px solid #1A1A1A;
+    border-radius: 6px 6px 0 0;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+    font-family: 'IBM Plex Mono', monospace;
+  `;
+
+  musicPlayerWindow.addEventListener('mousedown', () => {
+    bringToFront(musicPlayerWindow!);
+  });
+
+  // Top bar
+  const topBar = document.createElement('div');
+  topBar.style.cssText = `
+    height: 32px;
+    background: linear-gradient(to bottom, #4A4A4A 0%, #3A3A3A 100%);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+    border-bottom: 1px solid #1A1A1A;
+  `;
+
+  const logo = document.createElement('img');
+  logo.src = '/res/Rhythmbox_logo_3.4.4.svg.png';
+  logo.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
+
+  const title = document.createElement('span');
+  title.textContent = 'Rythmbox';
+  title.style.cssText = 'font-size: 13px; flex: 1;';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 0 4px;
+    transition: background 0.2s;
+  `;
+  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
+  closeBtn.onclick = () => {
+    document.body.removeChild(musicPlayerWindow!);
+    musicPlayerWindow = null;
+    const icon = document.getElementById('music-player-icon');
+    if (icon) icon.classList.remove('active');
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+    }
+  };
+
+  topBar.appendChild(logo);
+  topBar.appendChild(title);
+  topBar.appendChild(closeBtn);
+
+  // Dragging functionality
+  let isDraggingPlayer = false;
+  let playerOffsetX = 0;
+  let playerOffsetY = 0;
+
+  topBar.addEventListener('mousedown', (e) => {
+    if (e.target === closeBtn) return;
+    isDraggingPlayer = true;
+    const rect = musicPlayerWindow!.getBoundingClientRect();
+    playerOffsetX = e.clientX - rect.left;
+    playerOffsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingPlayer || !musicPlayerWindow) return;
+    e.preventDefault();
+    const newLeft = e.clientX - playerOffsetX;
+    const newTop = e.clientY - playerOffsetY;
+    musicPlayerWindow.style.left = `${newLeft}px`;
+    musicPlayerWindow.style.top = `${newTop}px`;
+    musicPlayerWindow.style.bottom = 'auto';
+    musicPlayerWindow.style.transform = 'none';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDraggingPlayer) {
+      isDraggingPlayer = false;
+      topBar.style.cursor = '';
+    }
+  });
+
+  // Player content
+  const playerContent = document.createElement('div');
+  playerContent.style.cssText = `
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 4px 12px;
+    gap: 12px;
+  `;
+
+  // Album cover
+  const albumCover = document.createElement('img');
+  albumCover.id = 'music-player-cover';
+  albumCover.src = '/res/logo.png'; // Default cover
+  albumCover.style.cssText = `
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+    object-fit: cover;
+    margin-bottom: 12px;
+    background: #1A1A1A;
+  `;
+
+  // Track info and controls
+  const controlsContainer = document.createElement('div');
+  controlsContainer.style.cssText = `
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+  `;
+
+  // Track info
+  const trackInfo = document.createElement('div');
+  trackInfo.style.cssText = 'display: flex; flex-direction: column; gap: 2px;';
+
+  const trackTitle = document.createElement('div');
+  trackTitle.id = 'track-title';
+  trackTitle.textContent = 'No track loaded';
+  trackTitle.style.cssText = 'color: #FFFFFF; font-size: 13px; font-weight: 500;';
+
+  const trackArtist = document.createElement('div');
+  trackArtist.id = 'track-artist';
+  trackArtist.textContent = 'Select a track to play';
+  trackArtist.style.cssText = 'color: #B0B0B0; font-size: 11px;';
+
+  trackInfo.appendChild(trackTitle);
+  trackInfo.appendChild(trackArtist);
+
+  // Controls
+  const controls = document.createElement('div');
+  controls.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  `;
+
+  const createControlButton = (icon: string, id: string) => {
+    const btn = document.createElement('button');
+    btn.id = id;
+    btn.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+    btn.style.cssText = `
+      background: linear-gradient(to bottom, #5A5A5A 0%, #4A4A4A 100%);
+      border: 1px solid #2A2A2A;
+      color: #FFFFFF;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    `;
+    btn.onmouseover = () => {
+      btn.style.background = 'linear-gradient(to bottom, #6A6A6A 0%, #5A5A5A 100%)';
+    };
+    btn.onmouseout = () => {
+      btn.style.background = 'linear-gradient(to bottom, #5A5A5A 0%, #4A4A4A 100%)';
+    };
+    return btn;
+  };
+
+  const prevBtn = createControlButton('fa-backward-step', 'music-prev');
+  const playPauseBtn = createControlButton('fa-play', 'music-play-pause');
+  const nextBtn = createControlButton('fa-forward-step', 'music-next');
+
+  // Time display
+  const timeDisplay = document.createElement('div');
+  timeDisplay.id = 'time-display';
+  timeDisplay.textContent = '-3:27 / 4:27';
+  timeDisplay.style.cssText = 'color: #B0B0B0; font-size: 11px; margin-left: auto;';
+
+  // Progress bar
+  const progressBar = document.createElement('input');
+  progressBar.id = 'music-progress';
+  progressBar.type = 'range';
+  progressBar.min = '0';
+  progressBar.max = '100';
+  progressBar.value = '0';
+  progressBar.style.cssText = `
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+    -webkit-appearance: none;
+    background: #4A4A4A;
+  `;
+
+  controls.appendChild(prevBtn);
+  controls.appendChild(playPauseBtn);
+  controls.appendChild(nextBtn);
+  controls.appendChild(progressBar);
+  controls.appendChild(timeDisplay);
+
+  controlsContainer.appendChild(trackInfo);
+  controlsContainer.appendChild(controls);
+
+  playerContent.appendChild(albumCover);
+  playerContent.appendChild(controlsContainer);
+
+  musicPlayerWindow.appendChild(topBar);
+  musicPlayerWindow.appendChild(playerContent);
+  document.body.appendChild(musicPlayerWindow);
+
+  // Event listeners for controls
+  playPauseBtn.addEventListener('click', togglePlayPause);
+  prevBtn.addEventListener('click', playPreviousTrack);
+  nextBtn.addEventListener('click', playNextTrack);
+  progressBar.addEventListener('input', seekTrack);
+
+  // Load the first track by default
+  if (playlist.length > 0) {
+    loadTrack(0);
+  }
+}
+
+function togglePlayPause() {
+  if (!currentAudio && playlist.length > 0) {
+    loadTrack(currentTrackIndex);
+  }
+
+  if (currentAudio) {
+    if (isPlaying) {
+      currentAudio.pause();
+      isPlaying = false;
+      const btn = document.getElementById('music-play-pause');
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+    } else {
+      currentAudio.play();
+      isPlaying = true;
+      const btn = document.getElementById('music-play-pause');
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    }
+  }
+}
+
+function loadTrack(index: number) {
+  if (index < 0 || index >= playlist.length) return;
+
+  currentTrackIndex = index;
+  const track = playlist[index];
+
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+
+  currentAudio = new Audio(track.file);
+  currentAudio.muted = isMuted; // Apply current mute state
+
+  const titleEl = document.getElementById('track-title');
+  const artistEl = document.getElementById('track-artist');
+  const coverEl = document.getElementById('music-player-cover') as HTMLImageElement;
+
+  if (titleEl) titleEl.textContent = track.title;
+  if (artistEl) artistEl.textContent = `by ${track.artist} from ${track.album}`;
+  if (coverEl && track.cover) coverEl.src = track.cover;
+
+  currentAudio.addEventListener('loadedmetadata', updateProgress);
+  currentAudio.addEventListener('timeupdate', updateProgress);
+  currentAudio.addEventListener('ended', playNextTrack);
+}
+
+function updateProgress() {
+  if (!currentAudio) return;
+
+  const progress = document.getElementById('music-progress') as HTMLInputElement;
+  const timeDisplay = document.getElementById('time-display');
+
+  if (progress && currentAudio.duration) {
+    const percent = (currentAudio.currentTime / currentAudio.duration) * 100;
+    progress.value = percent.toString();
+  }
+
+  if (timeDisplay && currentAudio.duration) {
+    const current = formatTime(currentAudio.currentTime);
+    const total = formatTime(currentAudio.duration);
+    timeDisplay.textContent = `${current} / ${total}`;
+  }
+}
+
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function seekTrack(e: Event) {
+  if (!currentAudio || !currentAudio.duration) return;
+  const input = e.target as HTMLInputElement;
+  const seekTime = (parseFloat(input.value) / 100) * currentAudio.duration;
+  currentAudio.currentTime = seekTime;
+}
+
+function playPreviousTrack() {
+  if (currentTrackIndex > 0) {
+    loadTrack(currentTrackIndex - 1);
+    if (isPlaying && currentAudio) {
+      currentAudio.play();
+    }
+  }
+}
+
+function playNextTrack() {
+  if (currentTrackIndex < playlist.length - 1) {
+    loadTrack(currentTrackIndex + 1);
+    if (isPlaying && currentAudio) {
+      currentAudio.play();
+    }
+  }
+}
+
+// Desktop context menu functionality
+let currentBackgroundIndex = 0;
+const backgrounds = ['ubuntu.jpg', 'ubuntu2.jpg'];
+const contextMenu = document.getElementById('desktop-context-menu');
+const changeBackgroundBtn = document.getElementById('change-background-btn');
+
+// Show context menu on right-click
+document.addEventListener('contextmenu', (e: MouseEvent) => {
+  // Only show context menu if clicking on the body/desktop area
+  const target = e.target as HTMLElement;
+  if (target === document.body || target.id === 'desktop-topbar' || target.id === 'desktop-clock') {
+    e.preventDefault();
+
+    if (contextMenu) {
+      contextMenu.style.display = 'block';
+      contextMenu.style.left = `${e.clientX}px`;
+      contextMenu.style.top = `${e.clientY}px`;
+    }
+  }
+});
+
+// Hide context menu on click outside
+document.addEventListener('click', (e: MouseEvent) => {
+  if (contextMenu && e.target !== changeBackgroundBtn) {
+    contextMenu.style.display = 'none';
+  }
+});
+
+// Change background on menu item click
+if (changeBackgroundBtn) {
+  changeBackgroundBtn.addEventListener('click', () => {
+    currentBackgroundIndex = (currentBackgroundIndex + 1) % backgrounds.length;
+    const newBackground = backgrounds[currentBackgroundIndex];
+
+    // Update background for both html and body
+    document.documentElement.style.backgroundImage = `url('/res/${newBackground}')`;
+    document.body.style.backgroundImage = `url('/res/${newBackground}')`;
+
+    if (contextMenu) {
+      contextMenu.style.display = 'none';
+    }
+  });
+}

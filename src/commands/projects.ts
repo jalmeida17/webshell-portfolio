@@ -5,7 +5,7 @@ export const createProjects = () : string[] => {
   projects.push("<br>");
   
   // Project 1: Galaxy Swiss Bourdin
-  projects.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>Galaxy Swiss Bourdin</span>");
+  projects.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>GSB Web App</span>");
   projects.push("<br>");
   projects.push("<span class='command'>2024 - Solo Project</span>");
   projects.push("<br>");
@@ -35,7 +35,7 @@ export const createProjects = () : string[] => {
   projects.push("<br>");
   
   // Project 2: Medical Prescription Management System
-  projects.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>Medical Prescription Management System</span>");
+  projects.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>GSB Winform</span>");
   projects.push("<br>");
   projects.push("<span class='command'>2024 - Solo Project</span>");
   projects.push("<br>");
