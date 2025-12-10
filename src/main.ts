@@ -41,21 +41,6 @@ const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "car
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
-// Typing sound functionality
-const typingSound = new Audio('/res/key_press.wav');
-typingSound.volume = 0.3; // Adjust volume (0.0 to 1.0)
-
-const playTypingSound = () => {
-  if (!soundEnabled) return;
-  
-  // Clone the audio to allow multiple simultaneous plays without interference
-  const sound = typingSound.cloneNode() as HTMLAudioElement;
-  sound.volume = 0.3;
-  sound.play().catch(() => {
-    // Silently fail if audio can't play (e.g., autoplay restrictions)
-  });
-};
-
 const scrollToBottom = () => {
   const MAIN = document.getElementById("main");
   if(!MAIN) return
@@ -65,11 +50,6 @@ const scrollToBottom = () => {
 
 function userInputHandler(e : KeyboardEvent) {
   const key = e.key;
-
-  // Play typing sound for printable characters and backspace
-  if (key.length === 1 || key === 'Backspace') {
-    playTypingSound();
-  }
 
   switch(key) {
     case "Enter":
@@ -478,6 +458,7 @@ const initEventListeners = () => {
   
   USERINPUT.addEventListener('keypress', userInputHandler);
   USERINPUT.addEventListener('keydown', userInputHandler);
+  USERINPUT.addEventListener('input', scrollToBottom);
   PASSWORD_INPUT.addEventListener('keypress', userInputHandler);
 
   window.addEventListener('click', (e) => {
@@ -491,8 +472,6 @@ const initEventListeners = () => {
 }
 
 // Desktop top bar functionality
-let soundEnabled = true;
-
 function updateDesktopClock() {
   const clockElement = document.getElementById('desktop-clock');
   if (!clockElement) return;
@@ -506,17 +485,6 @@ function updateDesktopClock() {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   
   clockElement.textContent = `${day} ${monthName} ${hours}:${minutes}`;
-}
-
-const soundToggle = document.getElementById('sound-toggle');
-if (soundToggle) {
-  soundToggle.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    const icon = soundToggle.querySelector('i');
-    if (icon) {
-      icon.className = soundEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
-    }
-  });
 }
 
 // Terminal window functionality
