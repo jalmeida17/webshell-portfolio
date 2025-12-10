@@ -1559,12 +1559,12 @@ if (maximizeButton && mainElement) {
       isMaximized = false;
     } else {
       // Maximize
-      mainElement.style.width = "";
+      mainElement.style.width = "95%";
       mainElement.style.height = "";
       mainElement.style.position = "";
-      mainElement.style.left = "";
-      mainElement.style.top = "";
-      mainElement.style.transform = "";
+      mainElement.style.left = "52%";
+      mainElement.style.top = "50%";
+      mainElement.style.transform = "translate(-50%, -50%)";
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
