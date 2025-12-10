@@ -5,7 +5,7 @@ export const createCareer = () : string[] => {
   career.push("<br>");
   
   // Job title and company
-  career.push("<span class='command'>Full Stack Developer - Internship</span>");
+  career.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>Full Stack Developer - Internship</span>");
   career.push("<br>");
   // Employment details
   career.push("<span class='command'>CLAUGER</span>");

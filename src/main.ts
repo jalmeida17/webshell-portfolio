@@ -2104,3 +2104,47 @@ function playNextTrack() {
     }
   }
 }
+
+// Desktop context menu functionality
+let currentBackgroundIndex = 0;
+const backgrounds = ['ubuntu.jpg', 'ubuntu2.jpg'];
+const contextMenu = document.getElementById('desktop-context-menu');
+const changeBackgroundBtn = document.getElementById('change-background-btn');
+
+// Show context menu on right-click
+document.addEventListener('contextmenu', (e: MouseEvent) => {
+  // Only show context menu if clicking on the body/desktop area
+  const target = e.target as HTMLElement;
+  if (target === document.body || target.id === 'desktop-topbar' || target.id === 'desktop-clock') {
+    e.preventDefault();
+
+    if (contextMenu) {
+      contextMenu.style.display = 'block';
+      contextMenu.style.left = `${e.clientX}px`;
+      contextMenu.style.top = `${e.clientY}px`;
+    }
+  }
+});
+
+// Hide context menu on click outside
+document.addEventListener('click', (e: MouseEvent) => {
+  if (contextMenu && e.target !== changeBackgroundBtn) {
+    contextMenu.style.display = 'none';
+  }
+});
+
+// Change background on menu item click
+if (changeBackgroundBtn) {
+  changeBackgroundBtn.addEventListener('click', () => {
+    currentBackgroundIndex = (currentBackgroundIndex + 1) % backgrounds.length;
+    const newBackground = backgrounds[currentBackgroundIndex];
+
+    // Update background for both html and body
+    document.documentElement.style.backgroundImage = `url('/res/${newBackground}')`;
+    document.body.style.backgroundImage = `url('/res/${newBackground}')`;
+
+    if (contextMenu) {
+      contextMenu.style.display = 'none';
+    }
+  });
+}
