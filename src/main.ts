@@ -475,16 +475,41 @@ const initEventListeners = () => {
 function updateDesktopClock() {
   const clockElement = document.getElementById('desktop-clock');
   if (!clockElement) return;
-  
+
   const now = new Date();
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
+
   const monthName = months[now.getMonth()];
   const day = now.getDate();
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
-  
+
   clockElement.textContent = `${day} ${monthName} ${hours}:${minutes}`;
+}
+
+// Sound toggle functionality
+let isMuted = false;
+const soundToggleBtn = document.getElementById('sound-toggle');
+
+if (soundToggleBtn) {
+  soundToggleBtn.addEventListener('click', () => {
+    isMuted = !isMuted;
+
+    // Mute/unmute the music player if it's playing
+    if (currentAudio) {
+      currentAudio.muted = isMuted;
+    }
+
+    // Update icon
+    const icon = soundToggleBtn.querySelector('i');
+    if (icon) {
+      if (isMuted) {
+        icon.className = 'fa-solid fa-volume-xmark';
+      } else {
+        icon.className = 'fa-solid fa-volume-high';
+      }
+    }
+  });
 }
 
 // Terminal window functionality
@@ -2016,6 +2041,7 @@ function loadTrack(index: number) {
   }
 
   currentAudio = new Audio(track.file);
+  currentAudio.muted = isMuted; // Apply current mute state
 
   const titleEl = document.getElementById('track-title');
   const artistEl = document.getElementById('track-artist');
