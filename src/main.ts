@@ -1123,7 +1123,11 @@ function openProjectDetailWindow(project: ProjectData) {
   `;
 
   // Build project detail HTML
-  const statusBadge = project.status ? `<span style='color: #FFA500;'> - ${project.status}</span>` : '';
+  let statusBadge = '';
+  if (project.status) {
+    const statusColor = project.status === 'CLAUGER' ? '#298FDD' : '#FFA500';
+    statusBadge = `<span style='color: ${statusColor};'> - ${project.status}</span>`;
+  }
   let projectHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/projects/${project.id}</p>`;
   projectHTML += '<br>';
   projectHTML += `<p style="animation: none;"><span class='command' style='font-size: 20px; text-decoration: underline;'>${project.title}</span>${statusBadge}</p>`;
@@ -1150,12 +1154,14 @@ function openProjectDetailWindow(project: ProjectData) {
   });
   projectHTML += '<br>';
 
-  // Repository
-  projectHTML += `<p style="animation: none;"><span class='command'>Repository:</span></p>`;
-  project.repository.forEach(repo => {
-    projectHTML += `<p style="animation: none;">${repo}</p>`;
-  });
-  projectHTML += '<br>';
+  // Repository (only show if there are repositories)
+  if (project.repository && project.repository.length > 0) {
+    projectHTML += `<p style="animation: none;"><span class='command'>Repository:</span></p>`;
+    project.repository.forEach(repo => {
+      projectHTML += `<p style="animation: none;">${repo}</p>`;
+    });
+    projectHTML += '<br>';
+  }
 
   content.innerHTML = projectHTML;
 

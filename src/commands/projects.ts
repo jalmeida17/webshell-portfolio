@@ -90,6 +90,59 @@ export const PROJECT_DETAILS: ProjectData[] = [
     ]
   },
   {
+    id: 'fretclauger',
+    title: 'FretClauger - Transport Request Management System',
+    year: '2025',
+    status: 'CLAUGER',
+    shortDescription: "Internal transportation & freight management system - <i class='fa-brands fa-angular'></i> <i class='fa-solid fa-code'></i> <i class='fa-solid fa-database'></i> <i class='fa-brands fa-docker'></i>",
+    fullDescription: [
+      'FretClauger is a full-stack web application designed to streamline and manage',
+      'transportation requests within Clauger. The system allows users to create, track,',
+      'and manage freight transport requests with detailed information including pickup/delivery',
+      'locations, merchandise details, contact management, project tracking, and carrier coordination.'
+    ],
+    achievements: [
+      '• Full-featured transport request workflow with pickup and delivery management',
+      '• Integration with Azure Entra ID (MSAL) for secure authentication',
+      '• Admin interface for managing transport suppliers, contacts, and agencies',
+      '• Multi-language support (i18n) using Transloco with dynamic language switching',
+      '• Project/sub-project/activity tracking for cost allocation and reporting',
+      '• PDF export functionality and email template generation',
+      '• Responsive UI with PrimeNG and comprehensive Swagger API documentation'
+    ],
+    technologies: [
+      "<i class='fa-brands fa-angular'></i> Angular 19&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-code'></i> .NET Core&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-database'></i> SQL Server",
+      "<i class='fa-brands fa-docker'></i> Docker&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-brands fa-microsoft'></i> Azure Entra ID&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-file-pdf'></i> PDF Export"
+    ],
+    repository: []
+  },
+  {
+    id: 'raw-fitness',
+    title: 'RAW - Fitness Tracker & Social Platform',
+    year: '2025',
+    status: 'In Progress',
+    shortDescription: "Bodybuilding workouts & macros tracking with social features - <i class='fa-brands fa-react'></i> <i class='fa-brands fa-node-js'></i> <i class='fa-solid fa-database'></i> <i class='fa-brands fa-docker'></i>",
+    fullDescription: [
+      'A comprehensive full-stack fitness application that combines workout tracking,',
+      'macro nutrition monitoring, and social networking features. RAW enables users to',
+      'log daily workouts, track nutritional macros, monitor progression over time, and',
+      'connect with friends to share fitness journeys and achievements.'
+    ],
+    achievements: [
+      '• Integrated workout logging with progression analytics',
+      '• Real-time macro nutrition tracking and calculations',
+      '• Rep max calculator and strength progression metrics',
+      '• Social feed featuring friend activity and achievements',
+    ],
+    technologies: [
+      "<i class='fa-brands fa-react'></i> React&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-brands fa-node-js'></i> Node.js&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-database'></i> MySQL",
+      "<i class='fa-brands fa-docker'></i> Docker"
+    ],
+    repository: [
+      "<a href='https://github.com/jalmeida17/StayRaw' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/StayRaw</a>"
+    ]
+  },
+  {
     id: 'threejs-portfolio',
     title: 'Three.js Portfolio Prototype',
     year: '2025',
@@ -123,7 +176,11 @@ export const createProjects = (): string[] => {
   projects.push("<br>");
 
   PROJECT_DETAILS.forEach((project, index) => {
-    const statusBadge = project.status ? `<span style='color: #FFA500;'> [${project.status}]</span>` : '';
+    let statusBadge = '';
+    if (project.status) {
+      const statusColor = project.status === 'CLAUGER' ? '#298FDD' : '#FFA500';
+      statusBadge = `<span style='color: ${statusColor};'> [${project.status}]</span>`;
+    }
     projects.push(
       `${index + 1}. <span class='project-link command ' data-project-id='${project.id}' style=' cursor: pointer; text-decoration: underline;'>${project.title}</span>${statusBadge} (${project.year})`
     );
