@@ -3,7 +3,7 @@ import { createHelp } from "./commands/help";
 import { createBanner } from "./commands/banner";
 import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
-import { PROJECTS as PROJECTS_DATA } from "./commands/projects";
+import { PROJECTS as PROJECTS_DATA, PROJECT_DETAILS, ProjectData } from "./commands/projects";
 import { createCareer } from "./commands/career";
 import { EDUCATION } from "./commands/education";
 import { SKILLS } from "./commands/skills";
@@ -225,7 +225,24 @@ function commandHandler(input : string) {
         writeLines(["I don't want you to break the other projects.", "<br>"])
         break;
       }
-      openProjectsWindow();
+      writeLines(PROJECTS_DATA);
+      // Add click listeners to project links after they're rendered
+      // Calculate total animation time: 40ms per line * number of lines
+      const totalAnimationTime = PROJECTS_DATA.length * 40 + 100;
+      setTimeout(() => {
+        const projectLinks = document.querySelectorAll('.project-link');
+        projectLinks.forEach(link => {
+          link.addEventListener('click', (e) => {
+            const projectId = (e.target as HTMLElement).getAttribute('data-project-id');
+            if (projectId) {
+              const project = PROJECT_DETAILS.find(p => p.id === projectId);
+              if (project) {
+                openProjectDetailWindow(project);
+              }
+            }
+          });
+        });
+      }, totalAnimationTime);
       break;
     case 'career':
       if(bareMode) {
@@ -1000,22 +1017,22 @@ function openSkillsWindow() {
   setTimeout(() => terminalInput.focus(), 100);
 }
 
-function openProjectsWindow() {
+function openProjectDetailWindow(project: ProjectData) {
   const mainElement = document.getElementById('main');
   if (!mainElement) return;
 
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-  
+
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
     position: fixed;
-    width: 40%;
-    height: 70%;
+    width: 50%;
+    height: 75%;
     ${position}: 5%;
-    top: 15%;
+    top: 12%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
@@ -1040,7 +1057,7 @@ function openProjectsWindow() {
     user-select: none;
     cursor: move;
   `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/projects`;
+  topBar.textContent = `visitor@jalmeida17:$ ~/projects/${project.id}`;
 
   const closeBtn = document.createElement('button');
   closeBtn.textContent = '×';
@@ -1104,18 +1121,43 @@ function openProjectsWindow() {
     font-size: 16px;
     line-height: 22px;
   `;
-  
-  // Add projects content with prompt
-  let projectsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/projects</p>`;
-  PROJECTS_DATA.forEach((line) => {
-    if (line === '<br>') {
-      projectsHTML += '<br>';
-    } else {
-      projectsHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
+
+  // Build project detail HTML
+  const statusBadge = project.status ? `<span style='color: #FFA500;'> - ${project.status}</span>` : '';
+  let projectHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/projects/${project.id}</p>`;
+  projectHTML += '<br>';
+  projectHTML += `<p style="animation: none;"><span class='command' style='font-size: 20px; text-decoration: underline;'>${project.title}</span>${statusBadge}</p>`;
+  projectHTML += `<p style="animation: none;"><span class='command'>${project.year} - Solo Project</span></p>`;
+  projectHTML += '<br>';
+
+  // Description
+  project.fullDescription.forEach(line => {
+    projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
   });
-  
-  content.innerHTML = projectsHTML;
+  projectHTML += '<br>';
+
+  // Achievements
+  projectHTML += `<p style="animation: none;"><span class='command'>Key Achievements:</span></p>`;
+  project.achievements.forEach(achievement => {
+    projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${achievement}</p>`;
+  });
+  projectHTML += '<br>';
+
+  // Technologies
+  projectHTML += `<p style="animation: none;"><span class='command'>Technologies:</span></p>`;
+  project.technologies.forEach(tech => {
+    projectHTML += `<p style="animation: none;">${tech}</p>`;
+  });
+  projectHTML += '<br>';
+
+  // Repository
+  projectHTML += `<p style="animation: none;"><span class='command'>Repository:</span></p>`;
+  project.repository.forEach(repo => {
+    projectHTML += `<p style="animation: none;">${repo}</p>`;
+  });
+  projectHTML += '<br>';
+
+  content.innerHTML = projectHTML;
 
   // Add input for closing
   const terminalInput = document.createElement('input');
@@ -1140,15 +1182,15 @@ function openProjectsWindow() {
   });
 
   // Global keydown listener for this window
-  const projectsKeydownHandler = (e: KeyboardEvent) => {
+  const projectDetailKeydownHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
       e.preventDefault();
       document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', projectsKeydownHandler);
+      document.removeEventListener('keydown', projectDetailKeydownHandler);
     }
   };
-  document.addEventListener('keydown', projectsKeydownHandler);
+  document.addEventListener('keydown', projectDetailKeydownHandler);
 
   content.appendChild(terminalInput);
 

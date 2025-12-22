@@ -1,124 +1,138 @@
-export const createProjects = () : string[] => {
-  const projects : string[] = [];
-  const SPACE = "&nbsp;";
+// Project data structure
+export interface ProjectData {
+  id: string;
+  title: string;
+  year: string;
+  status?: string;
+  shortDescription: string;
+  fullDescription: string[];
+  achievements: string[];
+  technologies: string[];
+  repository: string[];
+}
+
+// All project details
+export const PROJECT_DETAILS: ProjectData[] = [
+  {
+    id: 'gsb-webapp',
+    title: 'GSB Web App',
+    year: '2025',
+    shortDescription: "Full-stack bill management app - <i class='fa-brands fa-angular'></i> <i class='fa-brands fa-node-js'></i> <i class='fa-solid fa-leaf'></i> <i class='fa-brands fa-aws'></i>",
+    fullDescription: [
+      'A comprehensive bill management application designed for employees and',
+      'administrators. Built as part of a school examination project, it demonstrates',
+      'full-stack development skills with separate frontend and backend repositories.',
+      'The application manages expense reports, user authentication, and oversight.'
+    ],
+    achievements: [
+      '• Full-stack development with modern architecture',
+      '• Angular frontend expertise with responsive design',
+      '• Node.js backend with MongoDB integration',
+      '• AWS deployment and cloud infrastructure'
+    ],
+    technologies: [
+      "<i class='fa-brands fa-angular'></i> Angular&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-brands fa-node-js'></i> Node.js&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-leaf'></i> MongoDB",
+      "<i class='fa-brands fa-aws'></i> AWS"
+    ],
+    repository: [
+      "<a href='https://github.com/jalmeida17/bts-gsbfrontend-angular' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/bts-gsbfrontend-angular</a>",
+      "<a href='https://github.com/jalmeida17/bts-gsbbackend' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/bts-gsbbackend</a>"
+    ]
+  },
+  {
+    id: 'gsb-winform',
+    title: 'GSB Winform',
+    year: '2025',
+    shortDescription: "Medical prescription management system - <i class='fa-solid fa-code'></i> <i class='fa-solid fa-hashtag'></i> <i class='fa-solid fa-database'></i> <i class='fa-brands fa-docker'></i>",
+    fullDescription: [
+      'A Windows Forms desktop application for managing medical prescriptions,',
+      'patient records, and pharmaceutical databases. Built as part of a BTS',
+      'educational project demonstrating database design, CRUD operations, and',
+      'enterprise application architecture with role-based access control.'
+    ],
+    achievements: [
+      '• Secure authentication with SHA2-256 encryption',
+      '• Professional PDF prescription export with iText7',
+      '• Docker containerization for database services',
+      '• Comprehensive patient and medicine management'
+    ],
+    technologies: [
+      "<i class='fa-solid fa-code'></i> .NET 8.0&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-hashtag'></i> C#&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-database'></i> MySQL",
+      "<i class='fa-brands fa-docker'></i> Docker&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-file-pdf'></i> PDF Generation"
+    ],
+    repository: [
+      "<a href='https://github.com/jalmeida17/bts-gsb-winform' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/bts-gsb-winform</a>"
+    ]
+  },
+  {
+    id: 'webshell-portfolio',
+    title: 'WebShell Portfolio',
+    year: '2025',
+    shortDescription: "Interactive Ubuntu terminal portfolio - <i class='fa-brands fa-js'></i> <i class='fa-brands fa-html5'></i> <i class='fa-brands fa-css3-alt'></i> <i class='fa-solid fa-fire'></i>",
+    fullDescription: [
+      "An Ubuntu-themed terminal portfolio website you're viewing right now!",
+      'Features an interactive command-line interface with multiple terminal',
+      'windows, RSS news integration, and a fully responsive Ubuntu desktop',
+      'simulation. Demonstrates advanced CSS, TypeScript, and creative web design.'
+    ],
+    achievements: [
+      '• Pixel-perfect Ubuntu desktop simulation',
+      '• Interactive multi-window terminal system',
+      '• RSS feed integration for live news',
+      '• Custom command-line interface with easter eggs'
+    ],
+    technologies: [
+      "<i class='fa-brands fa-js'></i> TypeScript&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-brands fa-html5'></i> HTML5&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-brands fa-css3-alt'></i> CSS3",
+      "<i class='fa-solid fa-fire'></i> Vite"
+    ],
+    repository: [
+      "<a href='https://github.com/jalmeida17/webshell-portfolio' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/webshell-portfolio</a>"
+    ]
+  },
+  {
+    id: 'threejs-portfolio',
+    title: 'Three.js Portfolio Prototype',
+    year: '2025',
+    status: 'Unfinished',
+    shortDescription: "Experimental 3D portfolio with WoW assets - <i class='fa-brands fa-react'></i> <i class='fa-solid fa-cube'></i> <i class='fa-solid fa-gamepad'></i>",
+    fullDescription: [
+      'An experimental 3D portfolio using World of Warcraft assets and Three.js.',
+      'This project showcases advanced 3D web development techniques by integrating',
+      'WoW.tools assets to build immersive interactive environments. Currently on',
+      'hold but demonstrates innovative approach to portfolio design.'
+    ],
+    achievements: [
+      '• Immersive 3D web experience with Three.js',
+      "• Integration with WoW.tools API for game assets",
+      '• Advanced 3D rendering and optimization techniques',
+      '• Innovative portfolio concept and design'
+    ],
+    technologies: [
+      "<i class='fa-brands fa-react'></i> React&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-cube'></i> Three.js&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-gamepad'></i> WoW.tools"
+    ],
+    repository: [
+      "<a href='https://github.com/jalmeida17/wow-portfolio' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/wow-portfolio</a>"
+    ]
+  }
+];
+
+// Create simple project list for terminal display
+export const createProjects = (): string[] => {
+  const projects: string[] = [];
 
   projects.push("<br>");
-  
-  // Project 1: Galaxy Swiss Bourdin
-  projects.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>GSB Web App</span>");
-  projects.push("<br>");
-  projects.push("<span class='command'>2024 - Solo Project</span>");
-  projects.push("<br>");
-  projects.push("A comprehensive bill management application designed for employees and");
-  projects.push("administrators. Built as part of a school examination project, it demonstrates");
-  projects.push("full-stack development skills with separate frontend and backend repositories.");
-  projects.push("The application manages expense reports, user authentication, and oversight.");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Key Achievements:</span>");
-  projects.push("• Full-stack development with modern architecture");
-  projects.push("• Angular frontend expertise with responsive design");
-  projects.push("• Node.js backend with MongoDB integration");
-  projects.push("• AWS deployment and cloud infrastructure");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Technologies:</span>");
-  projects.push("<i class='fa-brands fa-angular'></i> Angular" + SPACE.repeat(4) + "<i class='fa-brands fa-node-js'></i> Node.js" + SPACE.repeat(4) + "<i class='fa-solid fa-leaf'></i> MongoDB");
-  projects.push("<i class='fa-brands fa-aws'></i> AWS");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Repository:</span>");
-  projects.push("<a href='https://github.com/jalmeida17/bts-gsbfrontend-angular' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/bts-gsbfrontend-angular</a>");
-  projects.push("<a href='https://github.com/jalmeida17/bts-gsbbackend' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/bts-gsbbackend</a>");
-  projects.push("<br>");
-  projects.push("―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――");
-  projects.push("<br>");
-  
-  // Project 2: Medical Prescription Management System
-  projects.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>GSB Winform</span>");
-  projects.push("<br>");
-  projects.push("<span class='command'>2024 - Solo Project</span>");
-  projects.push("<br>");
-  projects.push("A Windows Forms desktop application for managing medical prescriptions,");
-  projects.push("patient records, and pharmaceutical databases. Built as part of a BTS");
-  projects.push("educational project demonstrating database design, CRUD operations, and");
-  projects.push("enterprise application architecture with role-based access control.");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Key Achievements:</span>");
-  projects.push("• Secure authentication with SHA2-256 encryption");
-  projects.push("• Professional PDF prescription export with iText7");
-  projects.push("• Docker containerization for database services");
-  projects.push("• Comprehensive patient and medicine management");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Technologies:</span>");
-  projects.push("<i class='fa-solid fa-code'></i> .NET 8.0" + SPACE.repeat(4) + "<i class='fa-solid fa-hashtag'></i> C#" + SPACE.repeat(4) + "<i class='fa-solid fa-database'></i> MySQL");
-  projects.push("<i class='fa-brands fa-docker'></i> Docker" + SPACE.repeat(4) + "<i class='fa-solid fa-file-pdf'></i> PDF Generation");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Repository:</span>");
-  projects.push("<a href='https://github.com/jalmeida17/bts-gsb-winform' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/bts-gsb-winform</a>");
-  projects.push("<br>");
-  projects.push("―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――");
-  projects.push("<br>");
-  
-  // Project 3: WebShell Portfolio
-  projects.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>WebShell Portfolio</span>");
-  projects.push("<br>");
-  projects.push("<span class='command'>2024 - Solo Project</span>");
-  projects.push("<br>");
-  projects.push("An Ubuntu-themed terminal portfolio website you're viewing right now!");
-  projects.push("Features an interactive command-line interface with multiple terminal");
-  projects.push("windows, RSS news integration, and a fully responsive Ubuntu desktop");
-  projects.push("simulation. Demonstrates advanced CSS, TypeScript, and creative web design.");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Key Achievements:</span>");
-  projects.push("• Pixel-perfect Ubuntu desktop simulation");
-  projects.push("• Interactive multi-window terminal system");
-  projects.push("• RSS feed integration for live news");
-  projects.push("• Custom command-line interface with easter eggs");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Technologies:</span>");
-  projects.push("<i class='fa-brands fa-js'></i> TypeScript" + SPACE.repeat(4) + "<i class='fa-brands fa-html5'></i> HTML5" + SPACE.repeat(4) + "<i class='fa-brands fa-css3-alt'></i> CSS3");
-  projects.push("<i class='fa-solid fa-fire'></i> Vite");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Repository:</span>");
-  projects.push("<a href='https://github.com/jalmeida17/webshell-portfolio' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/webshell-portfolio</a>");
-  projects.push("<br>");
-  projects.push("―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――");
-  projects.push("<br>");
-  
-  // Project 4: Three.js Portfolio Prototype
-  projects.push("<span class='command' style='font-size: 20px; text-decoration: underline;'>Three.js Portfolio Prototype</span>");
-  projects.push("<br>");
-  projects.push("<span class='command'>2024 - Solo Project - <span style='color: #FFA500;'>Unfinished</span></span>");
-  projects.push("<br>");
-  projects.push("An experimental 3D portfolio using World of Warcraft assets and Three.js.");
-  projects.push("This project showcases advanced 3D web development techniques by integrating");
-  projects.push("WoW.tools assets to build immersive interactive environments. Currently on");
-  projects.push("hold but demonstrates innovative approach to portfolio design.");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Key Achievements:</span>");
-  projects.push("• Immersive 3D web experience with Three.js");
-  projects.push("• Integration with WoW.tools API for game assets");
-  projects.push("• Advanced 3D rendering and optimization techniques");
-  projects.push("• Innovative portfolio concept and design");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Technologies:</span>");
-  projects.push("<i class='fa-brands fa-react'></i> React" + SPACE.repeat(4) + "<i class='fa-solid fa-cube'></i> Three.js" + SPACE.repeat(4) + "<i class='fa-solid fa-gamepad'></i> WoW.tools");
-  projects.push("<br>");
-  
-  projects.push("<span class='command'>Repository:</span>");
-  projects.push("<a href='https://github.com/jalmeida17/wow-portfolio' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/wow-portfolio</a>");
-  projects.push("<br>");
-  
+
+  PROJECT_DETAILS.forEach((project, index) => {
+    const statusBadge = project.status ? `<span style='color: #FFA500;'> [${project.status}]</span>` : '';
+    projects.push(
+      `${index + 1}. <span class='project-link command ' data-project-id='${project.id}' style=' cursor: pointer; text-decoration: underline;'>${project.title}</span>${statusBadge} (${project.year})`
+    );
+    projects.push(`   ${project.shortDescription}`);
+    projects.push("<br>");
+  });
+
+
   return projects;
-}
+};
 
 export const PROJECTS = createProjects();
