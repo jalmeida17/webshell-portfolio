@@ -10,6 +10,7 @@ export const createHelp = () : string[] => {
     ["'education'", "Education background."],
     ["'skills'", "Technical & soft skills."],
     ["'news'", "Today's tech & science headlines."],
+    ["'clauger'", "Learn about the company I work at."],
     ["'cv'", "Download my CV."],
     ["'banner'", "Display the banner."],
     ["'clear'", "Clear the terminal."],

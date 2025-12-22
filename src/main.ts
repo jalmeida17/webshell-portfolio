@@ -7,6 +7,7 @@ import { PROJECTS as PROJECTS_DATA } from "./commands/projects";
 import { createCareer } from "./commands/career";
 import { EDUCATION } from "./commands/education";
 import { SKILLS } from "./commands/skills";
+import { CLAUGER } from "./commands/clauger";
 
 //mutWriteLines gets deleted and reassigned
 let mutWriteLines = document.getElementById("write-lines");
@@ -37,7 +38,7 @@ const PRE_USER = document.getElementById("pre-user");
 const HOST = document.getElementById("host");
 const USER = document.getElementById("user");
 const PROMPT = document.getElementById("prompt");
-const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news", "cv", "gui"];
+const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news", "cv", "gui", "clauger"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
@@ -271,6 +272,13 @@ function commandHandler(input : string) {
         break;
       }
       window.location.href = 'gui.html';
+      break;
+    case 'clauger':
+      if(bareMode) {
+        writeLines(["No company info for you.", "<br>"])
+        break;
+      }
+      openClaugerWindow();
       break;
     case 'linkedin':
       //add stuff here
@@ -1163,7 +1171,7 @@ async function openNewsWindow() {
   windowZIndex++;
   newTerminal.style.cssText = `
     position: fixed;
-    width: 40%;
+    width: 55%;
     height: 70%;
     ${position}: 5%;
     top: 15%;
@@ -1278,31 +1286,43 @@ async function openNewsWindow() {
     newsHTML += `<p style="animation: none;"><span style="color: #E95420; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
     newsHTML += '<br>';
 
-    for (const feed of feeds) {
+    for (let feedIndex = 0; feedIndex < feeds.length; feedIndex++) {
+      const feed = feeds[feedIndex];
       newsHTML += `<p style="animation: none; margin-top: 10px;"><span style="color: ${feed.color}; font-weight: bold;">${feed.category}</span></p>`;
-      
+
       try {
         // you're a bitch if you use my api key lol
-        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=1`);
+        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=2`);
         const data = await response.json();
-        
+
         if (data.status === 'ok' && data.items && data.items.length > 0) {
-          const item = data.items[0];
-          const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
-          
-          // Get description/content preview
-          let description = '';
-          if (item.description) {
-            // Strip HTML tags and get first 150 characters
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = item.description;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
-            description = textContent.length > 150 ? textContent.substring(0, 150) + '...' : textContent;
-          }
-          
-          newsHTML += `<p style="animation: none; margin-left: 10px;">• <a href="${item.link}" target="_blank" style="color: ${command.colors.foreground}; text-decoration: underline;">${title}</a></p>`;
-          if (description) {
-            newsHTML += `<p style="animation: none; margin-left: 20px; color: #888; font-size: 13px; font-style: italic;">${description}</p>`;
+          // Loop through each news item (max 2)
+          for (let i = 0; i < Math.min(data.items.length, 2); i++) {
+            const item = data.items[i];
+            const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
+
+            // Get description/content preview
+            let description = '';
+            if (item.description) {
+              // Strip HTML tags and get first 100 characters
+              const tempDiv = document.createElement('div');
+              tempDiv.innerHTML = item.description;
+              const textContent = tempDiv.textContent || tempDiv.innerText || '';
+              description = textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
+            }
+
+            // Display title and description
+            newsHTML += `<div style="margin-left: 10px; max-width: 90%;">`;
+            newsHTML += `<p style="animation: none; margin: 0;">• <a href="${item.link}" target="_blank" style="color: ${command.colors.foreground}; text-decoration: underline;">${title}</a></p>`;
+            if (description) {
+              newsHTML += `<p style="animation: none; margin: 5px 0 0 10px; color: #888; font-size: 13px; font-style: italic; max-width: 95%; word-wrap: break-word;">${description}</p>`;
+            }
+            newsHTML += `</div>`;
+
+            // Add spacing between news items
+            if (i < Math.min(data.items.length, 2) - 1) {
+              newsHTML += `<div style="margin: 15px 0;"></div>`;
+            }
           }
         } else {
           newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Unable to fetch feed (API limit or feed issue)</p>`;
@@ -1310,8 +1330,13 @@ async function openNewsWindow() {
       } catch (err) {
         newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Failed to load (${err instanceof Error ? err.message : 'unknown error'})</p>`;
       }
-      
+
       newsHTML += '<br>';
+
+      // Add divider between subjects (but not after the last one)
+      if (feedIndex < feeds.length - 1) {
+        newsHTML += `<div style="border-top: 1px solid #444; margin: 20px 0;"></div>`;
+      }
     }
 
     content.innerHTML = newsHTML;
@@ -1531,6 +1556,168 @@ function openAboutWindow() {
     }
   };
   document.addEventListener('keydown', aboutKeydownHandler);
+
+  content.appendChild(terminalInput);
+
+  newTerminal.appendChild(topBar);
+  newTerminal.appendChild(content);
+  document.body.appendChild(newTerminal);
+
+  setTimeout(() => terminalInput.focus(), 100);
+}
+
+function openClaugerWindow() {
+  const mainElement = document.getElementById('main');
+  if (!mainElement) return;
+
+  const existingNewTerminals = document.querySelectorAll('.new-terminal');
+  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+
+  const newTerminal = document.createElement('div');
+  newTerminal.className = 'new-terminal';
+  windowZIndex++;
+  newTerminal.style.cssText = `
+    position: fixed;
+    width: 50%;
+    height: 70%;
+    ${position}: 5%;
+    top: 15%;
+    background: ${command.colors.background};
+    border: 2px solid ${command.colors.border.color};
+    border-radius: 8px 8px 2px 2px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+  `;
+
+  newTerminal.addEventListener('mousedown', () => {
+    bringToFront(newTerminal);
+  });
+
+  const topBar = document.createElement('div');
+  topBar.style.cssText = `
+    height: 36px;
+    background: ${command.colors.border.color};
+    color: #FFFFFF;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+  `;
+  topBar.textContent = `visitor@jalmeida17:$ ~/clauger`;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 2px 6px;
+    transition: background 0.2s;
+    border-radius: 3px;
+  `;
+  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
+  closeBtn.onclick = () => document.body.removeChild(newTerminal);
+  topBar.appendChild(closeBtn);
+
+  // Dragging functionality
+  let isDraggingNew = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  topBar.addEventListener('mousedown', (e) => {
+    if (e.target === closeBtn) return;
+    isDraggingNew = true;
+    const rect = newTerminal.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingNew) return;
+    e.preventDefault();
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+    newTerminal.style.left = `${newLeft}px`;
+    newTerminal.style.top = `${newTop}px`;
+    newTerminal.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDraggingNew = false;
+  });
+
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    padding: 20px;
+    color: ${command.colors.foreground};
+    overflow-y: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    line-height: 22px;
+  `;
+
+  // Add Clauger content with prompt and logo
+  let claugerHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/clauger</p>`;
+
+  // Add logo with white background similar to /about profile image
+  claugerHTML += `
+    <div style="display: flex; justify-content: flex-start; margin: 20px 0;">
+      <img src="/res/logo-clauger.png" style="width: 150px; height: 100px; border-radius: 8px; border: 2px solid ${command.colors.border.color}; object-fit: contain; background: #FFFFFF; padding: 10px;">
+    </div>
+  `;
+
+  CLAUGER.forEach((line) => {
+    if (line === '<br>') {
+      claugerHTML += '<br>';
+    } else {
+      claugerHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
+    }
+  });
+
+  content.innerHTML = claugerHTML;
+
+  // Add input for closing
+  const terminalInput = document.createElement('input');
+  terminalInput.type = 'text';
+  terminalInput.style.cssText = `
+    width: 100%;
+    background: ${command.colors.background};
+    color: ${command.colors.foreground};
+    border: none;
+    outline: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    margin-top: 10px;
+  `;
+  terminalInput.placeholder = 'Press Enter to close...';
+
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+    }
+  });
+
+  // Global keydown listener for this window
+  const claugerKeydownHandler = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+      document.removeEventListener('keydown', claugerKeydownHandler);
+    }
+  };
+  document.addEventListener('keydown', claugerKeydownHandler);
 
   content.appendChild(terminalInput);
 
@@ -2106,10 +2293,16 @@ function playNextTrack() {
 }
 
 // Desktop context menu functionality
-let currentBackgroundIndex = 0;
+// Load saved background from localStorage or default to 0
+let currentBackgroundIndex = parseInt(localStorage.getItem('currentBackgroundIndex') || '0', 10);
 const backgrounds = ['ubuntu.jpg', 'ubuntu2.jpg'];
 const contextMenu = document.getElementById('desktop-context-menu');
 const changeBackgroundBtn = document.getElementById('change-background-btn');
+
+// Apply saved background on load
+const savedBackground = backgrounds[currentBackgroundIndex];
+document.documentElement.style.backgroundImage = `url('/res/${savedBackground}')`;
+document.body.style.backgroundImage = `url('/res/${savedBackground}')`;
 
 // Show context menu on right-click
 document.addEventListener('contextmenu', (e: MouseEvent) => {
@@ -2142,6 +2335,9 @@ if (changeBackgroundBtn) {
     // Update background for both html and body
     document.documentElement.style.backgroundImage = `url('/res/${newBackground}')`;
     document.body.style.backgroundImage = `url('/res/${newBackground}')`;
+
+    // Save the current background index to localStorage
+    localStorage.setItem('currentBackgroundIndex', currentBackgroundIndex.toString());
 
     if (contextMenu) {
       contextMenu.style.display = 'none';
