@@ -2342,6 +2342,149 @@ function playNextTrack() {
   }
 }
 
+// LibreOffice Calc functionality
+let calcWindow: HTMLDivElement | null = null;
+
+const excelIcon = document.getElementById('excel-icon');
+
+if (excelIcon) {
+  excelIcon.addEventListener('click', () => {
+    if (calcWindow && document.body.contains(calcWindow)) {
+      // Close calc window
+      document.body.removeChild(calcWindow);
+      calcWindow = null;
+      excelIcon.classList.remove('active');
+    } else {
+      // Open calc window
+      openCalcWindow();
+      excelIcon.classList.add('active');
+    }
+  });
+}
+
+function openCalcWindow() {
+  calcWindow = document.createElement('div');
+  calcWindow.className = 'calc-window';
+  windowZIndex++;
+  calcWindow.style.cssText = `
+    position: fixed;
+    width: 800px;
+    height: 600px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(to bottom, #3C3C3C 0%, #2A2A2A 100%);
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'IBM Plex Mono', monospace;
+  `;
+
+  calcWindow.addEventListener('mousedown', () => {
+    bringToFront(calcWindow!);
+  });
+
+  // Top bar
+  const topBar = document.createElement('div');
+  topBar.style.cssText = `
+    height: 32px;
+    background: linear-gradient(to bottom, #4A4A4A 0%, #3A3A3A 100%);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+    border-bottom: 1px solid #1A1A1A;
+  `;
+
+  const logo = document.createElement('img');
+  logo.src = '/res/excellogo.png';
+  logo.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
+
+  const title = document.createElement('span');
+  title.textContent = 'LibreOffice Calc';
+  title.style.cssText = 'font-size: 13px; flex: 1; margin: 4px 0;';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px 8px;
+    transition: background 0.2s;
+  `;
+
+  closeBtn.addEventListener('mouseenter', () => {
+    closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+    closeBtn.style.borderRadius = '3px';
+  });
+
+  closeBtn.addEventListener('mouseleave', () => {
+    closeBtn.style.background = 'transparent';
+  });
+
+  closeBtn.addEventListener('click', () => {
+    if (calcWindow && document.body.contains(calcWindow)) {
+      document.body.removeChild(calcWindow);
+      calcWindow = null;
+      excelIcon?.classList.remove('active');
+    }
+  });
+
+  topBar.appendChild(logo);
+  topBar.appendChild(title);
+  topBar.appendChild(closeBtn);
+
+  // Main content area (empty for now)
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    background: #2A2A2A;
+    border-radius: 0 0 6px 6px;
+    padding: 20px;
+    overflow: auto;
+  `;
+
+  // Dragging functionality
+  let isDraggingCalc = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  topBar.addEventListener('mousedown', (e) => {
+    if (e.target === closeBtn || !calcWindow) return;
+    isDraggingCalc = true;
+    const rect = calcWindow.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingCalc) return;
+    e.preventDefault();
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+    calcWindow!.style.left = `${newLeft}px`;
+    calcWindow!.style.top = `${newTop}px`;
+    calcWindow!.style.transform = 'none';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDraggingCalc = false;
+  });
+
+  calcWindow.appendChild(topBar);
+  calcWindow.appendChild(content);
+  document.body.appendChild(calcWindow);
+}
+
 // Desktop context menu functionality
 // Load saved background from localStorage or default to 0
 let currentBackgroundIndex = parseInt(localStorage.getItem('currentBackgroundIndex') || '0', 10);
