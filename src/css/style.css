@@ -199,7 +199,7 @@ body {
   font-size: 28px;
   color: #FFFFFF;
   position: relative;
-  background: rgba(255, 255, 255, 0.2);
+  background: transparent;
 }
 
 .dock-icon:hover {
@@ -207,7 +207,11 @@ body {
 }
 
 .dock-icon.active {
-  background: rgba(255, 255, 255, 0.2);
+  background: transparent;
+}
+
+.dock-icon.active:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .dock-icon.active::before {
@@ -216,10 +220,10 @@ body {
   left: -8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 4px;
-  height: 24px;
+  width: 8px;
+  height: 8px;
   background: #E95420;
-  border-radius: 0 2px 2px 0;
+  border-radius: 50%;
 }
 
 main {
@@ -470,4 +474,42 @@ a:hover {
   -moz-user-select: none;
   -ms-user-select: none;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Music Player Progress Bar */
+#music-progress {
+  background: linear-gradient(to right, #FFFFFF 0%, #FFFFFF var(--progress-value, 0%), #4A4A4A var(--progress-value, 0%), #4A4A4A 100%) !important;
+}
+
+#music-progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+  border: none;
+  margin-top: -4px;
+}
+
+#music-progress::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  cursor: pointer;
+  border: none;
+  margin-top: -4px;
+}
+
+#music-progress::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+#music-progress::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #4A4A4A;
 }

@@ -2006,7 +2006,7 @@ function openMusicPlayer() {
   musicPlayerWindow.style.cssText = `
     position: fixed;
     width: 600px;
-    height: 120px;
+    height: 130px;
     left: 50%;
     bottom: 60px;
     transform: translateX(-50%);
@@ -2045,7 +2045,7 @@ function openMusicPlayer() {
 
   const title = document.createElement('span');
   title.textContent = 'Rythmbox';
-  title.style.cssText = 'font-size: 13px; flex: 1;';
+  title.style.cssText = 'font-size: 13px; flex: 1; margin: 4px 0;';
 
   const closeBtn = document.createElement('button');
   closeBtn.textContent = '×';
@@ -2300,6 +2300,7 @@ function updateProgress() {
   if (progress && currentAudio.duration) {
     const percent = (currentAudio.currentTime / currentAudio.duration) * 100;
     progress.value = percent.toString();
+    progress.style.setProperty('--progress-value', `${percent}%`);
   }
 
   if (timeDisplay && currentAudio.duration) {
@@ -2320,6 +2321,7 @@ function seekTrack(e: Event) {
   const input = e.target as HTMLInputElement;
   const seekTime = (parseFloat(input.value) / 100) * currentAudio.duration;
   currentAudio.currentTime = seekTime;
+  input.style.setProperty('--progress-value', `${input.value}%`);
 }
 
 function playPreviousTrack() {
