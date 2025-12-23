@@ -2443,6 +2443,142 @@ function openCalcWindow() {
   topBar.appendChild(title);
   topBar.appendChild(closeBtn);
 
+  // Toolbar with file dropdown
+  const toolbar = document.createElement('div');
+  toolbar.style.cssText = `
+    height: 40px;
+    background: #3A3A3A;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 10px;
+    border-bottom: 1px solid #1A1A1A;
+  `;
+
+  const fileDropdown = document.createElement('select');
+  fileDropdown.style.cssText = `
+    width: 35%;
+    padding: 4px 8px;
+    background: #2A2A2A;
+    color: #FFFFFF;
+    border: 1px solid #1A1A1A;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    height: 28px;
+  `;
+
+  // Prevent dropdown from closing immediately
+  fileDropdown.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+  });
+
+  fileDropdown.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  // Add default option
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.textContent = 'Select an Excel file...';
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  defaultOption.style.cssText = 'background: #2A2A2A; color: #FFFFFF;';
+  fileDropdown.appendChild(defaultOption);
+
+  // Fetch Excel files from /excel/ folder
+  async function loadExcelFiles() {
+    try {
+      // Try to fetch a manifest file that lists all Excel files
+      const response = await fetch('/excel/manifest.json');
+      if (response.ok) {
+        const manifest = await response.json();
+        manifest.files.forEach((fileName: string) => {
+          addFileOption(fileName);
+        });
+      } else {
+        // Fallback: try known file names
+        await loadFilesWithFallback();
+      }
+    } catch (error) {
+      console.log('Could not load manifest, trying fallback method');
+      await loadFilesWithFallback();
+    }
+  }
+
+  async function loadFilesWithFallback() {
+    // Try to fetch each file to see if it exists
+    const possibleFiles = [
+      'BTS SIO 2025 - E4 - Tableau de synthèse - Joao.xlsx'
+    ];
+
+    for (const fileName of possibleFiles) {
+      try {
+        const response = await fetch(`/excel/${fileName}`, { method: 'HEAD' });
+        if (response.ok) {
+          addFileOption(fileName);
+        }
+      } catch (error) {
+        // File doesn't exist, skip it
+      }
+    }
+  }
+
+  function addFileOption(fileName: string) {
+    const option = document.createElement('option');
+    option.value = `/excel/${fileName}`;
+    option.textContent = fileName;
+    option.style.cssText = 'background: #2A2A2A; color: #FFFFFF;';
+    fileDropdown.appendChild(option);
+  }
+
+  // Load files when window opens
+  loadExcelFiles();
+
+  const openButton = document.createElement('button');
+  openButton.textContent = 'Open';
+  openButton.style.cssText = `
+    padding: 4px 20px;
+    background: #4A4A4A;
+    color: #FFFFFF;
+    border: 1px solid #5A5A5A;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    height: 28px;
+  `;
+
+  openButton.addEventListener('mouseenter', () => {
+    openButton.style.background = '#5A5A5A';
+  });
+
+  openButton.addEventListener('mouseleave', () => {
+    openButton.style.background = '#4A4A4A';
+  });
+
+  // Button click handler (doesn't work yet, as requested)
+  openButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const selectedFile = fileDropdown.value;
+    if (selectedFile) {
+      console.log('Would open file:', selectedFile);
+      // TODO: Implement file opening functionality
+    }
+  });
+
+  // Prevent toolbar from triggering window drag
+  openButton.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+  });
+
+  toolbar.appendChild(fileDropdown);
+  toolbar.appendChild(openButton);
+
   // Main content area (empty for now)
   const content = document.createElement('div');
   content.style.cssText = `
@@ -2481,6 +2617,7 @@ function openCalcWindow() {
   });
 
   calcWindow.appendChild(topBar);
+  calcWindow.appendChild(toolbar);
   calcWindow.appendChild(content);
   document.body.appendChild(calcWindow);
 }

@@ -513,3 +513,16 @@ a:hover {
   border-radius: 2px;
   background: #4A4A4A;
 }
+
+/* LibreOffice Calc Dropdown Styling */
+select option {
+  background: #2A2A2A;
+  color: #FFFFFF;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background: #3A3A3A;
+  color: #FFFFFF;
+}
