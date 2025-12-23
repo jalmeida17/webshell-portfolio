@@ -526,3 +526,12 @@ select option:checked {
   background: #3A3A3A;
   color: #FFFFFF;
 }
+
+/* Hide scrollbars in LibreOffice Calc content area */
+.calc-content-area::-webkit-scrollbar {
+  display: none;
+}
+
+.excel-table-wrapper::-webkit-scrollbar {
+  display: none;
+}

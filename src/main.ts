@@ -2407,18 +2407,84 @@ function openCalcWindow() {
   logo.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
 
   const title = document.createElement('span');
-  title.textContent = 'LibreOffice Calc';
+  title.textContent = 'LibreOffice Calc (Read-Only)';
   title.style.cssText = 'font-size: 13px; flex: 1; margin: 4px 0;';
 
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
+  const maximizeBtn = document.createElement('button');
+  maximizeBtn.textContent = '🗖';
+  maximizeBtn.style.cssText = `
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
     background: transparent;
     border: none;
     color: #FFFFFF;
     cursor: pointer;
-    font-size: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    padding: 8px 8px;
+    line-height: 1;
+    transition: background 0.2s;
+  `;
+
+  let isCalcMaximized = false;
+  const originalCalcStyle = {
+    width: '800px',
+    height: '600px',
+    left: '50%',
+    top: '50%',
+    transform: 'translate(-50%, -50%)'
+  };
+
+  maximizeBtn.addEventListener('mouseenter', () => {
+    maximizeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+    maximizeBtn.style.borderRadius = '3px';
+  });
+
+  maximizeBtn.addEventListener('mouseleave', () => {
+    maximizeBtn.style.background = 'transparent';
+  });
+
+  maximizeBtn.addEventListener('click', () => {
+    if (!calcWindow) return;
+
+    if (isCalcMaximized) {
+      // Restore original size
+      calcWindow.style.width = originalCalcStyle.width;
+      calcWindow.style.height = originalCalcStyle.height;
+      calcWindow.style.left = originalCalcStyle.left;
+      calcWindow.style.top = originalCalcStyle.top;
+      calcWindow.style.transform = originalCalcStyle.transform;
+      maximizeBtn.textContent = '🗖';
+      isCalcMaximized = false;
+    } else {
+      // Maximize - account for sidebar
+      calcWindow.style.width = 'calc(95% - 32px)';
+      calcWindow.style.height = '90%';
+      calcWindow.style.left = 'calc(50% + 32px)';
+      calcWindow.style.top = '50%';
+      calcWindow.style.transform = 'translate(-50%, -50%)';
+      maximizeBtn.textContent = '🗗';
+      isCalcMaximized = true;
+    }
+  });
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 24px;
     padding: 4px 8px;
+    line-height: 1;
     transition: background 0.2s;
   `;
 
@@ -2441,6 +2507,7 @@ function openCalcWindow() {
 
   topBar.appendChild(logo);
   topBar.appendChild(title);
+  topBar.appendChild(maximizeBtn);
   topBar.appendChild(closeBtn);
 
   // Toolbar with file dropdown
@@ -2561,15 +2628,136 @@ function openCalcWindow() {
     openButton.style.background = '#4A4A4A';
   });
 
-  // Button click handler (doesn't work yet, as requested)
-  openButton.addEventListener('click', (e) => {
+  // Button click handler - Load and display Excel file
+  openButton.addEventListener('click', async (e) => {
     e.stopPropagation();
     const selectedFile = fileDropdown.value;
     if (selectedFile) {
-      console.log('Would open file:', selectedFile);
-      // TODO: Implement file opening functionality
+      await loadExcelFile(selectedFile);
     }
   });
+
+  async function loadExcelFile(filePath: string) {
+    try {
+      content.innerHTML = '<div style="color: #FFFFFF; padding: 20px;">Loading...</div>';
+
+      const response = await fetch(filePath);
+      const arrayBuffer = await response.arrayBuffer();
+
+      // @ts-ignore - XLSX is loaded via CDN
+      const workbook = XLSX.read(arrayBuffer, {
+        type: 'array',
+        cellStyles: true
+      });
+
+      // Clear content and change to white background when file is loaded
+      content.innerHTML = '';
+      content.style.background = '#FFFFFF';
+
+      workbook.SheetNames.forEach((sheetName: string) => {
+        const worksheet = workbook.Sheets[sheetName];
+
+        // Convert to HTML table with cell info
+        // @ts-ignore
+        const htmlTable = XLSX.utils.sheet_to_html(worksheet, {
+          header: '',
+          editable: false,
+          cellHTML: true
+        });
+
+        // Table wrapper takes full height - hide scrollbars but keep functionality
+        const tableWrapper = document.createElement('div');
+        tableWrapper.innerHTML = htmlTable;
+        tableWrapper.style.cssText = `
+          overflow: auto;
+          height: 100%;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        `;
+        // Hide webkit scrollbars
+        const style = document.createElement('style');
+        style.textContent = `
+          .excel-table-wrapper::-webkit-scrollbar {
+            display: none;
+          }
+        `;
+        document.head.appendChild(style);
+        tableWrapper.className = 'excel-table-wrapper';
+
+        // Extract cell styles from worksheet and apply them
+        const range = worksheet['!ref'];
+        if (range) {
+          // @ts-ignore
+          const decoded = XLSX.utils.decode_range(range);
+          for (let R = decoded.s.r; R <= decoded.e.r; ++R) {
+            for (let C = decoded.s.c; C <= decoded.e.c; ++C) {
+              // @ts-ignore
+              const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+              const cell = worksheet[cellAddress];
+
+              if (cell && cell.s && cell.s.fgColor) {
+                const color = cell.s.fgColor;
+                const rgb = color.rgb || 'FFFFFF';
+                const bgColor = `#${rgb}`;
+
+                // Find the corresponding HTML cell
+                const table = tableWrapper.querySelector('table');
+                if (table && table.rows[R]) {
+                  const htmlCell = table.rows[R].cells[C];
+                  if (htmlCell) {
+                    htmlCell.style.backgroundColor = bgColor;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Style the table
+        const table = tableWrapper.querySelector('table');
+        if (table) {
+          table.style.cssText = `
+            border-collapse: collapse;
+            background: #FFFFFF;
+            color: #000000;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            width: 100%;
+          `;
+
+          // Style cells and preserve background colors
+          const cells = table.querySelectorAll('td, th');
+          cells.forEach(cell => {
+            const htmlCell = cell as HTMLElement;
+            const existingBg = htmlCell.style.backgroundColor;
+
+            htmlCell.style.cssText = `
+              border: 1px solid #CCCCCC;
+              padding: 8px 10px;
+              text-align: left;
+              ${existingBg ? `background-color: ${existingBg};` : ''}
+            `;
+          });
+
+          // Style header cells
+          const headerCells = table.querySelectorAll('th');
+          headerCells.forEach(cell => {
+            const htmlCell = cell as HTMLElement;
+            if (!htmlCell.style.backgroundColor) {
+              htmlCell.style.backgroundColor = '#F0F0F0';
+            }
+            htmlCell.style.fontWeight = 'bold';
+          });
+        }
+
+        content.appendChild(tableWrapper);
+      });
+
+    } catch (error) {
+      content.innerHTML = `<div style="color: #FF6B6B; padding: 20px;">Error loading file: ${error}</div>`;
+      console.error('Error loading Excel file:', error);
+    }
+  }
 
   // Prevent toolbar from triggering window drag
   openButton.addEventListener('mousedown', (e) => {
@@ -2579,15 +2767,18 @@ function openCalcWindow() {
   toolbar.appendChild(fileDropdown);
   toolbar.appendChild(openButton);
 
-  // Main content area (empty for now)
+  // Main content area - starts dark, turns white when file is loaded
   const content = document.createElement('div');
   content.style.cssText = `
     flex: 1;
     background: #2A2A2A;
     border-radius: 0 0 6px 6px;
-    padding: 20px;
+    padding: 0;
     overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   `;
+  content.className = 'calc-content-area';
 
   // Dragging functionality
   let isDraggingCalc = false;
@@ -2595,15 +2786,20 @@ function openCalcWindow() {
   let offsetY = 0;
 
   topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn || !calcWindow) return;
+    if (e.target === closeBtn || e.target === maximizeBtn || !calcWindow || isCalcMaximized) return;
     isDraggingCalc = true;
     const rect = calcWindow.getBoundingClientRect();
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
   });
 
+  // Double-click on topbar to maximize/restore
+  topBar.addEventListener('dblclick', () => {
+    maximizeBtn.click();
+  });
+
   document.addEventListener('mousemove', (e) => {
-    if (!isDraggingCalc) return;
+    if (!isDraggingCalc || isCalcMaximized) return;
     e.preventDefault();
     const newLeft = e.clientX - offsetX;
     const newTop = e.clientY - offsetY;
