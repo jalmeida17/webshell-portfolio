@@ -2345,6 +2345,9 @@ function playNextTrack() {
 // LibreOffice Calc functionality
 let calcWindow: HTMLDivElement | null = null;
 
+// VSCode functionality
+let vscodeWindow: HTMLDivElement | null = null;
+
 const excelIcon = document.getElementById('excel-icon');
 
 if (excelIcon) {
@@ -2816,6 +2819,221 @@ function openCalcWindow() {
   calcWindow.appendChild(toolbar);
   calcWindow.appendChild(content);
   document.body.appendChild(calcWindow);
+}
+
+// VSCode Icon Click Handler
+const vscodeIcon = document.getElementById('vscode-icon');
+
+if (vscodeIcon) {
+  vscodeIcon.addEventListener('click', () => {
+    if (vscodeWindow && document.body.contains(vscodeWindow)) {
+      // Close VSCode window
+      document.body.removeChild(vscodeWindow);
+      vscodeWindow = null;
+      vscodeIcon.classList.remove('active');
+    } else {
+      // Open VSCode window
+      openVSCodeWindow();
+      vscodeIcon.classList.add('active');
+    }
+  });
+}
+
+function openVSCodeWindow() {
+  vscodeWindow = document.createElement('div');
+  vscodeWindow.className = 'vscode-window';
+  windowZIndex++;
+  vscodeWindow.style.cssText = `
+    position: fixed;
+    width: 800px;
+    height: 600px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(to bottom, #3C3C3C 0%, #2A2A2A 100%);
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'IBM Plex Mono', monospace;
+  `;
+
+  vscodeWindow.addEventListener('mousedown', () => {
+    bringToFront(vscodeWindow!);
+  });
+
+  // Top bar
+  const topBar = document.createElement('div');
+  topBar.style.cssText = `
+    height: 32px;
+    background: linear-gradient(to bottom, #4A4A4A 0%, #3A3A3A 100%);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+    border-bottom: 1px solid #1A1A1A;
+  `;
+
+  const logo = document.createElement('img');
+  logo.src = '/Visual_Studio_Code_1.35_icon.svg';
+  logo.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
+
+  const title = document.createElement('span');
+  title.textContent = 'Visual Studio Code';
+  title.style.cssText = 'font-size: 13px; flex: 1; margin: 4px 0;';
+
+  const maximizeBtn = document.createElement('button');
+  maximizeBtn.textContent = '🗖';
+  maximizeBtn.style.cssText = `
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    padding: 8px 8px;
+    line-height: 1;
+    transition: background 0.2s;
+  `;
+
+  let isVSCodeMaximized = false;
+  const originalVSCodeStyle = {
+    width: '800px',
+    height: '600px',
+    left: '50%',
+    top: '50%',
+    transform: 'translate(-50%, -50%)'
+  };
+
+  maximizeBtn.addEventListener('mouseenter', () => {
+    maximizeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+    maximizeBtn.style.borderRadius = '3px';
+  });
+
+  maximizeBtn.addEventListener('mouseleave', () => {
+    maximizeBtn.style.background = 'transparent';
+  });
+
+  maximizeBtn.addEventListener('click', () => {
+    if (!vscodeWindow) return;
+
+    if (isVSCodeMaximized) {
+      // Restore original size
+      vscodeWindow.style.width = originalVSCodeStyle.width;
+      vscodeWindow.style.height = originalVSCodeStyle.height;
+      vscodeWindow.style.left = originalVSCodeStyle.left;
+      vscodeWindow.style.top = originalVSCodeStyle.top;
+      vscodeWindow.style.transform = originalVSCodeStyle.transform;
+      maximizeBtn.textContent = '🗖';
+      isVSCodeMaximized = false;
+    } else {
+      // Maximize - account for sidebar
+      vscodeWindow.style.width = 'calc(95% - 32px)';
+      vscodeWindow.style.height = '90%';
+      vscodeWindow.style.left = 'calc(50% + 32px)';
+      vscodeWindow.style.top = '50%';
+      vscodeWindow.style.transform = 'translate(-50%, -50%)';
+      maximizeBtn.textContent = '🗗';
+      isVSCodeMaximized = true;
+    }
+  });
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 24px;
+    padding: 4px 8px;
+    line-height: 1;
+    transition: background 0.2s;
+  `;
+
+  closeBtn.addEventListener('mouseenter', () => {
+    closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+    closeBtn.style.borderRadius = '3px';
+  });
+
+  closeBtn.addEventListener('mouseleave', () => {
+    closeBtn.style.background = 'transparent';
+  });
+
+  closeBtn.addEventListener('click', () => {
+    if (vscodeWindow && document.body.contains(vscodeWindow)) {
+      document.body.removeChild(vscodeWindow);
+      vscodeWindow = null;
+      vscodeIcon?.classList.remove('active');
+    }
+  });
+
+  topBar.appendChild(logo);
+  topBar.appendChild(title);
+  topBar.appendChild(maximizeBtn);
+  topBar.appendChild(closeBtn);
+
+  // Main content area (empty for now)
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    background: #2A2A2A;
+    border-radius: 0 0 6px 6px;
+    padding: 20px;
+    overflow: auto;
+    color: #FFFFFF;
+  `;
+  content.innerHTML = '';
+
+  // Dragging functionality
+  let isDraggingVSCode = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  topBar.addEventListener('mousedown', (e) => {
+    if (e.target === closeBtn || e.target === maximizeBtn || !vscodeWindow || isVSCodeMaximized) return;
+    isDraggingVSCode = true;
+    const rect = vscodeWindow.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+  });
+
+  // Double-click on topbar to maximize/restore
+  topBar.addEventListener('dblclick', () => {
+    maximizeBtn.click();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDraggingVSCode || isVSCodeMaximized) return;
+    e.preventDefault();
+    const newLeft = e.clientX - offsetX;
+    const newTop = e.clientY - offsetY;
+    vscodeWindow!.style.left = `${newLeft}px`;
+    vscodeWindow!.style.top = `${newTop}px`;
+    vscodeWindow!.style.transform = 'none';
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDraggingVSCode = false;
+  });
+
+  vscodeWindow.appendChild(topBar);
+  vscodeWindow.appendChild(content);
+  document.body.appendChild(vscodeWindow);
 }
 
 // Desktop context menu functionality
