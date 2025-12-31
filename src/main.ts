@@ -2167,7 +2167,7 @@ function openMusicPlayer() {
   const createControlButton = (icon: string, id: string) => {
     const btn = document.createElement('button');
     btn.id = id;
-    btn.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+    btn.innerHTML = `<i class="fa-solid ${icon}" style="color: #FFFFFF;"></i>`;
     btn.style.cssText = `
       background: linear-gradient(to bottom, #5A5A5A 0%, #4A4A4A 100%);
       border: 1px solid #2A2A2A;
