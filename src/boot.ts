@@ -222,6 +222,86 @@ function waitForGrub(output: HTMLElement): Promise<void> {
   });
 }
 
+function showLoginScreen(overlay: HTMLElement): Promise<void> {
+  return new Promise((loginResolve) => {
+    // Show the real topbar during login (like Ubuntu GDM)
+    const topbar = document.getElementById("desktop-topbar");
+    if (topbar) {
+      topbar.style.visibility = "visible";
+      topbar.style.zIndex = "100000";
+      topbar.style.background = "#3B3B3B";
+      topbar.style.boxShadow = "none";
+    }
+
+    // Start the clock (main.ts hasn't initialized yet)
+    const clockEl = document.getElementById("desktop-clock");
+    const updateClock = () => {
+      if (!clockEl) return;
+      const now = new Date();
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const day = now.getDate();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      clockEl.textContent = `${day} ${months[now.getMonth()]} ${hours}:${minutes}`;
+    };
+    updateClock();
+    const clockInterval = setInterval(updateClock, 1000);
+
+    // Build the login screen inside the existing overlay
+    const login = document.createElement("div");
+    login.className = "login-screen";
+
+    // User card (avatar + name in a clickable rectangle)
+    const card = document.createElement("div");
+    card.className = "login-card";
+
+    const avatar = document.createElement("img");
+    avatar.className = "login-avatar";
+    avatar.src = "/res/profile.png";
+    avatar.alt = "Profile";
+
+    const name = document.createElement("div");
+    name.className = "login-name";
+    name.textContent = "jalmeida17";
+
+    card.appendChild(avatar);
+    card.appendChild(name);
+
+    // Ubuntu logo at bottom
+    const logo = document.createElement("img");
+    logo.className = "login-logo";
+    logo.src = "/res/Ubuntu-logo-2022.svg.png";
+    logo.alt = "Ubuntu";
+
+    // "Not listed?" link
+    const notListed = document.createElement("div");
+    notListed.className = "login-not-listed";
+    notListed.textContent = "Not listed?";
+
+    login.appendChild(card);
+    login.appendChild(notListed);
+    login.appendChild(logo);
+    overlay.appendChild(login);
+
+    // Fade in the login screen
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        login.style.opacity = "1";
+      });
+    });
+
+    card.addEventListener("click", () => {
+      clearInterval(clockInterval);
+      // Reset topbar to its normal style
+      if (topbar) {
+        topbar.style.background = "";
+        topbar.style.boxShadow = "";
+      }
+      loginResolve();
+    });
+  });
+}
+
 function startBoot(overlay: HTMLElement, output: HTMLElement, resolve: () => void): void {
   const desktopElements = document.querySelectorAll<HTMLElement>(
     "#desktop-topbar, #sidebar-dock, #main, #version-info, #desktop-context-menu"
@@ -245,20 +325,24 @@ function startBoot(overlay: HTMLElement, output: HTMLElement, resolve: () => voi
     // Get last line delay to know when boot text finishes
     const lastDelay = POST_GRUB_LINES[POST_GRUB_LINES.length - 1].delay;
 
-    // Fade out and reveal desktop
-    setTimeout(() => {
+    // Phase 4: Login screen
+    setTimeout(async () => {
       stopBootSound();
       output.innerHTML = "";
+      overlay.style.background = "#3B3B3B";
+
+      await showLoginScreen(overlay);
+
+      // Reset topbar z-index and reveal desktop
+      const topbar = document.getElementById("desktop-topbar");
+      if (topbar) topbar.style.zIndex = "";
+      desktopElements.forEach((el) => (el.style.visibility = "visible"));
+      overlay.classList.add("boot-fade-out");
 
       setTimeout(() => {
-        desktopElements.forEach((el) => (el.style.visibility = "visible"));
-        overlay.classList.add("boot-fade-out");
-
-        setTimeout(() => {
-          overlay.remove();
-          resolve();
-        }, 1000);
-      }, 800);
+        overlay.remove();
+        resolve();
+      }, 1000);
     }, lastDelay + 600);
   }, 5200);
 }
