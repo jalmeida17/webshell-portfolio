@@ -8,6 +8,7 @@ import { createCareer } from "./commands/career";
 import { EDUCATION } from "./commands/education";
 import { SKILLS } from "./commands/skills";
 import { CLAUGER } from "./commands/clauger";
+import { runBootSequence } from "./boot";
 
 //mutWriteLines gets deleted and reassigned
 let mutWriteLines = document.getElementById("write-lines");
@@ -475,10 +476,12 @@ const initEventListeners = () => {
     PRE_USER.innerText = command.username;
   } 
 
-  window.addEventListener('load', () => {
+  window.addEventListener('load', async () => {
+    await runBootSequence();
     writeLines(BANNER);
     updateDesktopClock();
     setInterval(updateDesktopClock, 1000);
+    USERINPUT.focus();
   });
   
   USERINPUT.addEventListener('keypress', userInputHandler);
