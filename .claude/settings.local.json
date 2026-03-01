@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npx vite:*)",
-      "WebFetch(domain:www.ascii-art.de)"
+      "WebFetch(domain:www.ascii-art.de)",
+      "Bash(ls:*)"
     ]
   }
 }

@@ -1,5 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@200;300;400;600&family=Pixelify+Sans&family=VT323&display=swap');
 
+@font-face {
+  font-family: 'Ubuntu Sans';
+  src: url('/res/UbuntuSans-VariableFont_wdth,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Ubuntu Sans';
+  src: url('/res/UbuntuSans-Italic-VariableFont_wdth,wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 /* ========== Boot Screen ========== */
 
 #boot-screen {
@@ -150,7 +166,7 @@
 .login-name {
   font-size: 15px;
   color: #FFFFFF;
-  font-family: 'Segoe UI', Ubuntu, sans-serif;
+  font-family: 'Ubuntu Sans', sans-serif;
   font-weight: 400;
 }
 
@@ -161,7 +177,7 @@
   text-align: left;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.5);
-  font-family: 'Segoe UI', Ubuntu, sans-serif;
+  font-family: 'Ubuntu Sans', sans-serif;
   cursor: default;
 }
 
@@ -216,7 +232,7 @@ html {
 
 body {
   padding: 16px;
-  padding-top: 40px;
+  padding-top: 44px;
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
@@ -303,12 +319,13 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 24px;
+  height: 28px;
   background: linear-gradient(to bottom, #4C4B47 0%, #3C3B37 100%);
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: 'Ubuntu Sans', sans-serif;
   font-size: 13px;
   z-index: 1000;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -316,6 +333,20 @@ body {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+}
+
+#topbar-activities {
+  position: absolute;
+  left: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 3px;
+  cursor: default;
+}
+
+#topbar-activities:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 #desktop-clock {
@@ -327,7 +358,7 @@ body {
 
 #topbar-ethernet {
   position: absolute;
-  right: 40px;
+  right: 68px;
   color: #FFFFFF;
   font-size: 16px;
   padding: 4px 6px;
@@ -339,7 +370,7 @@ body {
 
 #sound-toggle {
   position: absolute;
-  right: 8px;
+  right: 36px;
   background: transparent;
   border: none;
   color: #FFFFFF;
@@ -357,10 +388,30 @@ body {
   border-radius: 3px;
 }
 
+#power-btn {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+#power-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
 #sidebar-dock {
   position: fixed;
   left: 0;
-  top: 24px;
+  top: 28px;
   bottom: 0;
   width: 64px;
   background: rgba(44, 44, 44, 0.6);
@@ -370,6 +421,13 @@ body {
   padding-top: 8px;
   z-index: 999;
   backdrop-filter: blur(10px);
+}
+
+.dock-divider {
+  width: 46px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 6px 0;
 }
 
 .dock-icon {
@@ -386,6 +444,21 @@ body {
   color: #FFFFFF;
   position: relative;
   background: transparent;
+}
+
+.dock-icon-static {
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+#show-applications {
+  margin-top: auto;
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
+#show-applications:hover {
+  opacity: 1;
 }
 
 .dock-icon:hover {
@@ -500,8 +573,10 @@ a:hover {
 
 #bar-1 {
   height: 36px;
-  background-color: var(--border);
-  color: var(--bg);
+  background: #303030;
+  color: #FFFFFF;
+  font-family: 'Ubuntu Sans', sans-serif;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -517,36 +592,41 @@ a:hover {
   -ms-user-select: none;
 }
 
-#close-window,
-#maximize-window {
+/* Standardized window control buttons */
+.window-controls {
   position: absolute;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.window-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   background: transparent;
   border: none;
   color: #FFFFFF;
   cursor: pointer;
-  font-family: 'IBM Plex Mono', monospace;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
   transition: background 0.2s;
+  padding: 0;
+  padding-bottom: 4px;
+  line-height: 1;
 }
 
-#close-window {
-  right: 10px;
-  font-size: 24px;
-  padding: 4px 8px;
+.window-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-#maximize-window {
-  right: 40px;
-  font-size: 16px;
-  padding: 8px 8px;
-}
-
-#close-window:hover,
-#maximize-window:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+.window-btn.window-btn-close:hover {
+  background: #E95420;
 }
 
 #terminal {
@@ -660,6 +740,51 @@ a:hover {
   -moz-user-select: none;
   -ms-user-select: none;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ========== Desktop Icons ========== */
+
+#desktop-icons {
+  position: fixed;
+  top: 12px;
+  left: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10;
+  padding: 12px 0;
+}
+
+.desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.desktop-icon:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.desktop-icon img {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 4px;
+  pointer-events: none;
+}
+
+.desktop-icon span {
+  color: #FFFFFF;
+  font-family: 'Ubuntu Sans', sans-serif;
+  font-size: 12px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  pointer-events: none;
 }
 
 /* Music Player Progress Bar */

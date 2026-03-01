@@ -232,6 +232,9 @@ function showLoginScreen(overlay: HTMLElement): Promise<void> {
       topbar.style.background = "#3B3B3B";
       topbar.style.boxShadow = "none";
     }
+    // Hide Activities on login screen
+    const activities = document.getElementById("topbar-activities");
+    if (activities) activities.style.display = "none";
 
     // Start the clock (main.ts hasn't initialized yet)
     const clockEl = document.getElementById("desktop-clock");
@@ -297,6 +300,7 @@ function showLoginScreen(overlay: HTMLElement): Promise<void> {
         topbar.style.background = "";
         topbar.style.boxShadow = "";
       }
+      if (activities) activities.style.display = "";
       loginResolve();
     });
   });

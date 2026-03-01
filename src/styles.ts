@@ -33,7 +33,7 @@ import command from '../config.json' assert {type: 'json'};
   } else {
     style.sheet.insertRule(`#bars {background: ${command.colors.background}}`)
     style.sheet.insertRule(`main {border-color: ${command.colors.border.color}}`)
-    style.sheet.insertRule(`#bar-1 {background: ${command.colors.border.color}; color: #FFFFFF}`)
+    style.sheet.insertRule(`#bar-1 {background: #303030; color: #FFFFFF}`)
     style.sheet.insertRule(`#bar-2 {background: ${command.colors.border.color}}`)
     style.sheet.insertRule(`#bar-3 {background: ${command.colors.border.color}}`)
     style.sheet.insertRule(`#bar-4 {background: ${command.colors.border.color}}`)

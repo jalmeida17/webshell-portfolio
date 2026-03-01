@@ -540,6 +540,89 @@ if (soundToggleBtn) {
   });
 }
 
+// Power button — shows login screen overlay
+const powerBtn = document.getElementById('power-btn');
+if (powerBtn) {
+  powerBtn.addEventListener('click', () => {
+    const topbar = document.getElementById('desktop-topbar');
+    const sidebar = document.getElementById('sidebar-dock');
+    const mainEl = document.getElementById('main');
+    const versionInfo = document.getElementById('version-info');
+    const activities = document.getElementById('topbar-activities');
+
+    // Hide desktop elements
+    if (sidebar) sidebar.style.visibility = 'hidden';
+    if (mainEl) mainEl.style.visibility = 'hidden';
+    if (versionInfo) versionInfo.style.visibility = 'hidden';
+    if (activities) activities.style.display = 'none';
+    // Hide all open windows
+    document.querySelectorAll<HTMLElement>('.new-terminal, .calc-window, .music-player-window').forEach(w => w.style.visibility = 'hidden');
+
+    // Style topbar for login and bring above overlay
+    if (topbar) {
+      topbar.style.background = '#3B3B3B';
+      topbar.style.boxShadow = 'none';
+      topbar.style.zIndex = '100000';
+    }
+
+    // Create login overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99998;';
+
+    const login = document.createElement('div');
+    login.className = 'login-screen';
+
+    const card = document.createElement('div');
+    card.className = 'login-card';
+
+    const avatar = document.createElement('img');
+    avatar.className = 'login-avatar';
+    avatar.src = '/res/profile.png';
+    avatar.alt = 'Profile';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'login-name';
+    nameEl.textContent = 'jalmeida17';
+
+    card.appendChild(avatar);
+    card.appendChild(nameEl);
+
+    const logo = document.createElement('img');
+    logo.className = 'login-logo';
+    logo.src = '/res/Ubuntu-logo-2022.svg.png';
+    logo.alt = 'Ubuntu';
+
+    const notListed = document.createElement('div');
+    notListed.className = 'login-not-listed';
+    notListed.textContent = 'Not listed?';
+
+    login.appendChild(card);
+    login.appendChild(notListed);
+    login.appendChild(logo);
+    overlay.appendChild(login);
+    document.body.appendChild(overlay);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { login.style.opacity = '1'; });
+    });
+
+    card.addEventListener('click', () => {
+      // Restore desktop
+      if (topbar) {
+        topbar.style.background = '';
+        topbar.style.boxShadow = '';
+        topbar.style.zIndex = '';
+      }
+      if (sidebar) sidebar.style.visibility = '';
+      if (mainEl) mainEl.style.visibility = '';
+      if (versionInfo) versionInfo.style.visibility = '';
+      if (activities) activities.style.display = '';
+      document.querySelectorAll<HTMLElement>('.new-terminal, .calc-window, .music-player-window').forEach(w => w.style.visibility = '');
+      document.body.removeChild(overlay);
+    });
+  });
+}
+
 // Terminal window functionality
 let windowZIndex = 50;
 
@@ -548,482 +631,334 @@ function bringToFront(element: HTMLElement) {
   element.style.zIndex = String(windowZIndex);
 }
 
-function openCareerWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
+// ─── Window Management Helpers ───
 
-  // Determine position - alternate between left and right
+function createWindowControls(options: {
+  onMinimize?: () => void;
+  onMaximize?: () => void;
+  onClose: () => void;
+}): HTMLDivElement {
+  const container = document.createElement('div');
+  container.className = 'window-controls';
+
+  if (options.onMinimize) {
+    const minBtn = document.createElement('button');
+    minBtn.className = 'window-btn';
+    minBtn.textContent = '─';
+    minBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onMinimize!(); });
+    container.appendChild(minBtn);
+  }
+
+  if (options.onMaximize) {
+    const maxBtn = document.createElement('button');
+    maxBtn.className = 'window-btn window-btn-maximize';
+    maxBtn.textContent = '□';
+    maxBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onMaximize!(); });
+    container.appendChild(maxBtn);
+  }
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'window-btn window-btn-close';
+  closeBtn.textContent = '✕';
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onClose(); });
+  container.appendChild(closeBtn);
+
+  return container;
+}
+
+function createTitleBar(title: string, controls: HTMLDivElement, iconSrc?: string): HTMLDivElement {
+  const titleBar = document.createElement('div');
+  titleBar.style.cssText = `
+    height: 36px;
+    background: #303030;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+    cursor: move;
+    padding: 0 12px;
+  `;
+
+  if (iconSrc) {
+    const icon = document.createElement('img');
+    icon.src = iconSrc;
+    icon.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
+    titleBar.appendChild(icon);
+  }
+
+  const titleSpan = document.createElement('span');
+  titleSpan.textContent = title;
+  titleSpan.style.cssText = "flex: 1; text-align: center; font-size: 13px; font-family: 'Ubuntu Sans', sans-serif;";
+  titleBar.appendChild(titleSpan);
+  titleBar.appendChild(controls);
+
+  return titleBar;
+}
+
+function makeDraggable(windowEl: HTMLElement, titleBar: HTMLElement, isMaximizedFn?: () => boolean): void {
+  let isDrag = false;
+  let oX = 0;
+  let oY = 0;
+
+  titleBar.addEventListener('mousedown', (e) => {
+    if ((e.target as HTMLElement).closest('.window-controls')) return;
+    if (isMaximizedFn && isMaximizedFn()) return;
+    isDrag = true;
+    const rect = windowEl.getBoundingClientRect();
+    oX = e.clientX - rect.left;
+    oY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDrag) return;
+    if (isMaximizedFn && isMaximizedFn()) return;
+    e.preventDefault();
+    windowEl.style.left = `${e.clientX - oX}px`;
+    windowEl.style.top = `${e.clientY - oY}px`;
+    windowEl.style.right = 'auto';
+    windowEl.style.bottom = 'auto';
+    windowEl.style.transform = 'none';
+  });
+
+  document.addEventListener('mouseup', () => { isDrag = false; });
+}
+
+// ─── End Helpers ───
+
+function openCareerWindow() {
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-  
+
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 40%; height: 70%;
+    ${position}: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  // Bring to front when clicked
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/career`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 2px 6px;
-    transition: background 0.2s;
-    border-radius: 3px;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => document.body.removeChild(newTerminal);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/career', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
-  
-  // Add career content with prompt
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+
   let careerHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/career</p>`;
   CAREER.forEach((line) => {
-    if (line === '<br>') {
-      careerHTML += '<br>';
-    } else {
-      careerHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
+    careerHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
   });
-  
   content.innerHTML = careerHTML;
 
-  // Add input for closing
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
+  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
   terminalInput.placeholder = 'Press Enter to close...';
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
-
-  // Global keydown listener for this window
   const careerKeydownHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', careerKeydownHandler);
+      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', careerKeydownHandler);
     }
   };
   document.addEventListener('keydown', careerKeydownHandler);
 
   content.appendChild(terminalInput);
-
   newTerminal.appendChild(topBar);
   newTerminal.appendChild(content);
   document.body.appendChild(newTerminal);
-
   setTimeout(() => terminalInput.focus(), 100);
 }
 
 function openEducationWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
-  // Determine position - alternate between left and right
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-  
+
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 40%; height: 70%;
+    ${position}: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/education`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 2px 6px;
-    transition: background 0.2s;
-    border-radius: 3px;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => document.body.removeChild(newTerminal);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/education', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
-  
-  // Add education content with prompt
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+
   let educationHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/education</p>`;
   EDUCATION.forEach((line) => {
-    if (line === '<br>') {
-      educationHTML += '<br>';
-    } else {
-      educationHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
+    educationHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
   });
-  
   content.innerHTML = educationHTML;
 
-  // Add input for closing
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
+  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
   terminalInput.placeholder = 'Press Enter to close...';
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
-
-  // Global keydown listener for this window
   const educationKeydownHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', educationKeydownHandler);
+      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', educationKeydownHandler);
     }
   };
   document.addEventListener('keydown', educationKeydownHandler);
 
   content.appendChild(terminalInput);
-
   newTerminal.appendChild(topBar);
   newTerminal.appendChild(content);
   document.body.appendChild(newTerminal);
-
   setTimeout(() => terminalInput.focus(), 100);
 }
 
 function openSkillsWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
-  // Determine position - alternate between left and right
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-  
+
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 40%; height: 70%;
+    ${position}: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-    cursor: move;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/skills`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    font-size: 24px;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-
-  closeBtn.addEventListener('click', (e: MouseEvent) => {
-    e.stopPropagation();
-    document.body.removeChild(newTerminal);
-  });
-
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/skills', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
-  
-  // Add skills content with prompt
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+
   let skillsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/skills</p>`;
   SKILLS_DATA.forEach((line) => {
-    if (line === '<br>') {
-      skillsHTML += '<br>';
-    } else {
-      skillsHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
+    skillsHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
   });
-  
   content.innerHTML = skillsHTML;
 
-  // Add input for closing
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
+  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
   terminalInput.placeholder = 'Press Enter to close...';
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
-
-  // Global keydown listener for this window
   const skillsKeydownHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', skillsKeydownHandler);
+      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', skillsKeydownHandler);
     }
   };
   document.addEventListener('keydown', skillsKeydownHandler);
 
   content.appendChild(terminalInput);
-
   newTerminal.appendChild(topBar);
   newTerminal.appendChild(content);
   document.body.appendChild(newTerminal);
-
   setTimeout(() => terminalInput.focus(), 100);
 }
 
 function openProjectDetailWindow(project: ProjectData) {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
 
@@ -1031,101 +966,48 @@ function openProjectDetailWindow(project: ProjectData) {
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 50%;
-    height: 75%;
-    ${position}: 5%;
-    top: 12%;
+    position: fixed; width: 50%; height: 75%;
+    ${position}: 5%; top: 12%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 50%; height: 75%; ${position}: 5%; top: 12%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-    cursor: move;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/projects/${project.id}`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    font-size: 24px;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-
-  closeBtn.addEventListener('click', (e: MouseEvent) => {
-    e.stopPropagation();
-    document.body.removeChild(newTerminal);
-  });
-
-  topBar.appendChild(closeBtn);
-
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar(`visitor@jalmeida17:$ ~/projects/${project.id}`, controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
 
-  // Build project detail HTML
   let statusBadge = '';
   if (project.status) {
     const statusColor = project.status === 'CLAUGER' ? '#298FDD' : '#FFA500';
@@ -1136,84 +1018,43 @@ function openProjectDetailWindow(project: ProjectData) {
   projectHTML += `<p style="animation: none;"><span class='command' style='font-size: 20px; text-decoration: underline;'>${project.title}</span>${statusBadge}</p>`;
   projectHTML += `<p style="animation: none;"><span class='command'>${project.year} - Solo Project</span></p>`;
   projectHTML += '<br>';
-
-  // Description
-  project.fullDescription.forEach(line => {
-    projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-  });
+  project.fullDescription.forEach(line => { projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`; });
   projectHTML += '<br>';
-
-  // Achievements
   projectHTML += `<p style="animation: none;"><span class='command'>Key Achievements:</span></p>`;
-  project.achievements.forEach(achievement => {
-    projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${achievement}</p>`;
-  });
+  project.achievements.forEach(achievement => { projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${achievement}</p>`; });
   projectHTML += '<br>';
-
-  // Technologies
   projectHTML += `<p style="animation: none;"><span class='command'>Technologies:</span></p>`;
-  project.technologies.forEach(tech => {
-    projectHTML += `<p style="animation: none;">${tech}</p>`;
-  });
+  project.technologies.forEach(tech => { projectHTML += `<p style="animation: none;">${tech}</p>`; });
   projectHTML += '<br>';
-
-  // Repository (only show if there are repositories)
   if (project.repository && project.repository.length > 0) {
     projectHTML += `<p style="animation: none;"><span class='command'>Repository:</span></p>`;
-    project.repository.forEach(repo => {
-      projectHTML += `<p style="animation: none;">${repo}</p>`;
-    });
+    project.repository.forEach(repo => { projectHTML += `<p style="animation: none;">${repo}</p>`; });
     projectHTML += '<br>';
   }
-
   content.innerHTML = projectHTML;
 
-  // Add input for closing
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
+  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
   terminalInput.placeholder = 'Press Enter to close...';
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
-
-  // Global keydown listener for this window
   const projectDetailKeydownHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', projectDetailKeydownHandler);
+      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', projectDetailKeydownHandler);
     }
   };
   document.addEventListener('keydown', projectDetailKeydownHandler);
 
   content.appendChild(terminalInput);
-
   newTerminal.appendChild(topBar);
   newTerminal.appendChild(content);
   document.body.appendChild(newTerminal);
-
   setTimeout(() => terminalInput.focus(), 100);
 }
 
 async function openNewsWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
 
@@ -1221,94 +1062,47 @@ async function openNewsWindow() {
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 55%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 55%; height: 70%;
+    ${position}: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 55%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/news`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 2px 6px;
-    transition: background 0.2s;
-    border-radius: 3px;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => document.body.removeChild(newTerminal);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/news', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
 
   let newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
   newsHTML += '<br>';
@@ -1432,103 +1226,51 @@ async function openNewsWindow() {
 }
 
 function openAboutWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
-  // Open to the right
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    right: 5%;
-    top: 15%;
+    position: fixed; width: 40%; height: 70%;
+    right: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  // Bring to front when clicked
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; right: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/about`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 2px 6px;
-    transition: background 0.2s;
-    border-radius: 3px;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => document.body.removeChild(newTerminal);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/about', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
 
   // Add about content with prompt
   const textContainer = document.createElement('div');
@@ -1618,9 +1360,6 @@ function openAboutWindow() {
 }
 
 function openClaugerWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
 
@@ -1628,94 +1367,47 @@ function openClaugerWindow() {
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 50%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 50%; height: 70%;
+    ${position}: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 50%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/clauger`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 2px 6px;
-    transition: background 0.2s;
-    border-radius: 3px;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => document.body.removeChild(newTerminal);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/clauger', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
 
   // Add Clauger content with prompt and logo
   let claugerHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/clauger</p>`;
@@ -1803,7 +1495,8 @@ if (terminalIcon) {
   });
 }
 
-// Maximize window button functionality
+// Main terminal window controls
+const minimizeButton = document.getElementById("minimize-window");
 const maximizeButton = document.getElementById("maximize-window");
 const closeButton = document.getElementById("close-window");
 const mainElement = document.getElementById("main");
@@ -1812,8 +1505,14 @@ let isMaximized = false;
 
 // Bring main terminal to front when clicked
 if (mainElement) {
-  mainElement.addEventListener('mousedown', () => {
-    bringToFront(mainElement);
+  mainElement.addEventListener('mousedown', () => bringToFront(mainElement));
+}
+
+// Minimize button functionality
+if (minimizeButton && mainElement && terminalIcon) {
+  minimizeButton.addEventListener('click', () => {
+    mainElement.style.display = 'none';
+    terminalIcon.classList.remove('active');
   });
 }
 
@@ -1828,7 +1527,6 @@ if (closeButton && mainElement && terminalIcon) {
 if (maximizeButton && mainElement) {
   maximizeButton.addEventListener("click", () => {
     if (isMaximized) {
-      // Restore to custom size - center it
       mainElement.style.width = "50%";
       mainElement.style.height = "80%";
       mainElement.style.position = "absolute";
@@ -1838,10 +1536,9 @@ if (maximizeButton && mainElement) {
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
-      maximizeButton.textContent = "🗖";
+      maximizeButton.textContent = "□";
       isMaximized = false;
     } else {
-      // Maximize
       mainElement.style.width = "95%";
       mainElement.style.height = "";
       mainElement.style.position = "";
@@ -1851,7 +1548,7 @@ if (maximizeButton && mainElement) {
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
-      maximizeButton.textContent = "🗗";
+      maximizeButton.textContent = "❐";
       isMaximized = true;
     }
   });
@@ -1859,45 +1556,12 @@ if (maximizeButton && mainElement) {
 
 // Double-click on topbar to maximize/restore
 if (barElement && mainElement && maximizeButton) {
-  barElement.addEventListener("dblclick", () => {
-    // Trigger the maximize button click
-    maximizeButton.click();
-  });
+  barElement.addEventListener("dblclick", () => maximizeButton.click());
 }
 
-// Drag functionality when window is not maximized
-let isDragging = false;
-let offsetX = 0;
-let offsetY = 0;
-
+// Drag via helper
 if (barElement && mainElement) {
-  barElement.addEventListener("mousedown", (e) => {
-    if (isMaximized || e.target === maximizeButton) return;
-    
-    isDragging = true;
-    
-    // Get current position
-    const rect = mainElement.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!isDragging || isMaximized) return;
-    
-    e.preventDefault();
-    
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    
-    mainElement.style.left = `${newLeft}px`;
-    mainElement.style.top = `${newTop}px`;
-    mainElement.style.transform = "none";
-  });
-
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
+  makeDraggable(mainElement, barElement, () => isMaximized);
 }
 
 // Desktop-style selection box
@@ -1995,7 +1659,6 @@ if (musicPlayerIcon) {
         currentAudio = null;
       }
     } else {
-      // Open music player
       openMusicPlayer();
       musicPlayerIcon.classList.add('active');
     }
@@ -2023,91 +1686,23 @@ function openMusicPlayer() {
     font-family: 'IBM Plex Mono', monospace;
   `;
 
-  musicPlayerWindow.addEventListener('mousedown', () => {
-    bringToFront(musicPlayerWindow!);
+  musicPlayerWindow.addEventListener('mousedown', () => bringToFront(musicPlayerWindow!));
+
+  const musicControls = createWindowControls({
+    onClose: () => {
+      document.body.removeChild(musicPlayerWindow!);
+      musicPlayerWindow = null;
+      const icon = document.getElementById('music-player-icon');
+      if (icon) icon.classList.remove('active');
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+    },
   });
 
-  // Top bar
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 32px;
-    background: linear-gradient(to bottom, #4A4A4A 0%, #3A3A3A 100%);
-    color: #FFFFFF;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-    border-bottom: 1px solid #1A1A1A;
-  `;
-
-  const logo = document.createElement('img');
-  logo.src = '/res/Rhythmbox_logo_3.4.4.svg.png';
-  logo.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
-
-  const title = document.createElement('span');
-  title.textContent = 'Rythmbox';
-  title.style.cssText = 'font-size: 13px; flex: 1; margin: 4px 0;';
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 0 4px;
-    transition: background 0.2s;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => {
-    document.body.removeChild(musicPlayerWindow!);
-    musicPlayerWindow = null;
-    const icon = document.getElementById('music-player-icon');
-    if (icon) icon.classList.remove('active');
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio = null;
-    }
-  };
-
-  topBar.appendChild(logo);
-  topBar.appendChild(title);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingPlayer = false;
-  let playerOffsetX = 0;
-  let playerOffsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingPlayer = true;
-    const rect = musicPlayerWindow!.getBoundingClientRect();
-    playerOffsetX = e.clientX - rect.left;
-    playerOffsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingPlayer || !musicPlayerWindow) return;
-    e.preventDefault();
-    const newLeft = e.clientX - playerOffsetX;
-    const newTop = e.clientY - playerOffsetY;
-    musicPlayerWindow.style.left = `${newLeft}px`;
-    musicPlayerWindow.style.top = `${newTop}px`;
-    musicPlayerWindow.style.bottom = 'auto';
-    musicPlayerWindow.style.transform = 'none';
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (isDraggingPlayer) {
-      isDraggingPlayer = false;
-      topBar.style.cursor = '';
-    }
-  });
+  const topBar = createTitleBar('Rhythmbox', musicControls, '/res/Rhythmbox_logo_3.4.4.svg.png');
+  makeDraggable(musicPlayerWindow, topBar);
 
   // Player content
   const playerContent = document.createElement('div');
@@ -2348,18 +1943,23 @@ function playNextTrack() {
 // LibreOffice Calc functionality
 let calcWindow: HTMLDivElement | null = null;
 
-// VSCode functionality
-let vscodeWindow: HTMLDivElement | null = null;
 
 const excelIcon = document.getElementById('excel-icon');
 
 if (excelIcon) {
   excelIcon.addEventListener('click', () => {
     if (calcWindow && document.body.contains(calcWindow)) {
-      // Close calc window
-      document.body.removeChild(calcWindow);
-      calcWindow = null;
-      excelIcon.classList.remove('active');
+      if (calcWindow.style.display === 'none') {
+        // Restore minimized
+        calcWindow.style.display = 'flex';
+        excelIcon.classList.add('active');
+        bringToFront(calcWindow);
+      } else {
+        // Close calc window
+        document.body.removeChild(calcWindow);
+        calcWindow = null;
+        excelIcon.classList.remove('active');
+      }
     } else {
       // Open calc window
       openCalcWindow();
@@ -2389,132 +1989,45 @@ function openCalcWindow() {
     font-family: 'IBM Plex Mono', monospace;
   `;
 
-  calcWindow.addEventListener('mousedown', () => {
-    bringToFront(calcWindow!);
-  });
-
-  // Top bar
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 32px;
-    background: linear-gradient(to bottom, #4A4A4A 0%, #3A3A3A 100%);
-    color: #FFFFFF;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-    border-bottom: 1px solid #1A1A1A;
-  `;
-
-  const logo = document.createElement('img');
-  logo.src = '/res/excellogo.png';
-  logo.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
-
-  const title = document.createElement('span');
-  title.textContent = 'LibreOffice Calc (Read-Only)';
-  title.style.cssText = 'font-size: 13px; flex: 1; margin: 4px 0;';
-
-  const maximizeBtn = document.createElement('button');
-  maximizeBtn.textContent = '🗖';
-  maximizeBtn.style.cssText = `
-    position: absolute;
-    right: 40px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    padding: 8px 8px;
-    line-height: 1;
-    transition: background 0.2s;
-  `;
+  calcWindow.addEventListener('mousedown', () => bringToFront(calcWindow!));
 
   let isCalcMaximized = false;
-  const originalCalcStyle = {
-    width: '800px',
-    height: '600px',
-    left: '50%',
-    top: '50%',
-    transform: 'translate(-50%, -50%)'
-  };
-
-  maximizeBtn.addEventListener('mouseenter', () => {
-    maximizeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-    maximizeBtn.style.borderRadius = '3px';
-  });
-
-  maximizeBtn.addEventListener('mouseleave', () => {
-    maximizeBtn.style.background = 'transparent';
-  });
-
-  maximizeBtn.addEventListener('click', () => {
-    if (!calcWindow) return;
-
-    if (isCalcMaximized) {
-      // Restore original size
-      calcWindow.style.width = originalCalcStyle.width;
-      calcWindow.style.height = originalCalcStyle.height;
-      calcWindow.style.left = originalCalcStyle.left;
-      calcWindow.style.top = originalCalcStyle.top;
-      calcWindow.style.transform = originalCalcStyle.transform;
-      maximizeBtn.textContent = '🗖';
-      isCalcMaximized = false;
-    } else {
-      // Maximize - account for sidebar
-      calcWindow.style.width = 'calc(95% - 32px)';
-      calcWindow.style.height = '90%';
-      calcWindow.style.left = 'calc(50% + 32px)';
-      calcWindow.style.top = '50%';
-      calcWindow.style.transform = 'translate(-50%, -50%)';
-      maximizeBtn.textContent = '🗗';
-      isCalcMaximized = true;
-    }
-  });
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 24px;
-    padding: 4px 8px;
-    line-height: 1;
-    transition: background 0.2s;
-  `;
-
-  closeBtn.addEventListener('mouseenter', () => {
-    closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-    closeBtn.style.borderRadius = '3px';
-  });
-
-  closeBtn.addEventListener('mouseleave', () => {
-    closeBtn.style.background = 'transparent';
-  });
-
-  closeBtn.addEventListener('click', () => {
-    if (calcWindow && document.body.contains(calcWindow)) {
-      document.body.removeChild(calcWindow);
-      calcWindow = null;
+  const calcControls = createWindowControls({
+    onMinimize: () => {
+      if (calcWindow) calcWindow.style.display = 'none';
       excelIcon?.classList.remove('active');
-    }
+    },
+    onMaximize: () => {
+      if (!calcWindow) return;
+      const maxBtn = calcControls.querySelector('.window-btn-maximize');
+      if (isCalcMaximized) {
+        calcWindow.style.width = '800px';
+        calcWindow.style.height = '600px';
+        calcWindow.style.left = '50%';
+        calcWindow.style.top = '50%';
+        calcWindow.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '□';
+        isCalcMaximized = false;
+      } else {
+        calcWindow.style.width = 'calc(95% - 32px)';
+        calcWindow.style.height = '90%';
+        calcWindow.style.left = 'calc(50% + 32px)';
+        calcWindow.style.top = '50%';
+        calcWindow.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isCalcMaximized = true;
+      }
+    },
+    onClose: () => {
+      if (calcWindow && document.body.contains(calcWindow)) {
+        document.body.removeChild(calcWindow);
+        calcWindow = null;
+        excelIcon?.classList.remove('active');
+      }
+    },
   });
 
-  topBar.appendChild(logo);
-  topBar.appendChild(title);
-  topBar.appendChild(maximizeBtn);
-  topBar.appendChild(closeBtn);
+  const topBar = createTitleBar('LibreOffice Calc (Read-Only)', calcControls, '/res/excellogo.png');
 
   // Toolbar with file dropdown
   const toolbar = document.createElement('div');
@@ -2726,7 +2239,7 @@ function openCalcWindow() {
             border-collapse: collapse;
             background: #FFFFFF;
             color: #000000;
-            font-family: Arial, sans-serif;
+            font-family: 'Ubuntu Sans', sans-serif;
             font-size: 13px;
             width: 100%;
           `;
@@ -2786,36 +2299,10 @@ function openCalcWindow() {
   `;
   content.className = 'calc-content-area';
 
-  // Dragging functionality
-  let isDraggingCalc = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn || e.target === maximizeBtn || !calcWindow || isCalcMaximized) return;
-    isDraggingCalc = true;
-    const rect = calcWindow.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  // Double-click on topbar to maximize/restore
+  makeDraggable(calcWindow, topBar, () => isCalcMaximized);
   topBar.addEventListener('dblclick', () => {
-    maximizeBtn.click();
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingCalc || isCalcMaximized) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    calcWindow!.style.left = `${newLeft}px`;
-    calcWindow!.style.top = `${newTop}px`;
-    calcWindow!.style.transform = 'none';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingCalc = false;
+    const maxBtn = calcControls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   calcWindow.appendChild(topBar);
@@ -2824,220 +2311,6 @@ function openCalcWindow() {
   document.body.appendChild(calcWindow);
 }
 
-// VSCode Icon Click Handler
-const vscodeIcon = document.getElementById('vscode-icon');
-
-if (vscodeIcon) {
-  vscodeIcon.addEventListener('click', () => {
-    if (vscodeWindow && document.body.contains(vscodeWindow)) {
-      // Close VSCode window
-      document.body.removeChild(vscodeWindow);
-      vscodeWindow = null;
-      vscodeIcon.classList.remove('active');
-    } else {
-      // Open VSCode window
-      openVSCodeWindow();
-      vscodeIcon.classList.add('active');
-    }
-  });
-}
-
-function openVSCodeWindow() {
-  vscodeWindow = document.createElement('div');
-  vscodeWindow.className = 'vscode-window';
-  windowZIndex++;
-  vscodeWindow.style.cssText = `
-    position: fixed;
-    width: 800px;
-    height: 600px;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(to bottom, #3C3C3C 0%, #2A2A2A 100%);
-    border: 1px solid #1A1A1A;
-    border-radius: 6px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    font-family: 'IBM Plex Mono', monospace;
-  `;
-
-  vscodeWindow.addEventListener('mousedown', () => {
-    bringToFront(vscodeWindow!);
-  });
-
-  // Top bar
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 32px;
-    background: linear-gradient(to bottom, #4A4A4A 0%, #3A3A3A 100%);
-    color: #FFFFFF;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-    border-bottom: 1px solid #1A1A1A;
-  `;
-
-  const logo = document.createElement('img');
-  logo.src = '/Visual_Studio_Code_1.35_icon.svg';
-  logo.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
-
-  const title = document.createElement('span');
-  title.textContent = 'Visual Studio Code';
-  title.style.cssText = 'font-size: 13px; flex: 1; margin: 4px 0;';
-
-  const maximizeBtn = document.createElement('button');
-  maximizeBtn.textContent = '🗖';
-  maximizeBtn.style.cssText = `
-    position: absolute;
-    right: 40px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    padding: 8px 8px;
-    line-height: 1;
-    transition: background 0.2s;
-  `;
-
-  let isVSCodeMaximized = false;
-  const originalVSCodeStyle = {
-    width: '800px',
-    height: '600px',
-    left: '50%',
-    top: '50%',
-    transform: 'translate(-50%, -50%)'
-  };
-
-  maximizeBtn.addEventListener('mouseenter', () => {
-    maximizeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-    maximizeBtn.style.borderRadius = '3px';
-  });
-
-  maximizeBtn.addEventListener('mouseleave', () => {
-    maximizeBtn.style.background = 'transparent';
-  });
-
-  maximizeBtn.addEventListener('click', () => {
-    if (!vscodeWindow) return;
-
-    if (isVSCodeMaximized) {
-      // Restore original size
-      vscodeWindow.style.width = originalVSCodeStyle.width;
-      vscodeWindow.style.height = originalVSCodeStyle.height;
-      vscodeWindow.style.left = originalVSCodeStyle.left;
-      vscodeWindow.style.top = originalVSCodeStyle.top;
-      vscodeWindow.style.transform = originalVSCodeStyle.transform;
-      maximizeBtn.textContent = '🗖';
-      isVSCodeMaximized = false;
-    } else {
-      // Maximize - account for sidebar
-      vscodeWindow.style.width = 'calc(95% - 32px)';
-      vscodeWindow.style.height = '90%';
-      vscodeWindow.style.left = 'calc(50% + 32px)';
-      vscodeWindow.style.top = '50%';
-      vscodeWindow.style.transform = 'translate(-50%, -50%)';
-      maximizeBtn.textContent = '🗗';
-      isVSCodeMaximized = true;
-    }
-  });
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 24px;
-    padding: 4px 8px;
-    line-height: 1;
-    transition: background 0.2s;
-  `;
-
-  closeBtn.addEventListener('mouseenter', () => {
-    closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-    closeBtn.style.borderRadius = '3px';
-  });
-
-  closeBtn.addEventListener('mouseleave', () => {
-    closeBtn.style.background = 'transparent';
-  });
-
-  closeBtn.addEventListener('click', () => {
-    if (vscodeWindow && document.body.contains(vscodeWindow)) {
-      document.body.removeChild(vscodeWindow);
-      vscodeWindow = null;
-      vscodeIcon?.classList.remove('active');
-    }
-  });
-
-  topBar.appendChild(logo);
-  topBar.appendChild(title);
-  topBar.appendChild(maximizeBtn);
-  topBar.appendChild(closeBtn);
-
-  // Main content area (empty for now)
-  const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    background: #2A2A2A;
-    border-radius: 0 0 6px 6px;
-    padding: 20px;
-    overflow: auto;
-    color: #FFFFFF;
-  `;
-  content.innerHTML = '';
-
-  // Dragging functionality
-  let isDraggingVSCode = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn || e.target === maximizeBtn || !vscodeWindow || isVSCodeMaximized) return;
-    isDraggingVSCode = true;
-    const rect = vscodeWindow.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  // Double-click on topbar to maximize/restore
-  topBar.addEventListener('dblclick', () => {
-    maximizeBtn.click();
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingVSCode || isVSCodeMaximized) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    vscodeWindow!.style.left = `${newLeft}px`;
-    vscodeWindow!.style.top = `${newTop}px`;
-    vscodeWindow!.style.transform = 'none';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingVSCode = false;
-  });
-
-  vscodeWindow.appendChild(topBar);
-  vscodeWindow.appendChild(content);
-  document.body.appendChild(vscodeWindow);
-}
 
 // Desktop context menu functionality
 // Load saved background from localStorage or default to 0
