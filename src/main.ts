@@ -3,10 +3,12 @@ import { createHelp } from "./commands/help";
 import { createBanner } from "./commands/banner";
 import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
-import { PROJECTS as PROJECTS_DATA } from "./commands/projects";
+import { PROJECTS as PROJECTS_DATA, PROJECT_DETAILS, ProjectData } from "./commands/projects";
 import { createCareer } from "./commands/career";
 import { EDUCATION } from "./commands/education";
 import { SKILLS } from "./commands/skills";
+import { CLAUGER } from "./commands/clauger";
+import { runBootSequence } from "./boot";
 
 //mutWriteLines gets deleted and reassigned
 let mutWriteLines = document.getElementById("write-lines");
@@ -37,7 +39,7 @@ const PRE_USER = document.getElementById("pre-user");
 const HOST = document.getElementById("host");
 const USER = document.getElementById("user");
 const PROMPT = document.getElementById("prompt");
-const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news", "cv", "gui"];
+const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news", "cv", "gui", "clauger"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
@@ -224,7 +226,24 @@ function commandHandler(input : string) {
         writeLines(["I don't want you to break the other projects.", "<br>"])
         break;
       }
-      openProjectsWindow();
+      writeLines(PROJECTS_DATA);
+      // Add click listeners to project links after they're rendered
+      // Calculate total animation time: 40ms per line * number of lines
+      const totalAnimationTime = PROJECTS_DATA.length * 40 + 100;
+      setTimeout(() => {
+        const projectLinks = document.querySelectorAll('.project-link');
+        projectLinks.forEach(link => {
+          link.addEventListener('click', (e) => {
+            const projectId = (e.target as HTMLElement).getAttribute('data-project-id');
+            if (projectId) {
+              const project = PROJECT_DETAILS.find(p => p.id === projectId);
+              if (project) {
+                openProjectDetailWindow(project);
+              }
+            }
+          });
+        });
+      }, totalAnimationTime);
       break;
     case 'career':
       if(bareMode) {
@@ -271,6 +290,13 @@ function commandHandler(input : string) {
         break;
       }
       window.location.href = 'gui.html';
+      break;
+    case 'clauger':
+      if(bareMode) {
+        writeLines(["No company info for you.", "<br>"])
+        break;
+      }
+      openClaugerWindow();
       break;
     case 'linkedin':
       //add stuff here
@@ -450,10 +476,12 @@ const initEventListeners = () => {
     PRE_USER.innerText = command.username;
   } 
 
-  window.addEventListener('load', () => {
+  window.addEventListener('load', async () => {
+    await runBootSequence();
     writeLines(BANNER);
     updateDesktopClock();
     setInterval(updateDesktopClock, 1000);
+    USERINPUT.focus();
   });
   
   USERINPUT.addEventListener('keypress', userInputHandler);
@@ -512,6 +540,89 @@ if (soundToggleBtn) {
   });
 }
 
+// Power button — shows login screen overlay
+const powerBtn = document.getElementById('power-btn');
+if (powerBtn) {
+  powerBtn.addEventListener('click', () => {
+    const topbar = document.getElementById('desktop-topbar');
+    const sidebar = document.getElementById('sidebar-dock');
+    const mainEl = document.getElementById('main');
+    const versionInfo = document.getElementById('version-info');
+    const activities = document.getElementById('topbar-activities');
+
+    // Hide desktop elements
+    if (sidebar) sidebar.style.visibility = 'hidden';
+    if (mainEl) mainEl.style.visibility = 'hidden';
+    if (versionInfo) versionInfo.style.visibility = 'hidden';
+    if (activities) activities.style.display = 'none';
+    // Hide all open windows
+    document.querySelectorAll<HTMLElement>('.new-terminal, .calc-window, .music-player-window').forEach(w => w.style.visibility = 'hidden');
+
+    // Style topbar for login and bring above overlay
+    if (topbar) {
+      topbar.style.background = '#3B3B3B';
+      topbar.style.boxShadow = 'none';
+      topbar.style.zIndex = '100000';
+    }
+
+    // Create login overlay
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99998;';
+
+    const login = document.createElement('div');
+    login.className = 'login-screen';
+
+    const card = document.createElement('div');
+    card.className = 'login-card';
+
+    const avatar = document.createElement('img');
+    avatar.className = 'login-avatar';
+    avatar.src = '/res/profile.png';
+    avatar.alt = 'Profile';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'login-name';
+    nameEl.textContent = 'jalmeida17';
+
+    card.appendChild(avatar);
+    card.appendChild(nameEl);
+
+    const logo = document.createElement('img');
+    logo.className = 'login-logo';
+    logo.src = '/res/Ubuntu-logo-2022.svg.png';
+    logo.alt = 'Ubuntu';
+
+    const notListed = document.createElement('div');
+    notListed.className = 'login-not-listed';
+    notListed.textContent = 'Not listed?';
+
+    login.appendChild(card);
+    login.appendChild(notListed);
+    login.appendChild(logo);
+    overlay.appendChild(login);
+    document.body.appendChild(overlay);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => { login.style.opacity = '1'; });
+    });
+
+    card.addEventListener('click', () => {
+      // Restore desktop
+      if (topbar) {
+        topbar.style.background = '';
+        topbar.style.boxShadow = '';
+        topbar.style.zIndex = '';
+      }
+      if (sidebar) sidebar.style.visibility = '';
+      if (mainEl) mainEl.style.visibility = '';
+      if (versionInfo) versionInfo.style.visibility = '';
+      if (activities) activities.style.display = '';
+      document.querySelectorAll<HTMLElement>('.new-terminal, .calc-window, .music-player-window').forEach(w => w.style.visibility = '');
+      document.body.removeChild(overlay);
+    });
+  });
+}
+
 // Terminal window functionality
 let windowZIndex = 50;
 
@@ -520,641 +631,430 @@ function bringToFront(element: HTMLElement) {
   element.style.zIndex = String(windowZIndex);
 }
 
-function openCareerWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
+// ─── Window Management Helpers ───
 
-  // Determine position - alternate between left and right
+function createWindowControls(options: {
+  onMinimize?: () => void;
+  onMaximize?: () => void;
+  onClose: () => void;
+}): HTMLDivElement {
+  const container = document.createElement('div');
+  container.className = 'window-controls';
+
+  if (options.onMinimize) {
+    const minBtn = document.createElement('button');
+    minBtn.className = 'window-btn';
+    minBtn.textContent = '─';
+    minBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onMinimize!(); });
+    container.appendChild(minBtn);
+  }
+
+  if (options.onMaximize) {
+    const maxBtn = document.createElement('button');
+    maxBtn.className = 'window-btn window-btn-maximize';
+    maxBtn.textContent = '□';
+    maxBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onMaximize!(); });
+    container.appendChild(maxBtn);
+  }
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'window-btn window-btn-close';
+  closeBtn.textContent = '✕';
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onClose(); });
+  container.appendChild(closeBtn);
+
+  return container;
+}
+
+function createTitleBar(title: string, controls: HTMLDivElement, iconSrc?: string): HTMLDivElement {
+  const titleBar = document.createElement('div');
+  titleBar.style.cssText = `
+    height: 36px;
+    background: #303030;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    user-select: none;
+    cursor: move;
+    padding: 0 12px;
+  `;
+
+  if (iconSrc) {
+    const icon = document.createElement('img');
+    icon.src = iconSrc;
+    icon.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
+    titleBar.appendChild(icon);
+  }
+
+  const titleSpan = document.createElement('span');
+  titleSpan.textContent = title;
+  titleSpan.style.cssText = "flex: 1; text-align: center; font-size: 13px; font-family: 'Ubuntu Sans', sans-serif;";
+  titleBar.appendChild(titleSpan);
+  titleBar.appendChild(controls);
+
+  return titleBar;
+}
+
+function makeDraggable(windowEl: HTMLElement, titleBar: HTMLElement, isMaximizedFn?: () => boolean): void {
+  let isDrag = false;
+  let oX = 0;
+  let oY = 0;
+
+  titleBar.addEventListener('mousedown', (e) => {
+    if ((e.target as HTMLElement).closest('.window-controls')) return;
+    if (isMaximizedFn && isMaximizedFn()) return;
+    isDrag = true;
+    const rect = windowEl.getBoundingClientRect();
+    oX = e.clientX - rect.left;
+    oY = e.clientY - rect.top;
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDrag) return;
+    if (isMaximizedFn && isMaximizedFn()) return;
+    e.preventDefault();
+    windowEl.style.left = `${e.clientX - oX}px`;
+    windowEl.style.top = `${e.clientY - oY}px`;
+    windowEl.style.right = 'auto';
+    windowEl.style.bottom = 'auto';
+    windowEl.style.transform = 'none';
+  });
+
+  document.addEventListener('mouseup', () => { isDrag = false; });
+}
+
+// ─── End Helpers ───
+
+function openCareerWindow() {
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-  
+
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 40%; height: 70%;
+    ${position}: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  // Bring to front when clicked
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/career`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 2px 6px;
-    transition: background 0.2s;
-    border-radius: 3px;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => document.body.removeChild(newTerminal);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/career', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
-  
-  // Add career content with prompt
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+
   let careerHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/career</p>`;
   CAREER.forEach((line) => {
-    if (line === '<br>') {
-      careerHTML += '<br>';
-    } else {
-      careerHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
+    careerHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
   });
-  
   content.innerHTML = careerHTML;
 
-  // Add input for closing
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
+  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
   terminalInput.placeholder = 'Press Enter to close...';
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
-
-  // Global keydown listener for this window
   const careerKeydownHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', careerKeydownHandler);
+      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', careerKeydownHandler);
     }
   };
   document.addEventListener('keydown', careerKeydownHandler);
 
   content.appendChild(terminalInput);
-
   newTerminal.appendChild(topBar);
   newTerminal.appendChild(content);
   document.body.appendChild(newTerminal);
-
   setTimeout(() => terminalInput.focus(), 100);
 }
 
 function openEducationWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
-  // Determine position - alternate between left and right
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-  
+
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 40%; height: 70%;
+    ${position}: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/education`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 2px 6px;
-    transition: background 0.2s;
-    border-radius: 3px;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => document.body.removeChild(newTerminal);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/education', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
-  
-  // Add education content with prompt
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+
   let educationHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/education</p>`;
   EDUCATION.forEach((line) => {
-    if (line === '<br>') {
-      educationHTML += '<br>';
-    } else {
-      educationHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
+    educationHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
   });
-  
   content.innerHTML = educationHTML;
 
-  // Add input for closing
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
+  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
   terminalInput.placeholder = 'Press Enter to close...';
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
-
-  // Global keydown listener for this window
   const educationKeydownHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', educationKeydownHandler);
+      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', educationKeydownHandler);
     }
   };
   document.addEventListener('keydown', educationKeydownHandler);
 
   content.appendChild(terminalInput);
-
   newTerminal.appendChild(topBar);
   newTerminal.appendChild(content);
   document.body.appendChild(newTerminal);
-
   setTimeout(() => terminalInput.focus(), 100);
 }
 
 function openSkillsWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
-  // Determine position - alternate between left and right
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-  
+
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 40%; height: 70%;
+    ${position}: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-    cursor: move;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/skills`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    font-size: 24px;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-
-  closeBtn.addEventListener('click', (e: MouseEvent) => {
-    e.stopPropagation();
-    document.body.removeChild(newTerminal);
-  });
-
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/skills', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
-  
-  // Add skills content with prompt
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+
   let skillsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/skills</p>`;
   SKILLS_DATA.forEach((line) => {
-    if (line === '<br>') {
-      skillsHTML += '<br>';
-    } else {
-      skillsHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
+    skillsHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
   });
-  
   content.innerHTML = skillsHTML;
 
-  // Add input for closing
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
+  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
   terminalInput.placeholder = 'Press Enter to close...';
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
-
-  // Global keydown listener for this window
   const skillsKeydownHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', skillsKeydownHandler);
+      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', skillsKeydownHandler);
     }
   };
   document.addEventListener('keydown', skillsKeydownHandler);
 
   content.appendChild(terminalInput);
-
   newTerminal.appendChild(topBar);
   newTerminal.appendChild(content);
   document.body.appendChild(newTerminal);
-
   setTimeout(() => terminalInput.focus(), 100);
 }
 
-function openProjectsWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
+function openProjectDetailWindow(project: ProjectData) {
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-  
+
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 50%; height: 75%;
+    ${position}: 5%; top: 12%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 50%; height: 75%; ${position}: 5%; top: 12%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-    cursor: move;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/projects`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    font-size: 24px;
-    cursor: pointer;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-
-  closeBtn.addEventListener('click', (e: MouseEvent) => {
-    e.stopPropagation();
-    document.body.removeChild(newTerminal);
-  });
-
-  topBar.appendChild(closeBtn);
-
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar(`visitor@jalmeida17:$ ~/projects/${project.id}`, controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
-  
-  // Add projects content with prompt
-  let projectsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/projects</p>`;
-  PROJECTS_DATA.forEach((line) => {
-    if (line === '<br>') {
-      projectsHTML += '<br>';
-    } else {
-      projectsHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
-  });
-  
-  content.innerHTML = projectsHTML;
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
 
-  // Add input for closing
+  let statusBadge = '';
+  if (project.status) {
+    const statusColor = project.status === 'CLAUGER' ? '#298FDD' : '#FFA500';
+    statusBadge = `<span style='color: ${statusColor};'> - ${project.status}</span>`;
+  }
+  let projectHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/projects/${project.id}</p>`;
+  projectHTML += '<br>';
+  projectHTML += `<p style="animation: none;"><span class='command' style='font-size: 20px; text-decoration: underline;'>${project.title}</span>${statusBadge}</p>`;
+  projectHTML += `<p style="animation: none;"><span class='command'>${project.year} - Solo Project</span></p>`;
+  projectHTML += '<br>';
+  project.fullDescription.forEach(line => { projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`; });
+  projectHTML += '<br>';
+  projectHTML += `<p style="animation: none;"><span class='command'>Key Achievements:</span></p>`;
+  project.achievements.forEach(achievement => { projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${achievement}</p>`; });
+  projectHTML += '<br>';
+  projectHTML += `<p style="animation: none;"><span class='command'>Technologies:</span></p>`;
+  project.technologies.forEach(tech => { projectHTML += `<p style="animation: none;">${tech}</p>`; });
+  projectHTML += '<br>';
+  if (project.repository && project.repository.length > 0) {
+    projectHTML += `<p style="animation: none;"><span class='command'>Repository:</span></p>`;
+    project.repository.forEach(repo => { projectHTML += `<p style="animation: none;">${repo}</p>`; });
+    projectHTML += '<br>';
+  }
+  content.innerHTML = projectHTML;
+
   const terminalInput = document.createElement('input');
   terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
+  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
   terminalInput.placeholder = 'Press Enter to close...';
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
-
-  // Global keydown listener for this window
-  const projectsKeydownHandler = (e: KeyboardEvent) => {
+  const projectDetailKeydownHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', projectsKeydownHandler);
+      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', projectDetailKeydownHandler);
     }
   };
-  document.addEventListener('keydown', projectsKeydownHandler);
+  document.addEventListener('keydown', projectDetailKeydownHandler);
 
   content.appendChild(terminalInput);
-
   newTerminal.appendChild(topBar);
   newTerminal.appendChild(content);
   document.body.appendChild(newTerminal);
-
   setTimeout(() => terminalInput.focus(), 100);
 }
 
 async function openNewsWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
   const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
 
@@ -1162,94 +1062,47 @@ async function openNewsWindow() {
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    ${position}: 5%;
-    top: 15%;
+    position: fixed; width: 55%; height: 70%;
+    ${position}: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 55%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/news`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 2px 6px;
-    transition: background 0.2s;
-    border-radius: 3px;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => document.body.removeChild(newTerminal);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/news', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
 
   let newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
   newsHTML += '<br>';
@@ -1278,31 +1131,43 @@ async function openNewsWindow() {
     newsHTML += `<p style="animation: none;"><span style="color: #E95420; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
     newsHTML += '<br>';
 
-    for (const feed of feeds) {
+    for (let feedIndex = 0; feedIndex < feeds.length; feedIndex++) {
+      const feed = feeds[feedIndex];
       newsHTML += `<p style="animation: none; margin-top: 10px;"><span style="color: ${feed.color}; font-weight: bold;">${feed.category}</span></p>`;
-      
+
       try {
         // you're a bitch if you use my api key lol
-        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=1`);
+        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=2`);
         const data = await response.json();
-        
+
         if (data.status === 'ok' && data.items && data.items.length > 0) {
-          const item = data.items[0];
-          const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
-          
-          // Get description/content preview
-          let description = '';
-          if (item.description) {
-            // Strip HTML tags and get first 150 characters
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = item.description;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
-            description = textContent.length > 150 ? textContent.substring(0, 150) + '...' : textContent;
-          }
-          
-          newsHTML += `<p style="animation: none; margin-left: 10px;">• <a href="${item.link}" target="_blank" style="color: ${command.colors.foreground}; text-decoration: underline;">${title}</a></p>`;
-          if (description) {
-            newsHTML += `<p style="animation: none; margin-left: 20px; color: #888; font-size: 13px; font-style: italic;">${description}</p>`;
+          // Loop through each news item (max 2)
+          for (let i = 0; i < Math.min(data.items.length, 2); i++) {
+            const item = data.items[i];
+            const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
+
+            // Get description/content preview
+            let description = '';
+            if (item.description) {
+              // Strip HTML tags and get first 100 characters
+              const tempDiv = document.createElement('div');
+              tempDiv.innerHTML = item.description;
+              const textContent = tempDiv.textContent || tempDiv.innerText || '';
+              description = textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
+            }
+
+            // Display title and description
+            newsHTML += `<div style="margin-left: 10px; max-width: 90%;">`;
+            newsHTML += `<p style="animation: none; margin: 0;">• <a href="${item.link}" target="_blank" style="color: ${command.colors.foreground}; text-decoration: underline;">${title}</a></p>`;
+            if (description) {
+              newsHTML += `<p style="animation: none; margin: 5px 0 0 10px; color: #888; font-size: 13px; font-style: italic; max-width: 95%; word-wrap: break-word;">${description}</p>`;
+            }
+            newsHTML += `</div>`;
+
+            // Add spacing between news items
+            if (i < Math.min(data.items.length, 2) - 1) {
+              newsHTML += `<div style="margin: 15px 0;"></div>`;
+            }
           }
         } else {
           newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Unable to fetch feed (API limit or feed issue)</p>`;
@@ -1310,8 +1175,13 @@ async function openNewsWindow() {
       } catch (err) {
         newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Failed to load (${err instanceof Error ? err.message : 'unknown error'})</p>`;
       }
-      
+
       newsHTML += '<br>';
+
+      // Add divider between subjects (but not after the last one)
+      if (feedIndex < feeds.length - 1) {
+        newsHTML += `<div style="border-top: 1px solid #444; margin: 20px 0;"></div>`;
+      }
     }
 
     content.innerHTML = newsHTML;
@@ -1356,103 +1226,51 @@ async function openNewsWindow() {
 }
 
 function openAboutWindow() {
-  const mainElement = document.getElementById('main');
-  if (!mainElement) return;
-
-  // Open to the right
   const newTerminal = document.createElement('div');
   newTerminal.className = 'new-terminal';
   windowZIndex++;
   newTerminal.style.cssText = `
-    position: fixed;
-    width: 40%;
-    height: 70%;
-    right: 5%;
-    top: 15%;
+    position: fixed; width: 40%; height: 70%;
+    right: 5%; top: 15%;
     background: ${command.colors.background};
     border: 2px solid ${command.colors.border.color};
     border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex};
-    display: flex;
-    flex-direction: column;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
   `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
 
-  // Bring to front when clicked
-  newTerminal.addEventListener('mousedown', () => {
-    bringToFront(newTerminal);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; right: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
   });
 
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 36px;
-    background: ${command.colors.border.color};
-    color: #FFFFFF;
-    line-height: 36px;
-    text-align: center;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-  `;
-  topBar.textContent = `visitor@jalmeida17:$ ~/about`;
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 2px 6px;
-    transition: background 0.2s;
-    border-radius: 3px;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => document.body.removeChild(newTerminal);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingNew = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingNew = true;
-    const rect = newTerminal.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingNew) return;
-    e.preventDefault();
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    newTerminal.style.left = `${newLeft}px`;
-    newTerminal.style.top = `${newTop}px`;
-    newTerminal.style.right = 'auto';
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDraggingNew = false;
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/about', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
   });
 
   const content = document.createElement('div');
-  content.style.cssText = `
-    flex: 1;
-    padding: 20px;
-    color: ${command.colors.foreground};
-    overflow-y: auto;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    line-height: 22px;
-  `;
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
 
   // Add about content with prompt
   const textContainer = document.createElement('div');
@@ -1541,6 +1359,118 @@ function openAboutWindow() {
   setTimeout(() => terminalInput.focus(), 100);
 }
 
+function openClaugerWindow() {
+  const existingNewTerminals = document.querySelectorAll('.new-terminal');
+  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+
+  const newTerminal = document.createElement('div');
+  newTerminal.className = 'new-terminal';
+  windowZIndex++;
+  newTerminal.style.cssText = `
+    position: fixed; width: 50%; height: 70%;
+    ${position}: 5%; top: 15%;
+    background: ${command.colors.background};
+    border: 2px solid ${command.colors.border.color};
+    border-radius: 8px 8px 2px 2px;
+    z-index: ${windowZIndex}; display: flex; flex-direction: column;
+  `;
+  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
+
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMaximize: () => {
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        newTerminal.style.cssText = `position: fixed; width: 50%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        if (maxBtn) maxBtn.textContent = '□';
+        isWinMax = false;
+      } else {
+        newTerminal.style.width = 'calc(95% - 32px)';
+        newTerminal.style.height = '90%';
+        newTerminal.style.left = 'calc(50% + 32px)';
+        newTerminal.style.right = 'auto';
+        newTerminal.style.top = '50%';
+        newTerminal.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isWinMax = true;
+      }
+    },
+    onClose: () => document.body.removeChild(newTerminal),
+  });
+
+  const topBar = createTitleBar('visitor@jalmeida17:$ ~/clauger', controls);
+  makeDraggable(newTerminal, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
+  });
+
+  const content = document.createElement('div');
+  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+
+  // Add Clauger content with prompt and logo
+  let claugerHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/clauger</p>`;
+
+  // Add logo with white background similar to /about profile image
+  claugerHTML += `
+    <div style="display: flex; justify-content: flex-start; margin: 20px 0;">
+      <img src="/res/logo-clauger.png" style="width: 150px; height: 100px; border-radius: 8px; border: 2px solid ${command.colors.border.color}; object-fit: contain; background: #FFFFFF; padding: 10px;">
+    </div>
+  `;
+
+  CLAUGER.forEach((line) => {
+    if (line === '<br>') {
+      claugerHTML += '<br>';
+    } else {
+      claugerHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
+    }
+  });
+
+  content.innerHTML = claugerHTML;
+
+  // Add input for closing
+  const terminalInput = document.createElement('input');
+  terminalInput.type = 'text';
+  terminalInput.style.cssText = `
+    width: 100%;
+    background: ${command.colors.background};
+    color: ${command.colors.foreground};
+    border: none;
+    outline: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 16px;
+    margin-top: 10px;
+  `;
+  terminalInput.placeholder = 'Press Enter to close...';
+
+  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+    }
+  });
+
+  // Global keydown listener for this window
+  const claugerKeydownHandler = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
+      e.preventDefault();
+      document.body.removeChild(newTerminal);
+      document.removeEventListener('keydown', claugerKeydownHandler);
+    }
+  };
+  document.addEventListener('keydown', claugerKeydownHandler);
+
+  content.appendChild(terminalInput);
+
+  newTerminal.appendChild(topBar);
+  newTerminal.appendChild(content);
+  document.body.appendChild(newTerminal);
+
+  setTimeout(() => terminalInput.focus(), 100);
+}
+
 initEventListeners();
 
 // Sidebar dock terminal icon functionality
@@ -1565,7 +1495,8 @@ if (terminalIcon) {
   });
 }
 
-// Maximize window button functionality
+// Main terminal window controls
+const minimizeButton = document.getElementById("minimize-window");
 const maximizeButton = document.getElementById("maximize-window");
 const closeButton = document.getElementById("close-window");
 const mainElement = document.getElementById("main");
@@ -1574,8 +1505,14 @@ let isMaximized = false;
 
 // Bring main terminal to front when clicked
 if (mainElement) {
-  mainElement.addEventListener('mousedown', () => {
-    bringToFront(mainElement);
+  mainElement.addEventListener('mousedown', () => bringToFront(mainElement));
+}
+
+// Minimize button functionality
+if (minimizeButton && mainElement && terminalIcon) {
+  minimizeButton.addEventListener('click', () => {
+    mainElement.style.display = 'none';
+    terminalIcon.classList.remove('active');
   });
 }
 
@@ -1590,7 +1527,6 @@ if (closeButton && mainElement && terminalIcon) {
 if (maximizeButton && mainElement) {
   maximizeButton.addEventListener("click", () => {
     if (isMaximized) {
-      // Restore to custom size - center it
       mainElement.style.width = "50%";
       mainElement.style.height = "80%";
       mainElement.style.position = "absolute";
@@ -1600,10 +1536,9 @@ if (maximizeButton && mainElement) {
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
-      maximizeButton.textContent = "🗖";
+      maximizeButton.textContent = "□";
       isMaximized = false;
     } else {
-      // Maximize
       mainElement.style.width = "95%";
       mainElement.style.height = "";
       mainElement.style.position = "";
@@ -1613,7 +1548,7 @@ if (maximizeButton && mainElement) {
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
-      maximizeButton.textContent = "🗗";
+      maximizeButton.textContent = "❐";
       isMaximized = true;
     }
   });
@@ -1621,45 +1556,12 @@ if (maximizeButton && mainElement) {
 
 // Double-click on topbar to maximize/restore
 if (barElement && mainElement && maximizeButton) {
-  barElement.addEventListener("dblclick", () => {
-    // Trigger the maximize button click
-    maximizeButton.click();
-  });
+  barElement.addEventListener("dblclick", () => maximizeButton.click());
 }
 
-// Drag functionality when window is not maximized
-let isDragging = false;
-let offsetX = 0;
-let offsetY = 0;
-
+// Drag via helper
 if (barElement && mainElement) {
-  barElement.addEventListener("mousedown", (e) => {
-    if (isMaximized || e.target === maximizeButton) return;
-    
-    isDragging = true;
-    
-    // Get current position
-    const rect = mainElement.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener("mousemove", (e) => {
-    if (!isDragging || isMaximized) return;
-    
-    e.preventDefault();
-    
-    const newLeft = e.clientX - offsetX;
-    const newTop = e.clientY - offsetY;
-    
-    mainElement.style.left = `${newLeft}px`;
-    mainElement.style.top = `${newTop}px`;
-    mainElement.style.transform = "none";
-  });
-
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
+  makeDraggable(mainElement, barElement, () => isMaximized);
 }
 
 // Desktop-style selection box
@@ -1757,7 +1659,6 @@ if (musicPlayerIcon) {
         currentAudio = null;
       }
     } else {
-      // Open music player
       openMusicPlayer();
       musicPlayerIcon.classList.add('active');
     }
@@ -1771,7 +1672,7 @@ function openMusicPlayer() {
   musicPlayerWindow.style.cssText = `
     position: fixed;
     width: 600px;
-    height: 120px;
+    height: 130px;
     left: 50%;
     bottom: 60px;
     transform: translateX(-50%);
@@ -1785,91 +1686,23 @@ function openMusicPlayer() {
     font-family: 'IBM Plex Mono', monospace;
   `;
 
-  musicPlayerWindow.addEventListener('mousedown', () => {
-    bringToFront(musicPlayerWindow!);
+  musicPlayerWindow.addEventListener('mousedown', () => bringToFront(musicPlayerWindow!));
+
+  const musicControls = createWindowControls({
+    onClose: () => {
+      document.body.removeChild(musicPlayerWindow!);
+      musicPlayerWindow = null;
+      const icon = document.getElementById('music-player-icon');
+      if (icon) icon.classList.remove('active');
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+    },
   });
 
-  // Top bar
-  const topBar = document.createElement('div');
-  topBar.style.cssText = `
-    height: 32px;
-    background: linear-gradient(to bottom, #4A4A4A 0%, #3A3A3A 100%);
-    color: #FFFFFF;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    border-radius: 6px 6px 0 0;
-    position: relative;
-    user-select: none;
-    border-bottom: 1px solid #1A1A1A;
-  `;
-
-  const logo = document.createElement('img');
-  logo.src = '/res/Rhythmbox_logo_3.4.4.svg.png';
-  logo.style.cssText = 'width: 20px; height: 20px; margin-right: 8px;';
-
-  const title = document.createElement('span');
-  title.textContent = 'Rythmbox';
-  title.style.cssText = 'font-size: 13px; flex: 1;';
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '×';
-  closeBtn.style.cssText = `
-    background: transparent;
-    border: none;
-    color: #FFFFFF;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 0 4px;
-    transition: background 0.2s;
-  `;
-  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-  closeBtn.onmouseout = () => closeBtn.style.background = 'transparent';
-  closeBtn.onclick = () => {
-    document.body.removeChild(musicPlayerWindow!);
-    musicPlayerWindow = null;
-    const icon = document.getElementById('music-player-icon');
-    if (icon) icon.classList.remove('active');
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio = null;
-    }
-  };
-
-  topBar.appendChild(logo);
-  topBar.appendChild(title);
-  topBar.appendChild(closeBtn);
-
-  // Dragging functionality
-  let isDraggingPlayer = false;
-  let playerOffsetX = 0;
-  let playerOffsetY = 0;
-
-  topBar.addEventListener('mousedown', (e) => {
-    if (e.target === closeBtn) return;
-    isDraggingPlayer = true;
-    const rect = musicPlayerWindow!.getBoundingClientRect();
-    playerOffsetX = e.clientX - rect.left;
-    playerOffsetY = e.clientY - rect.top;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDraggingPlayer || !musicPlayerWindow) return;
-    e.preventDefault();
-    const newLeft = e.clientX - playerOffsetX;
-    const newTop = e.clientY - playerOffsetY;
-    musicPlayerWindow.style.left = `${newLeft}px`;
-    musicPlayerWindow.style.top = `${newTop}px`;
-    musicPlayerWindow.style.bottom = 'auto';
-    musicPlayerWindow.style.transform = 'none';
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (isDraggingPlayer) {
-      isDraggingPlayer = false;
-      topBar.style.cursor = '';
-    }
-  });
+  const topBar = createTitleBar('Rhythmbox', musicControls, '/res/Rhythmbox_logo_3.4.4.svg.png');
+  makeDraggable(musicPlayerWindow, topBar);
 
   // Player content
   const playerContent = document.createElement('div');
@@ -1932,7 +1765,7 @@ function openMusicPlayer() {
   const createControlButton = (icon: string, id: string) => {
     const btn = document.createElement('button');
     btn.id = id;
-    btn.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+    btn.innerHTML = `<i class="fa-solid ${icon}" style="color: #FFFFFF;"></i>`;
     btn.style.cssText = `
       background: linear-gradient(to bottom, #5A5A5A 0%, #4A4A4A 100%);
       border: 1px solid #2A2A2A;
@@ -2065,6 +1898,7 @@ function updateProgress() {
   if (progress && currentAudio.duration) {
     const percent = (currentAudio.currentTime / currentAudio.duration) * 100;
     progress.value = percent.toString();
+    progress.style.setProperty('--progress-value', `${percent}%`);
   }
 
   if (timeDisplay && currentAudio.duration) {
@@ -2085,6 +1919,7 @@ function seekTrack(e: Event) {
   const input = e.target as HTMLInputElement;
   const seekTime = (parseFloat(input.value) / 100) * currentAudio.duration;
   currentAudio.currentTime = seekTime;
+  input.style.setProperty('--progress-value', `${input.value}%`);
 }
 
 function playPreviousTrack() {
@@ -2105,11 +1940,389 @@ function playNextTrack() {
   }
 }
 
+// LibreOffice Calc functionality
+let calcWindow: HTMLDivElement | null = null;
+
+
+const excelIcon = document.getElementById('excel-icon');
+
+if (excelIcon) {
+  excelIcon.addEventListener('click', () => {
+    if (calcWindow && document.body.contains(calcWindow)) {
+      if (calcWindow.style.display === 'none') {
+        // Restore minimized
+        calcWindow.style.display = 'flex';
+        excelIcon.classList.add('active');
+        bringToFront(calcWindow);
+      } else {
+        // Close calc window
+        document.body.removeChild(calcWindow);
+        calcWindow = null;
+        excelIcon.classList.remove('active');
+      }
+    } else {
+      // Open calc window
+      openCalcWindow();
+      excelIcon.classList.add('active');
+    }
+  });
+}
+
+function openCalcWindow() {
+  calcWindow = document.createElement('div');
+  calcWindow.className = 'calc-window';
+  windowZIndex++;
+  calcWindow.style.cssText = `
+    position: fixed;
+    width: 800px;
+    height: 600px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(to bottom, #3C3C3C 0%, #2A2A2A 100%);
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'IBM Plex Mono', monospace;
+  `;
+
+  calcWindow.addEventListener('mousedown', () => bringToFront(calcWindow!));
+
+  let isCalcMaximized = false;
+  const calcControls = createWindowControls({
+    onMinimize: () => {
+      if (calcWindow) calcWindow.style.display = 'none';
+      excelIcon?.classList.remove('active');
+    },
+    onMaximize: () => {
+      if (!calcWindow) return;
+      const maxBtn = calcControls.querySelector('.window-btn-maximize');
+      if (isCalcMaximized) {
+        calcWindow.style.width = '800px';
+        calcWindow.style.height = '600px';
+        calcWindow.style.left = '50%';
+        calcWindow.style.top = '50%';
+        calcWindow.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '□';
+        isCalcMaximized = false;
+      } else {
+        calcWindow.style.width = 'calc(95% - 32px)';
+        calcWindow.style.height = '90%';
+        calcWindow.style.left = 'calc(50% + 32px)';
+        calcWindow.style.top = '50%';
+        calcWindow.style.transform = 'translate(-50%, -50%)';
+        if (maxBtn) maxBtn.textContent = '❐';
+        isCalcMaximized = true;
+      }
+    },
+    onClose: () => {
+      if (calcWindow && document.body.contains(calcWindow)) {
+        document.body.removeChild(calcWindow);
+        calcWindow = null;
+        excelIcon?.classList.remove('active');
+      }
+    },
+  });
+
+  const topBar = createTitleBar('LibreOffice Calc (Read-Only)', calcControls, '/res/excellogo.png');
+
+  // Toolbar with file dropdown
+  const toolbar = document.createElement('div');
+  toolbar.style.cssText = `
+    height: 40px;
+    background: #3A3A3A;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 10px;
+    border-bottom: 1px solid #1A1A1A;
+  `;
+
+  const fileDropdown = document.createElement('select');
+  fileDropdown.style.cssText = `
+    width: 35%;
+    padding: 4px 8px;
+    background: #2A2A2A;
+    color: #FFFFFF;
+    border: 1px solid #1A1A1A;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    height: 28px;
+  `;
+
+  // Prevent dropdown from closing immediately
+  fileDropdown.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+  });
+
+  fileDropdown.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  // Add default option
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.textContent = 'Select an Excel file...';
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  defaultOption.style.cssText = 'background: #2A2A2A; color: #FFFFFF;';
+  fileDropdown.appendChild(defaultOption);
+
+  // Fetch Excel files from /excel/ folder
+  async function loadExcelFiles() {
+    try {
+      // Try to fetch a manifest file that lists all Excel files
+      const response = await fetch('/excel/manifest.json');
+      if (response.ok) {
+        const manifest = await response.json();
+        manifest.files.forEach((fileName: string) => {
+          addFileOption(fileName);
+        });
+      } else {
+        // Fallback: try known file names
+        await loadFilesWithFallback();
+      }
+    } catch (error) {
+      console.log('Could not load manifest, trying fallback method');
+      await loadFilesWithFallback();
+    }
+  }
+
+  async function loadFilesWithFallback() {
+    // Try to fetch each file to see if it exists
+    const possibleFiles = [
+      'BTS SIO 2025 - E4 - Tableau de synthèse - Joao.xlsx'
+    ];
+
+    for (const fileName of possibleFiles) {
+      try {
+        const response = await fetch(`/excel/${fileName}`, { method: 'HEAD' });
+        if (response.ok) {
+          addFileOption(fileName);
+        }
+      } catch (error) {
+        // File doesn't exist, skip it
+      }
+    }
+  }
+
+  function addFileOption(fileName: string) {
+    const option = document.createElement('option');
+    option.value = `/excel/${fileName}`;
+    option.textContent = fileName;
+    option.style.cssText = 'background: #2A2A2A; color: #FFFFFF;';
+    fileDropdown.appendChild(option);
+  }
+
+  // Load files when window opens
+  loadExcelFiles();
+
+  const openButton = document.createElement('button');
+  openButton.textContent = 'Open';
+  openButton.style.cssText = `
+    padding: 4px 20px;
+    background: #4A4A4A;
+    color: #FFFFFF;
+    border: 1px solid #5A5A5A;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    height: 28px;
+  `;
+
+  openButton.addEventListener('mouseenter', () => {
+    openButton.style.background = '#5A5A5A';
+  });
+
+  openButton.addEventListener('mouseleave', () => {
+    openButton.style.background = '#4A4A4A';
+  });
+
+  // Button click handler - Load and display Excel file
+  openButton.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const selectedFile = fileDropdown.value;
+    if (selectedFile) {
+      await loadExcelFile(selectedFile);
+    }
+  });
+
+  async function loadExcelFile(filePath: string) {
+    try {
+      content.innerHTML = '<div style="color: #FFFFFF; padding: 20px;">Loading...</div>';
+
+      const response = await fetch(filePath);
+      const arrayBuffer = await response.arrayBuffer();
+
+      // @ts-ignore - XLSX is loaded via CDN
+      const workbook = XLSX.read(arrayBuffer, {
+        type: 'array',
+        cellStyles: true
+      });
+
+      // Clear content and change to white background when file is loaded
+      content.innerHTML = '';
+      content.style.background = '#FFFFFF';
+
+      workbook.SheetNames.forEach((sheetName: string) => {
+        const worksheet = workbook.Sheets[sheetName];
+
+        // Convert to HTML table with cell info
+        // @ts-ignore
+        const htmlTable = XLSX.utils.sheet_to_html(worksheet, {
+          header: '',
+          editable: false,
+          cellHTML: true
+        });
+
+        // Table wrapper takes full height - hide scrollbars but keep functionality
+        const tableWrapper = document.createElement('div');
+        tableWrapper.innerHTML = htmlTable;
+        tableWrapper.style.cssText = `
+          overflow: auto;
+          height: 100%;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        `;
+        // Hide webkit scrollbars
+        const style = document.createElement('style');
+        style.textContent = `
+          .excel-table-wrapper::-webkit-scrollbar {
+            display: none;
+          }
+        `;
+        document.head.appendChild(style);
+        tableWrapper.className = 'excel-table-wrapper';
+
+        // Extract cell styles from worksheet and apply them
+        const range = worksheet['!ref'];
+        if (range) {
+          // @ts-ignore
+          const decoded = XLSX.utils.decode_range(range);
+          for (let R = decoded.s.r; R <= decoded.e.r; ++R) {
+            for (let C = decoded.s.c; C <= decoded.e.c; ++C) {
+              // @ts-ignore
+              const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+              const cell = worksheet[cellAddress];
+
+              if (cell && cell.s && cell.s.fgColor) {
+                const color = cell.s.fgColor;
+                const rgb = color.rgb || 'FFFFFF';
+                const bgColor = `#${rgb}`;
+
+                // Find the corresponding HTML cell
+                const table = tableWrapper.querySelector('table');
+                if (table && table.rows[R]) {
+                  const htmlCell = table.rows[R].cells[C];
+                  if (htmlCell) {
+                    htmlCell.style.backgroundColor = bgColor;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // Style the table
+        const table = tableWrapper.querySelector('table');
+        if (table) {
+          table.style.cssText = `
+            border-collapse: collapse;
+            background: #FFFFFF;
+            color: #000000;
+            font-family: 'Ubuntu Sans', sans-serif;
+            font-size: 13px;
+            width: 100%;
+          `;
+
+          // Style cells and preserve background colors
+          const cells = table.querySelectorAll('td, th');
+          cells.forEach(cell => {
+            const htmlCell = cell as HTMLElement;
+            const existingBg = htmlCell.style.backgroundColor;
+
+            htmlCell.style.cssText = `
+              border: 1px solid #CCCCCC;
+              padding: 8px 10px;
+              text-align: left;
+              ${existingBg ? `background-color: ${existingBg};` : ''}
+            `;
+          });
+
+          // Style header cells
+          const headerCells = table.querySelectorAll('th');
+          headerCells.forEach(cell => {
+            const htmlCell = cell as HTMLElement;
+            if (!htmlCell.style.backgroundColor) {
+              htmlCell.style.backgroundColor = '#F0F0F0';
+            }
+            htmlCell.style.fontWeight = 'bold';
+          });
+        }
+
+        content.appendChild(tableWrapper);
+      });
+
+    } catch (error) {
+      content.innerHTML = `<div style="color: #FF6B6B; padding: 20px;">Error loading file: ${error}</div>`;
+      console.error('Error loading Excel file:', error);
+    }
+  }
+
+  // Prevent toolbar from triggering window drag
+  openButton.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+  });
+
+  toolbar.appendChild(fileDropdown);
+  toolbar.appendChild(openButton);
+
+  // Main content area - starts dark, turns white when file is loaded
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    background: #2A2A2A;
+    border-radius: 0 0 6px 6px;
+    padding: 0;
+    overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  `;
+  content.className = 'calc-content-area';
+
+  makeDraggable(calcWindow, topBar, () => isCalcMaximized);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = calcControls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
+  });
+
+  calcWindow.appendChild(topBar);
+  calcWindow.appendChild(toolbar);
+  calcWindow.appendChild(content);
+  document.body.appendChild(calcWindow);
+}
+
+
 // Desktop context menu functionality
-let currentBackgroundIndex = 0;
+// Load saved background from localStorage or default to 0
+let currentBackgroundIndex = parseInt(localStorage.getItem('currentBackgroundIndex') || '0', 10);
 const backgrounds = ['ubuntu.jpg', 'ubuntu2.jpg'];
 const contextMenu = document.getElementById('desktop-context-menu');
 const changeBackgroundBtn = document.getElementById('change-background-btn');
+
+// Apply saved background on load
+const savedBackground = backgrounds[currentBackgroundIndex];
+document.documentElement.style.backgroundImage = `url('/res/${savedBackground}')`;
+document.body.style.backgroundImage = `url('/res/${savedBackground}')`;
 
 // Show context menu on right-click
 document.addEventListener('contextmenu', (e: MouseEvent) => {
@@ -2142,6 +2355,9 @@ if (changeBackgroundBtn) {
     // Update background for both html and body
     document.documentElement.style.backgroundImage = `url('/res/${newBackground}')`;
     document.body.style.backgroundImage = `url('/res/${newBackground}')`;
+
+    // Save the current background index to localStorage
+    localStorage.setItem('currentBackgroundIndex', currentBackgroundIndex.toString());
 
     if (contextMenu) {
       contextMenu.style.display = 'none';
