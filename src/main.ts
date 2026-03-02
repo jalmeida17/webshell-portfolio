@@ -4,7 +4,6 @@ import { createBanner } from "./commands/banner";
 import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
 import { PROJECTS as PROJECTS_DATA, PROJECT_DETAILS, ProjectData } from "./commands/projects";
-import { SKILLS } from "./commands/skills";
 import { runBootSequence } from "./boot";
 import { VEILLE_SOURCES, VEILLE_SYNTHESES, VEILLE_METHODOLOGY } from "./commands/veille";
 
@@ -22,7 +21,6 @@ const HELP = createHelp();
 const BANNER = createBanner();
 const ABOUT = createAbout();
 const DEFAULT = createDefault();
-const SKILLS_DATA = SKILLS;
 
 //WRITELINESCOPY is used to during the "clear" command
 const WRITELINESCOPY = mutWriteLines;
@@ -766,82 +764,326 @@ function makeDraggable(windowEl: HTMLElement, titleBar: HTMLElement, isMaximized
 
 // ─── End Helpers ───
 
-function openSkillsWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+// ═══════ SKILLS APP ═══════
+let skillsWindow: HTMLDivElement | null = null;
 
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
+function openSkillsWindow() {
+  if (skillsWindow && document.body.contains(skillsWindow)) {
+    bringToFront(skillsWindow);
+    return;
+  }
+
+  skillsWindow = document.createElement('div');
   windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 40%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
+  skillsWindow.style.cssText = `
+    position: fixed;
+    width: 800px;
+    height: 700px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
   `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
+  skillsWindow.addEventListener('mousedown', () => bringToFront(skillsWindow!));
 
   let isWinMax = false;
   const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMinimize: () => { if (skillsWindow) skillsWindow.style.display = 'none'; },
     onMaximize: () => {
+      if (!skillsWindow) return;
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        skillsWindow.style.width = '800px';
+        skillsWindow.style.height = '700px';
+        skillsWindow.style.left = '50%';
+        skillsWindow.style.top = '50%';
+        skillsWindow.style.transform = 'translate(-50%, -50%)';
+        skillsWindow.style.borderRadius = '6px';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(100% - 64px)';
-        newTerminal.style.height = 'calc(100% - 28px)';
-        newTerminal.style.left = '64px';
-        newTerminal.style.right = '0';
-        newTerminal.style.top = '28px';
-        newTerminal.style.transform = 'none';
-        newTerminal.style.borderRadius = '0';
+        skillsWindow.style.width = 'calc(100% - 64px)';
+        skillsWindow.style.height = 'calc(100% - 28px)';
+        skillsWindow.style.left = '64px';
+        skillsWindow.style.top = '28px';
+        skillsWindow.style.transform = 'none';
+        skillsWindow.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
-    onClose: () => document.body.removeChild(newTerminal),
+    onClose: () => {
+      if (skillsWindow && document.body.contains(skillsWindow)) {
+        document.body.removeChild(skillsWindow);
+        skillsWindow = null;
+      }
+    },
   });
 
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/skills', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
+  const topBar = createTitleBar('Skills', controls);
+  makeDraggable(skillsWindow, topBar, () => isWinMax);
   topBar.addEventListener('dblclick', () => {
     const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
     if (maxBtn) maxBtn.click();
   });
 
+  // Content area
   const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
+  `;
 
-  let skillsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/skills</p>`;
-  SKILLS_DATA.forEach((line) => {
-    skillsHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-  });
-  content.innerHTML = skillsHTML;
+  // === Identity section ===
+  const identity = document.createElement('div');
+  identity.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 32px 28px;
+    gap: 12px;
+  `;
 
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
-  terminalInput.placeholder = 'Press Enter to close...';
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
+  const iconWrap = document.createElement('div');
+  iconWrap.style.cssText = `
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #D97706, #F59E0B);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255,255,255,0.06);
+  `;
+  const skillsIconEl = document.createElement('i');
+  skillsIconEl.className = 'fa-solid fa-star';
+  skillsIconEl.style.cssText = 'font-size: 42px; color: #FFFFFF;';
+  iconWrap.appendChild(skillsIconEl);
 
-  const skillsKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', skillsKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', skillsKeydownHandler);
+  const idName = document.createElement('div');
+  idName.textContent = 'Skills';
+  idName.style.cssText = 'font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
 
-  content.appendChild(terminalInput);
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-  setTimeout(() => terminalInput.focus(), 100);
+  const idTag = document.createElement('div');
+  idTag.textContent = 'Technical & Soft Skills';
+  idTag.style.cssText = 'font-size: 13px; color: #999999; font-weight: 400;';
+
+  identity.appendChild(iconWrap);
+  identity.appendChild(idName);
+  identity.appendChild(idTag);
+
+  // === List area ===
+  const listArea = document.createElement('div');
+  listArea.style.cssText = 'padding: 0 28px 28px; display: flex; flex-direction: column; gap: 20px;';
+
+  // Helper: GNOME-style listbox group with pill badges
+  function createSkillGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px; height: 32px; border-radius: 8px;
+        background: ${row.iconColor};
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  // Helper: progress bar row
+  function createLangGroup(label: string, langs: { flag: string; name: string; pct: number }[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+    langs.forEach((lang, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < langs.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const flag = document.createElement('div');
+      flag.textContent = lang.flag;
+      flag.style.cssText = 'font-size: 22px; flex-shrink: 0; width: 32px; text-align: center;';
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+
+      const nameRow = document.createElement('div');
+      nameRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;';
+      const nameText = document.createElement('div');
+      nameText.textContent = lang.name;
+      nameText.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500;';
+      const pctText = document.createElement('div');
+      pctText.textContent = lang.pct + '%';
+      pctText.style.cssText = 'font-size: 11px; color: #F59E0B; font-weight: 600;';
+      nameRow.appendChild(nameText);
+      nameRow.appendChild(pctText);
+
+      const barBg = document.createElement('div');
+      barBg.style.cssText = 'height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;';
+      const barFill = document.createElement('div');
+      barFill.style.cssText = `height: 100%; width: ${lang.pct}%; background: linear-gradient(90deg, #D97706, #F59E0B); border-radius: 2px; transition: width 0.6s ease;`;
+      barBg.appendChild(barFill);
+
+      textWrap.appendChild(nameRow);
+      textWrap.appendChild(barBg);
+
+      rowEl.appendChild(flag);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  // --- Programming Languages ---
+  listArea.appendChild(createSkillGroup('Programming Languages', [
+    { icon: 'fa-brands fa-js', iconColor: '#F7DF1E', text: 'JavaScript', detail: 'ES6+, DOM, async/await' },
+    { icon: 'fa-brands fa-js', iconColor: '#3178C6', text: 'TypeScript', detail: 'Typed JavaScript' },
+    { icon: 'fa-solid fa-hashtag', iconColor: '#512BD4', text: 'C#', detail: '.NET ecosystem' },
+    { icon: 'fa-brands fa-python', iconColor: '#3776AB', text: 'Python', detail: 'Scripting & automation' },
+    { icon: 'fa-brands fa-html5', iconColor: '#E34F26', text: 'HTML5', detail: 'Semantic markup' },
+    { icon: 'fa-brands fa-css3-alt', iconColor: '#1572B6', text: 'CSS3', detail: 'Styling & animations' },
+  ]));
+
+  // --- Frameworks & Libraries ---
+  listArea.appendChild(createSkillGroup('Frameworks & Libraries', [
+    { icon: 'fa-brands fa-react', iconColor: '#61DAFB', text: 'React.js', detail: 'Component-based UI' },
+    { icon: 'fa-brands fa-react', iconColor: '#000000', text: 'Next.js', detail: 'React framework' },
+    { icon: 'fa-brands fa-angular', iconColor: '#DD0031', text: 'Angular', detail: 'Enterprise frontend' },
+    { icon: 'fa-brands fa-node-js', iconColor: '#339933', text: 'Node.js', detail: 'Server-side JS' },
+    { icon: 'fa-solid fa-code', iconColor: '#512BD4', text: '.NET / ASP.NET', detail: 'Backend framework' },
+    { icon: 'fa-solid fa-layer-group', iconColor: '#DD0031', text: 'PrimeNG', detail: 'Angular UI library' },
+    { icon: 'fa-solid fa-database', iconColor: '#3ECF8E', text: 'Supabase', detail: 'Backend as a service' },
+  ]));
+
+  // --- Databases ---
+  listArea.appendChild(createSkillGroup('Databases', [
+    { icon: 'fa-solid fa-database', iconColor: '#003545', text: 'MariaDB', detail: 'Relational database' },
+    { icon: 'fa-solid fa-leaf', iconColor: '#47A248', text: 'MongoDB', detail: 'NoSQL document store' },
+    { icon: 'fa-solid fa-database', iconColor: '#336791', text: 'SQL', detail: 'Query language' },
+  ]));
+
+  // --- Cloud & DevOps ---
+  listArea.appendChild(createSkillGroup('Cloud & DevOps', [
+    { icon: 'fa-brands fa-git-alt', iconColor: '#F05032', text: 'Git', detail: 'Version control' },
+    { icon: 'fa-brands fa-github', iconColor: '#6E40C9', text: 'GitHub', detail: 'Code hosting & CI' },
+    { icon: 'fa-brands fa-aws', iconColor: '#FF9900', text: 'AWS', detail: 'Cloud services' },
+    { icon: 'fa-brands fa-microsoft', iconColor: '#0078D4', text: 'Azure', detail: 'Microsoft cloud' },
+    { icon: 'fa-solid fa-bolt', iconColor: '#0066FF', text: 'Power Automate', detail: 'Workflow automation' },
+    { icon: 'fa-brands fa-windows', iconColor: '#0078D4', text: 'Power BI', detail: 'Data visualization' },
+    { icon: 'fa-solid fa-infinity', iconColor: '#0891B2', text: 'DevOps', detail: 'CI/CD pipelines' },
+    { icon: 'fa-solid fa-cloud', iconColor: '#000000', text: 'Vercel', detail: 'Deployment platform' },
+  ]));
+
+  // --- Other Tools ---
+  listArea.appendChild(createSkillGroup('Other Tools & Technologies', [
+    { icon: 'fa-brands fa-google', iconColor: '#4285F4', text: 'Google Workspace', detail: 'Docs, Sheets, Drive' },
+    { icon: 'fa-solid fa-robot', iconColor: '#7C3AED', text: 'Generative AI', detail: 'LLMs, prompt engineering' },
+    { icon: 'fa-solid fa-film', iconColor: '#DC2626', text: 'Video Editing', detail: 'Content production' },
+    { icon: 'fa-brands fa-youtube', iconColor: '#FF0000', text: 'Content Creation', detail: 'YouTube, social media' },
+    { icon: 'fa-solid fa-laptop', iconColor: '#6B7280', text: 'Hardware', detail: 'PC building & repair' },
+    { icon: 'fa-solid fa-microchip', iconColor: '#059669', text: 'BIOS', detail: 'Firmware configuration' },
+    { icon: 'fa-solid fa-palette', iconColor: '#00C4CC', text: 'Canva', detail: 'Graphic design' },
+  ]));
+
+  // --- Separator ---
+  const sep = document.createElement('div');
+  sep.style.cssText = 'height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0;';
+  listArea.appendChild(sep);
+
+  // --- Soft Skills ---
+  listArea.appendChild(createSkillGroup('Soft Skills', [
+    { icon: 'fa-solid fa-users', iconColor: '#0891B2', text: 'Team Working', detail: 'Collaborative mindset' },
+    { icon: 'fa-solid fa-medal', iconColor: '#D97706', text: 'Disciplined', detail: 'Consistent & focused' },
+    { icon: 'fa-solid fa-clock', iconColor: '#7C3AED', text: 'Patient', detail: 'Methodical approach' },
+    { icon: 'fa-solid fa-smile', iconColor: '#059669', text: 'Easygoing', detail: 'Friendly & approachable' },
+  ]));
+
+  // --- Separator ---
+  const sep2 = document.createElement('div');
+  sep2.style.cssText = 'height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0;';
+  listArea.appendChild(sep2);
+
+  // --- Languages ---
+  listArea.appendChild(createLangGroup('Languages', [
+    { flag: '\uD83C\uDDEC\uD83C\uDDE7', name: 'English', pct: 95 },
+    { flag: '\uD83C\uDDEB\uD83C\uDDF7', name: 'French', pct: 90 },
+    { flag: '\uD83C\uDDF5\uD83C\uDDF9', name: 'Portuguese', pct: 85 },
+    { flag: '\uD83C\uDDEA\uD83C\uDDF8', name: 'Spanish', pct: 70 },
+  ]));
+
+  content.appendChild(identity);
+  content.appendChild(listArea);
+
+  skillsWindow.appendChild(topBar);
+  skillsWindow.appendChild(content);
+  document.body.appendChild(skillsWindow);
 }
 
 function openProjectDetailWindow(project: ProjectData) {
@@ -2948,6 +3190,7 @@ const APP_GRID_ITEMS = [
   { name: 'Clauger',          icon: '/res/logoclauger.png',               action: 'clauger' },
   { name: 'Tech Watch',       icon: '/res/veille-icon.svg',               action: 'veille' },
   { name: 'Resume',           icon: '/res/resume-icon.svg',               action: 'resume' },
+  { name: 'Skills',           icon: '/res/skills-icon.svg',               action: 'skills' },
 ];
 
 const showApplicationsBtn = document.getElementById('show-applications');
@@ -3090,6 +3333,9 @@ function executeAppAction(action: string) {
       break;
     case 'resume':
       openResumeWindow();
+      break;
+    case 'skills':
+      openSkillsWindow();
       break;
     case 'noop':
       break;
