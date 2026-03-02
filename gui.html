@@ -26,7 +26,7 @@
         <li><a href="#career">Career</a></li>
         <li><a href="#projects">Projects</a></li>
         <li><a href="#skills">Skills</a></li>
-        <li><a href="#news">News</a></li>
+        <li><a href="#veille">Tech Watch</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
       <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
@@ -245,7 +245,7 @@
             <h3>WebShell Portfolio</h3>
             <span class="project-year">2025</span>
           </div>
-          <p class="project-desc">The Ubuntu terminal portfolio you're looking at! Interactive CLI, multi-window system, RSS news, desktop simulation with easter eggs.</p>
+          <p class="project-desc">The Ubuntu terminal portfolio you're looking at! Interactive CLI, multi-window system, tech watch, desktop simulation with easter eggs.</p>
           <div class="project-bottom">
             <div class="tech-tags">
               <span class="tech-tag">TypeScript</span>
@@ -348,16 +348,126 @@
     </div>
   </section>
 
-  <!-- News -->
-  <section id="news" class="section">
+  <!-- Tech Watch (Veille) -->
+  <section id="veille" class="section">
     <div class="container">
-      <h2 class="section-title reveal">Headlines</h2>
-      <div id="news-content" class="news-grid">
-        <div class="news-loading">
-          <i class="fa-solid fa-spinner fa-spin"></i>
-          <p>Loading latest news...</p>
+      <h2 class="section-title reveal">Tech Watch</h2>
+
+      <!-- Methodology -->
+      <div class="veille-methodology reveal">
+        <div class="veille-method-item">
+          <i class="fa-solid fa-brain" style="color:#7C3AED"></i>
+          <div><strong>Subject</strong><span>Artificial Intelligence &amp; Machine Learning</span></div>
+        </div>
+        <div class="veille-method-item">
+          <i class="fa-solid fa-magnifying-glass" style="color:#6366F1"></i>
+          <div><strong>Objective</strong><span>Tracking advances in AI/ML: new models, frameworks, industrial applications and regulatory landscape.</span></div>
+        </div>
+        <div class="veille-method-item">
+          <i class="fa-solid fa-clock" style="color:#0891B2"></i>
+          <div><strong>Frequency</strong><span>Daily to weekly</span></div>
+        </div>
+        <div class="veille-method-item">
+          <i class="fa-solid fa-screwdriver-wrench" style="color:#059669"></i>
+          <div><strong>Tools</strong><span>Newsletters, YouTube, Reddit, GitHub</span></div>
         </div>
       </div>
+
+      <!-- Sources -->
+      <h3 class="veille-subtitle reveal">Sources</h3>
+      <div class="veille-sources reveal">
+        <div class="veille-source-card">
+          <i class="fa-brands fa-youtube" style="color:#FF0000"></i>
+          <strong>YouTube</strong>
+          <span>Fireship, Two Minute Papers, Yannic Kilcher</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-brands fa-reddit-alien" style="color:#FF4500"></i>
+          <strong>Reddit</strong>
+          <span>r/MachineLearning, r/artificial, r/LocalLLaMA</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-brands fa-github" style="color:#6E40C9"></i>
+          <strong>GitHub</strong>
+          <span>Trending repos, Hugging Face, Papers with Code</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-brands fa-x-twitter" style="color:#1DA1F2"></i>
+          <strong>Twitter / X</strong>
+          <span>@AndrewYNg, @ylecun, @OpenAI, @AnthropicAI</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-solid fa-envelope" style="color:#10B981"></i>
+          <strong>TLDR AI</strong>
+          <span>Daily AI digest delivered by email</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-solid fa-code" style="color:#3B82F6"></i>
+          <strong>TLDR Dev</strong>
+          <span>Daily dev &amp; tech news roundup</span>
+        </div>
+      </div>
+
+      <!-- Syntheses -->
+      <h3 class="veille-subtitle reveal">Syntheses</h3>
+      <div class="veille-syntheses reveal">
+        <div class="veille-synth-card" data-synth="open-source-models">
+          <div class="veille-synth-header">
+            <h4>The Rise of Open-Source Models</h4>
+            <span class="veille-synth-meta">Oct 2025 &middot; GitHub / Hugging Face</span>
+          </div>
+          <p class="veille-synth-summary">LLaMA, Mistral, Gemma: how open-source is reshaping the AI landscape.</p>
+          <div class="veille-synth-detail">
+            <p>In 2025, open-source language models reached performance levels that rival proprietary solutions. Meta with LLaMA 3, Mistral AI with its Mixtral models, and Google with Gemma have significantly closed the quality gap with GPT-4 and Claude.</p>
+            <p>The Hugging Face ecosystem plays a central role in this democratization. With over 500,000 hosted models, the platform enables developers to fine-tune and deploy models tailored to their specific needs without relying on expensive proprietary APIs.</p>
+            <p>This trend has a direct impact on software development: companies can now integrate AI capabilities into their products while retaining control over their data and reducing infrastructure costs.</p>
+          </div>
+          <a href="https://huggingface.co/blog" target="_blank" rel="noopener noreferrer" class="veille-synth-link">Read more <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+
+        <div class="veille-synth-card" data-synth="ai-agents">
+          <div class="veille-synth-header">
+            <h4>Autonomous AI Agents</h4>
+            <span class="veille-synth-meta">Nov 2025 &middot; TLDR AI / Twitter</span>
+          </div>
+          <p class="veille-synth-summary">Claude Code, Copilot, Devin: the emergence of agents that can code autonomously.</p>
+          <div class="veille-synth-detail">
+            <p>Autonomous AI agents represent a major evolution from simple chat assistants. Unlike a classic LLM that answers a question, an agent can plan, execute actions, use tools, and iterate on its results to accomplish complex tasks.</p>
+            <p>Anthropic's Claude Code illustrates this trend well: it can navigate a codebase, modify files, run tests, and fix bugs autonomously. GitHub Copilot is evolving in the same direction with its agent mode, while Cognition AI's Devin positions itself as a complete 'AI software engineer'.</p>
+            <p>The ReAct (Reasoning + Acting) pattern is at the heart of these systems: the agent reasons about the task, chooses an action, observes the result, then adjusts its strategy.</p>
+          </div>
+          <a href="https://www.anthropic.com/claude-code" target="_blank" rel="noopener noreferrer" class="veille-synth-link">Read more <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+
+        <div class="veille-synth-card" data-synth="predictive-maintenance">
+          <div class="veille-synth-header">
+            <h4>AI in Industry: Predictive Maintenance</h4>
+            <span class="veille-synth-meta">Dec 2025 &middot; Reddit / YouTube</span>
+          </div>
+          <p class="veille-synth-summary">IoT + ML to anticipate industrial failures — directly tied to my experience at Clauger.</p>
+          <div class="veille-synth-detail">
+            <p>Predictive maintenance combines IoT sensors and machine learning algorithms to anticipate industrial equipment failures before they occur. In the industrial refrigeration sector, where I work at Clauger, this approach is particularly relevant.</p>
+            <p>Compressors, heat exchangers, and refrigeration systems continuously generate temperature, pressure, and vibration data. ML models analyze these streams to detect abnormal patterns and predict failures days in advance.</p>
+            <p>The economic impact is considerable: reducing unplanned downtime by 30 to 50%, extending equipment lifespan, and optimizing maintenance interventions.</p>
+          </div>
+          <a href="https://www.ibm.com/topics/predictive-maintenance" target="_blank" rel="noopener noreferrer" class="veille-synth-link">Read more <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+
+        <div class="veille-synth-card" data-synth="ai-act">
+          <div class="veille-synth-header">
+            <h4>AI Regulation in Europe: The AI Act</h4>
+            <span class="veille-synth-meta">Jan 2026 &middot; TLDR Dev / Twitter</span>
+          </div>
+          <p class="veille-synth-summary">The European legal framework for AI takes effect — implications for developers.</p>
+          <div class="veille-synth-detail">
+            <p>The European AI Act, progressively coming into force since 2024, establishes the world's first comprehensive legal framework for artificial intelligence. Based on a risk-level approach, it classifies AI systems into four categories: unacceptable risk (banned), high risk, limited risk, and minimal risk.</p>
+            <p>For developers, the implications are concrete: high-risk AI systems must meet strict requirements for transparency, technical documentation, training data quality, and human oversight.</p>
+            <p>Foundation models (GPT, Claude, LLaMA) are subject to specific transparency obligations: documentation of capabilities, copyright compliance in training data, and labeling of AI-generated content.</p>
+          </div>
+          <a href="https://artificialintelligenceact.eu/" target="_blank" rel="noopener noreferrer" class="veille-synth-link">Read more <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+      </div>
+
     </div>
   </section>
 

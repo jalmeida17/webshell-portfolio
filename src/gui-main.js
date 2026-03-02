@@ -99,95 +99,10 @@ document.querySelectorAll('.reveal').forEach(el => {
   revealObserver.observe(el);
 });
 
-// Fetch and display news using safe DOM construction
-async function fetchNews() {
-  const newsContent = document.getElementById('news-content');
-  if (!newsContent) return;
-
-  const feeds = [
-    { category: 'Development', icon: 'fa-solid fa-code', url: 'https://github.blog/feed/' },
-    { category: 'Tech', icon: 'fa-solid fa-microchip', url: 'https://techcrunch.com/feed/' },
-    { category: 'Science', icon: 'fa-solid fa-flask', url: 'https://www.sciencealert.com/rss' },
-    { category: 'AI', icon: 'fa-solid fa-robot', url: 'https://venturebeat.com/feed/' },
-    { category: 'Design', icon: 'fa-solid fa-palette', url: 'https://www.smashingmagazine.com/feed/' }
-  ];
-
-  try {
-    // Clear loading state
-    newsContent.textContent = '';
-
-    for (const feed of feeds) {
-      const categoryDiv = document.createElement('div');
-      categoryDiv.className = 'news-category reveal';
-
-      const titleH3 = document.createElement('h3');
-      titleH3.className = 'news-category-title';
-      const titleIcon = document.createElement('i');
-      titleIcon.className = feed.icon;
-      titleH3.appendChild(titleIcon);
-      titleH3.appendChild(document.createTextNode(' ' + feed.category));
-      categoryDiv.appendChild(titleH3);
-
-      try {
-        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=5`);
-        const data = await response.json();
-
-        if (data.status === 'ok' && data.items && data.items.length > 0) {
-          data.items.forEach(item => {
-            const newsItem = document.createElement('div');
-            newsItem.className = 'news-item';
-
-            const titleDiv = document.createElement('div');
-            titleDiv.className = 'news-item-title';
-            const titleLink = document.createElement('a');
-            titleLink.href = item.link;
-            titleLink.target = '_blank';
-            titleLink.rel = 'noopener noreferrer';
-            const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
-            titleLink.textContent = title;
-            titleDiv.appendChild(titleLink);
-            newsItem.appendChild(titleDiv);
-
-            if (item.description) {
-              const tempDiv = document.createElement('div');
-              tempDiv.textContent = item.description.replace(/<[^>]*>/g, '');
-              const textContent = tempDiv.textContent || '';
-              const description = textContent.length > 120 ? textContent.substring(0, 120) + '...' : textContent;
-              if (description) {
-                const descP = document.createElement('p');
-                descP.className = 'news-item-description';
-                descP.textContent = description;
-                newsItem.appendChild(descP);
-              }
-            }
-
-            categoryDiv.appendChild(newsItem);
-          });
-        } else {
-          const errorP = document.createElement('p');
-          errorP.style.color = 'var(--clr-text-tertiary)';
-          errorP.textContent = 'Unable to fetch news from this source.';
-          categoryDiv.appendChild(errorP);
-        }
-      } catch (err) {
-        const errorP = document.createElement('p');
-        errorP.style.color = 'var(--clr-text-tertiary)';
-        errorP.textContent = 'Failed to load news.';
-        categoryDiv.appendChild(errorP);
-      }
-
-      newsContent.appendChild(categoryDiv);
-      revealObserver.observe(categoryDiv);
-    }
-
-  } catch (error) {
-    newsContent.textContent = '';
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'news-error';
-    errorDiv.textContent = 'Failed to fetch news feeds. Please try again later.';
-    newsContent.appendChild(errorDiv);
-  }
-}
-
-// Load news when page loads
-window.addEventListener('load', fetchNews);
+// Veille syntheses — expand/collapse detail on click
+document.querySelectorAll('.veille-synth-card').forEach(card => {
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('a')) return; // don't toggle when clicking links
+    card.classList.toggle('expanded');
+  });
+});
