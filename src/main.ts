@@ -491,8 +491,8 @@ const initEventListeners = () => {
 
   window.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
-    // Don't focus main input if clicking on a new terminal
-    if (target.closest('.new-terminal')) return;
+    // Don't focus main input if clicking on a new terminal or app grid overlay
+    if (target.closest('.new-terminal') || target.closest('#app-grid-overlay')) return;
     USERINPUT.focus();
   });
 
@@ -633,6 +633,48 @@ function bringToFront(element: HTMLElement) {
 
 // ─── Window Management Helpers ───
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function createSvgIcon(type: 'minimize' | 'maximize' | 'maximize-restore' | 'close'): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 12 12');
+
+  if (type === 'minimize') {
+    const line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', '2'); line.setAttribute('y1', '6');
+    line.setAttribute('x2', '10'); line.setAttribute('y2', '6');
+    svg.appendChild(line);
+  } else if (type === 'maximize') {
+    const rect = document.createElementNS(SVG_NS, 'rect');
+    rect.setAttribute('x', '2'); rect.setAttribute('y', '2');
+    rect.setAttribute('width', '8'); rect.setAttribute('height', '8');
+    rect.setAttribute('rx', '1');
+    svg.appendChild(rect);
+  } else if (type === 'maximize-restore') {
+    const back = document.createElementNS(SVG_NS, 'rect');
+    back.setAttribute('x', '3.5'); back.setAttribute('y', '1');
+    back.setAttribute('width', '7.5'); back.setAttribute('height', '7.5');
+    back.setAttribute('rx', '1');
+    svg.appendChild(back);
+    const front = document.createElementNS(SVG_NS, 'rect');
+    front.setAttribute('x', '1'); front.setAttribute('y', '3.5');
+    front.setAttribute('width', '7.5'); front.setAttribute('height', '7.5');
+    front.setAttribute('rx', '1');
+    svg.appendChild(front);
+  } else if (type === 'close') {
+    const l1 = document.createElementNS(SVG_NS, 'line');
+    l1.setAttribute('x1', '3'); l1.setAttribute('y1', '3');
+    l1.setAttribute('x2', '9'); l1.setAttribute('y2', '9');
+    svg.appendChild(l1);
+    const l2 = document.createElementNS(SVG_NS, 'line');
+    l2.setAttribute('x1', '9'); l2.setAttribute('y1', '3');
+    l2.setAttribute('x2', '3'); l2.setAttribute('y2', '9');
+    svg.appendChild(l2);
+  }
+
+  return svg;
+}
+
 function createWindowControls(options: {
   onMinimize?: () => void;
   onMaximize?: () => void;
@@ -644,7 +686,7 @@ function createWindowControls(options: {
   if (options.onMinimize) {
     const minBtn = document.createElement('button');
     minBtn.className = 'window-btn';
-    minBtn.textContent = '─';
+    minBtn.appendChild(createSvgIcon('minimize'));
     minBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onMinimize!(); });
     container.appendChild(minBtn);
   }
@@ -652,14 +694,14 @@ function createWindowControls(options: {
   if (options.onMaximize) {
     const maxBtn = document.createElement('button');
     maxBtn.className = 'window-btn window-btn-maximize';
-    maxBtn.textContent = '□';
+    maxBtn.appendChild(createSvgIcon('maximize'));
     maxBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onMaximize!(); });
     container.appendChild(maxBtn);
   }
 
   const closeBtn = document.createElement('button');
   closeBtn.className = 'window-btn window-btn-close';
-  closeBtn.textContent = '✕';
+  closeBtn.appendChild(createSvgIcon('close'));
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onClose(); });
   container.appendChild(closeBtn);
 
@@ -751,7 +793,7 @@ function openCareerWindow() {
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
         newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
         newTerminal.style.width = 'calc(95% - 32px)';
@@ -760,7 +802,7 @@ function openCareerWindow() {
         newTerminal.style.right = 'auto';
         newTerminal.style.top = '50%';
         newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
@@ -828,7 +870,7 @@ function openEducationWindow() {
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
         newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
         newTerminal.style.width = 'calc(95% - 32px)';
@@ -837,7 +879,7 @@ function openEducationWindow() {
         newTerminal.style.right = 'auto';
         newTerminal.style.top = '50%';
         newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
@@ -905,7 +947,7 @@ function openSkillsWindow() {
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
         newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
         newTerminal.style.width = 'calc(95% - 32px)';
@@ -914,7 +956,7 @@ function openSkillsWindow() {
         newTerminal.style.right = 'auto';
         newTerminal.style.top = '50%';
         newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
@@ -982,7 +1024,7 @@ function openProjectDetailWindow(project: ProjectData) {
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
         newTerminal.style.cssText = `position: fixed; width: 50%; height: 75%; ${position}: 5%; top: 12%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
         newTerminal.style.width = 'calc(95% - 32px)';
@@ -991,7 +1033,7 @@ function openProjectDetailWindow(project: ProjectData) {
         newTerminal.style.right = 'auto';
         newTerminal.style.top = '50%';
         newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
@@ -1078,7 +1120,7 @@ async function openNewsWindow() {
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
         newTerminal.style.cssText = `position: fixed; width: 55%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
         newTerminal.style.width = 'calc(95% - 32px)';
@@ -1087,7 +1129,7 @@ async function openNewsWindow() {
         newTerminal.style.right = 'auto';
         newTerminal.style.top = '50%';
         newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
@@ -1246,7 +1288,7 @@ function openAboutWindow() {
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
         newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; right: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
         newTerminal.style.width = 'calc(95% - 32px)';
@@ -1255,7 +1297,7 @@ function openAboutWindow() {
         newTerminal.style.right = 'auto';
         newTerminal.style.top = '50%';
         newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
@@ -1383,7 +1425,7 @@ function openClaugerWindow() {
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
         newTerminal.style.cssText = `position: fixed; width: 50%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
         newTerminal.style.width = 'calc(95% - 32px)';
@@ -1392,7 +1434,7 @@ function openClaugerWindow() {
         newTerminal.style.right = 'auto';
         newTerminal.style.top = '50%';
         newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
@@ -1536,7 +1578,7 @@ if (maximizeButton && mainElement) {
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
-      maximizeButton.textContent = "□";
+      maximizeButton.replaceChildren(createSvgIcon('maximize'));
       isMaximized = false;
     } else {
       mainElement.style.width = "95%";
@@ -1548,7 +1590,7 @@ if (maximizeButton && mainElement) {
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
-      maximizeButton.textContent = "❐";
+      maximizeButton.replaceChildren(createSvgIcon('maximize-restore'));
       isMaximized = true;
     }
   });
@@ -2006,7 +2048,7 @@ function openCalcWindow() {
         calcWindow.style.left = '50%';
         calcWindow.style.top = '50%';
         calcWindow.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '□';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isCalcMaximized = false;
       } else {
         calcWindow.style.width = 'calc(95% - 32px)';
@@ -2014,7 +2056,7 @@ function openCalcWindow() {
         calcWindow.style.left = 'calc(50% + 32px)';
         calcWindow.style.top = '50%';
         calcWindow.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isCalcMaximized = true;
       }
     },
@@ -2312,55 +2354,159 @@ function openCalcWindow() {
 }
 
 
-// Desktop context menu functionality
-// Load saved background from localStorage or default to 0
-let currentBackgroundIndex = parseInt(localStorage.getItem('currentBackgroundIndex') || '0', 10);
-const backgrounds = ['ubuntu.jpg', 'ubuntu2.jpg'];
-const contextMenu = document.getElementById('desktop-context-menu');
-const changeBackgroundBtn = document.getElementById('change-background-btn');
+// Set wallpaper
+document.documentElement.style.backgroundImage = `url('/res/ubuntu2.jpg')`;
+document.body.style.backgroundImage = `url('/res/ubuntu2.jpg')`;
 
-// Apply saved background on load
-const savedBackground = backgrounds[currentBackgroundIndex];
-document.documentElement.style.backgroundImage = `url('/res/${savedBackground}')`;
-document.body.style.backgroundImage = `url('/res/${savedBackground}')`;
+// ========== Show Applications Overlay ==========
 
-// Show context menu on right-click
-document.addEventListener('contextmenu', (e: MouseEvent) => {
-  // Only show context menu if clicking on the body/desktop area
-  const target = e.target as HTMLElement;
-  if (target === document.body || target.id === 'desktop-topbar' || target.id === 'desktop-clock') {
-    e.preventDefault();
+const APP_GRID_ITEMS = [
+  { name: 'Terminal',          icon: '/res/terminal-app.png',              action: 'terminal' },
+  { name: 'Rhythmbox',        icon: '/res/Rhythmbox_logo_3.4.4.svg.png', action: 'music' },
+  { name: 'LibreOffice Calc', icon: '/res/excellogo.png',                 action: 'calc' },
+  { name: 'Clauger',          icon: '/res/logoclauger.png',               action: 'clauger' },
+];
 
-    if (contextMenu) {
-      contextMenu.style.display = 'block';
-      contextMenu.style.left = `${e.clientX}px`;
-      contextMenu.style.top = `${e.clientY}px`;
-    }
+const showApplicationsBtn = document.getElementById('show-applications');
+let appGridOverlay: HTMLDivElement | null = null;
+
+function appGridKeyHandler(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    closeShowApplications();
   }
-});
+}
 
-// Hide context menu on click outside
-document.addEventListener('click', (e: MouseEvent) => {
-  if (contextMenu && e.target !== changeBackgroundBtn) {
-    contextMenu.style.display = 'none';
+function toggleShowApplications() {
+  if (appGridOverlay && document.body.contains(appGridOverlay)) {
+    closeShowApplications();
+  } else {
+    openShowApplications();
   }
-});
+}
 
-// Change background on menu item click
-if (changeBackgroundBtn) {
-  changeBackgroundBtn.addEventListener('click', () => {
-    currentBackgroundIndex = (currentBackgroundIndex + 1) % backgrounds.length;
-    const newBackground = backgrounds[currentBackgroundIndex];
+function openShowApplications() {
+  if (appGridOverlay && document.body.contains(appGridOverlay)) return;
 
-    // Update background for both html and body
-    document.documentElement.style.backgroundImage = `url('/res/${newBackground}')`;
-    document.body.style.backgroundImage = `url('/res/${newBackground}')`;
+  appGridOverlay = document.createElement('div');
+  appGridOverlay.id = 'app-grid-overlay';
 
-    // Save the current background index to localStorage
-    localStorage.setItem('currentBackgroundIndex', currentBackgroundIndex.toString());
-
-    if (contextMenu) {
-      contextMenu.style.display = 'none';
-    }
+  // Search bar
+  const searchBar = document.createElement('input');
+  searchBar.type = 'text';
+  searchBar.className = 'app-grid-search';
+  searchBar.placeholder = 'Type to search\u2026';
+  searchBar.addEventListener('input', () => {
+    const query = searchBar.value.toLowerCase();
+    const items = appGridOverlay?.querySelectorAll('.app-grid-item');
+    items?.forEach((item) => {
+      const name = item.getAttribute('data-name') || '';
+      item.classList.toggle('hidden', !name.toLowerCase().includes(query));
+    });
   });
+
+  // Desktop image link
+  const desktopLink = document.createElement('img');
+  desktopLink.className = 'app-grid-desktop-link';
+  desktopLink.src = '/res/ubuntu2.jpg';
+  desktopLink.alt = 'Desktop';
+  desktopLink.addEventListener('click', () => closeShowApplications());
+
+  // App grid
+  const grid = document.createElement('div');
+  grid.className = 'app-grid';
+
+  APP_GRID_ITEMS.forEach((app) => {
+    const item = document.createElement('div');
+    item.className = 'app-grid-item';
+    item.setAttribute('data-name', app.name);
+
+    const img = document.createElement('img');
+    img.src = app.icon;
+    img.alt = app.name;
+
+    const label = document.createElement('span');
+    label.textContent = app.name;
+
+    item.appendChild(img);
+    item.appendChild(label);
+
+    item.addEventListener('click', () => {
+      closeShowApplications();
+      executeAppAction(app.action);
+    });
+
+    grid.appendChild(item);
+  });
+
+  appGridOverlay.appendChild(searchBar);
+  appGridOverlay.appendChild(desktopLink);
+  appGridOverlay.appendChild(grid);
+  document.body.appendChild(appGridOverlay);
+
+  // Fade in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      appGridOverlay?.classList.add('visible');
+      searchBar.focus();
+    });
+  });
+
+  document.addEventListener('keydown', appGridKeyHandler);
+}
+
+function closeShowApplications() {
+  if (!appGridOverlay || !document.body.contains(appGridOverlay)) return;
+
+  appGridOverlay.classList.remove('visible');
+  document.removeEventListener('keydown', appGridKeyHandler);
+
+  const overlay = appGridOverlay;
+  appGridOverlay = null;
+
+  setTimeout(() => {
+    if (document.body.contains(overlay)) {
+      document.body.removeChild(overlay);
+    }
+  }, 300);
+}
+
+function executeAppAction(action: string) {
+  switch (action) {
+    case 'terminal': {
+      const mainEl = document.getElementById('main');
+      if (mainEl) {
+        mainEl.style.display = 'flex';
+        mainEl.style.flexDirection = 'column';
+        terminalIcon?.classList.add('active');
+        bringToFront(mainEl);
+        USERINPUT.focus();
+      }
+      break;
+    }
+    case 'music':
+      if (!musicPlayerWindow || !document.body.contains(musicPlayerWindow)) {
+        openMusicPlayer();
+        musicPlayerIcon?.classList.add('active');
+      } else {
+        bringToFront(musicPlayerWindow);
+      }
+      break;
+    case 'calc':
+      if (!calcWindow || !document.body.contains(calcWindow)) {
+        openCalcWindow();
+        excelIcon?.classList.add('active');
+      } else {
+        bringToFront(calcWindow);
+      }
+      break;
+    case 'clauger':
+      openClaugerWindow();
+      break;
+    case 'noop':
+      break;
+  }
+}
+
+if (showApplicationsBtn) {
+  showApplicationsBtn.addEventListener('click', toggleShowApplications);
 }
