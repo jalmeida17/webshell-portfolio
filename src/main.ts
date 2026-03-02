@@ -8,6 +8,7 @@ import { createCareer } from "./commands/career";
 import { EDUCATION } from "./commands/education";
 import { SKILLS } from "./commands/skills";
 import { runBootSequence } from "./boot";
+import { VEILLE_SOURCES, VEILLE_SYNTHESES, VEILLE_METHODOLOGY } from "./commands/veille";
 
 //mutWriteLines gets deleted and reassigned
 let mutWriteLines = document.getElementById("write-lines");
@@ -38,7 +39,7 @@ const PRE_USER = document.getElementById("pre-user");
 const HOST = document.getElementById("host");
 const USER = document.getElementById("user");
 const PROMPT = document.getElementById("prompt");
-const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news", "cv", "gui", "clauger"];
+const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "veille", "cv", "gui", "clauger"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
@@ -265,12 +266,12 @@ function commandHandler(input : string) {
       }
       openSkillsWindow();
       break;
-    case 'news':
+    case 'veille':
       if(bareMode) {
-        writeLines(["No news for you.", "<br>"])
+        writeLines(["No tech watch for you.", "<br>"])
         break;
       }
-      openNewsWindow();
+      openVeilleWindow();
       break;
     case 'cv':
       if(bareMode) {
@@ -1099,176 +1100,394 @@ function openProjectDetailWindow(project: ProjectData) {
   setTimeout(() => terminalInput.focus(), 100);
 }
 
-async function openNewsWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+let veilleWindow: HTMLDivElement | null = null;
 
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
+function openVeilleWindow() {
+  if (veilleWindow && document.body.contains(veilleWindow)) {
+    bringToFront(veilleWindow);
+    return;
+  }
+
+  veilleWindow = document.createElement('div');
   windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 55%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
+  veilleWindow.style.cssText = `
+    position: fixed;
+    width: 800px;
+    height: 700px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
   `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
+  veilleWindow.addEventListener('mousedown', () => bringToFront(veilleWindow!));
 
   let isWinMax = false;
   const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMinimize: () => { if (veilleWindow) veilleWindow.style.display = 'none'; },
     onMaximize: () => {
+      if (!veilleWindow) return;
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 55%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        veilleWindow.style.width = '800px';
+        veilleWindow.style.height = '700px';
+        veilleWindow.style.left = '50%';
+        veilleWindow.style.top = '50%';
+        veilleWindow.style.transform = 'translate(-50%, -50%)';
+        veilleWindow.style.borderRadius = '6px';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(100% - 64px)';
-        newTerminal.style.height = 'calc(100% - 28px)';
-        newTerminal.style.left = '64px';
-        newTerminal.style.right = '0';
-        newTerminal.style.top = '28px';
-        newTerminal.style.transform = 'none';
-        newTerminal.style.borderRadius = '0';
+        veilleWindow.style.width = 'calc(100% - 64px)';
+        veilleWindow.style.height = 'calc(100% - 28px)';
+        veilleWindow.style.left = '64px';
+        veilleWindow.style.top = '28px';
+        veilleWindow.style.transform = 'none';
+        veilleWindow.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
-    onClose: () => document.body.removeChild(newTerminal),
+    onClose: () => {
+      if (veilleWindow && document.body.contains(veilleWindow)) {
+        document.body.removeChild(veilleWindow);
+        veilleWindow = null;
+      }
+    },
   });
 
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/news', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
+  const topBar = createTitleBar('Tech Watch', controls);
+  makeDraggable(veilleWindow, topBar, () => isWinMax);
   topBar.addEventListener('dblclick', () => {
     const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
     if (maxBtn) maxBtn.click();
   });
 
+  // Content area
   const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
+  `;
 
-  let newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
-  newsHTML += '<br>';
-  newsHTML += `<p style="animation: none;"><span style="color: #E95420; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
-  newsHTML += '<br>';
-  newsHTML += '<p style="animation: none; color: #888;">Fetching latest news...</p>';
-  
-  content.innerHTML = newsHTML;
+  // === Identity section ===
+  const identity = document.createElement('div');
+  identity.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 32px 28px;
+    gap: 12px;
+  `;
 
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
+  const iconWrap = document.createElement('div');
+  iconWrap.style.cssText = `
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #7C3AED, #A855F7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255,255,255,0.06);
+  `;
+  const brainIcon = document.createElement('i');
+  brainIcon.className = 'fa-solid fa-brain';
+  brainIcon.style.cssText = 'font-size: 42px; color: #FFFFFF;';
+  iconWrap.appendChild(brainIcon);
 
-  // Fetch RSS feeds
-  try {
-    const feeds = [
-      { category: '🔧 Development', url: 'https://github.blog/feed/', color: '#E95420' },
-      { category: '💻 Tech', url: 'https://techcrunch.com/feed/', color: '#E95420' },
-      { category: '🔬 Science', url: 'https://www.sciencealert.com/rss', color: '#E95420' },
-      { category: '🤖 AI', url: 'https://venturebeat.com/feed/', color: '#E95420' },
-      { category: '🎨 Design', url: 'https://www.smashingmagazine.com/feed/', color: '#E95420' }
-    ];
+  const idName = document.createElement('div');
+  idName.textContent = 'Tech Watch';
+  idName.style.cssText = 'font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
 
-    newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
-    newsHTML += '<br>';
-    newsHTML += `<p style="animation: none;"><span style="color: #E95420; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
-    newsHTML += '<br>';
+  const idTag = document.createElement('div');
+  idTag.textContent = 'Intelligence Artificielle & Machine Learning';
+  idTag.style.cssText = 'font-size: 13px; color: #999999; font-weight: 400;';
 
-    for (let feedIndex = 0; feedIndex < feeds.length; feedIndex++) {
-      const feed = feeds[feedIndex];
-      newsHTML += `<p style="animation: none; margin-top: 10px;"><span style="color: ${feed.color}; font-weight: bold;">${feed.category}</span></p>`;
+  const idBadge = document.createElement('div');
+  idBadge.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 4px 12px;
+    background: rgba(124, 58, 237, 0.12);
+    border-radius: 20px;
+  `;
+  const badgeIcon = document.createElement('i');
+  badgeIcon.className = 'fa-solid fa-graduation-cap';
+  badgeIcon.style.cssText = 'font-size: 11px; color: #A855F7;';
+  const badgeText = document.createElement('span');
+  badgeText.textContent = 'BTS SIO \u2014 Daily to weekly';
+  badgeText.style.cssText = 'font-size: 12px; color: #A855F7; font-weight: 500;';
+  idBadge.appendChild(badgeIcon);
+  idBadge.appendChild(badgeText);
 
-      try {
-        // you're a bitch if you use my api key lol
-        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=2`);
-        const data = await response.json();
+  identity.appendChild(iconWrap);
+  identity.appendChild(idName);
+  identity.appendChild(idTag);
+  identity.appendChild(idBadge);
 
-        if (data.status === 'ok' && data.items && data.items.length > 0) {
-          // Loop through each news item (max 2)
-          for (let i = 0; i < Math.min(data.items.length, 2); i++) {
-            const item = data.items[i];
-            const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
+  // === List groups ===
+  const listArea = document.createElement('div');
+  listArea.style.cssText = 'padding: 0 28px 28px; display: flex; flex-direction: column; gap: 20px;';
 
-            // Get description/content preview
-            let description = '';
-            if (item.description) {
-              // Strip HTML tags and get first 100 characters
-              const tempDiv = document.createElement('div');
-              tempDiv.innerHTML = item.description;
-              const textContent = tempDiv.textContent || tempDiv.innerText || '';
-              description = textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
-            }
+  // Helper: GNOME-style listbox group (same pattern as Clauger)
+  function createVeilleListGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
 
-            // Display title and description
-            newsHTML += `<div style="margin-left: 10px; max-width: 90%;">`;
-            newsHTML += `<p style="animation: none; margin: 0;">• <a href="${item.link}" target="_blank" style="color: ${command.colors.foreground}; text-decoration: underline;">${title}</a></p>`;
-            if (description) {
-              newsHTML += `<p style="animation: none; margin: 5px 0 0 10px; color: #888; font-size: 13px; font-style: italic; max-width: 95%; word-wrap: break-word;">${description}</p>`;
-            }
-            newsHTML += `</div>`;
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
 
-            // Add spacing between news items
-            if (i < Math.min(data.items.length, 2) - 1) {
-              newsHTML += `<div style="margin: 15px 0;"></div>`;
-            }
-          }
-        } else {
-          newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Unable to fetch feed (API limit or feed issue)</p>`;
-        }
-      } catch (err) {
-        newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Failed to load (${err instanceof Error ? err.message : 'unknown error'})</p>`;
-      }
+    const box = document.createElement('div');
+    box.style.cssText = `
+      background: #363636;
+      border-radius: 10px;
+      overflow: hidden;
+    `;
 
-      newsHTML += '<br>';
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
 
-      // Add divider between subjects (but not after the last one)
-      if (feedIndex < feeds.length - 1) {
-        newsHTML += `<div style="border-top: 1px solid #444; margin: 20px 0;"></div>`;
-      }
-    }
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: ${row.iconColor};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
 
-    content.innerHTML = newsHTML;
-  } catch (error) {
-    content.innerHTML += '<p style="animation: none; color: #ff6b6b;">Failed to fetch news feeds.</p>';
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
   }
 
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
-  terminalInput.placeholder = 'Press Enter to close...';
+  // --- Methodology section ---
+  listArea.appendChild(createVeilleListGroup('Subject & Methodology', [
+    { icon: 'fa-solid fa-brain',        iconColor: '#7C3AED', text: 'Subject',    detail: VEILLE_METHODOLOGY.subject },
+    { icon: 'fa-solid fa-magnifying-glass', iconColor: '#6366F1', text: 'Objective',  detail: VEILLE_METHODOLOGY.description },
+    { icon: 'fa-solid fa-clock',         iconColor: '#0891B2', text: 'Frequency',  detail: VEILLE_METHODOLOGY.frequency },
+    { icon: 'fa-solid fa-screwdriver-wrench', iconColor: '#059669', text: 'Tools',      detail: VEILLE_METHODOLOGY.tools },
+  ]));
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
+  // --- Sources section ---
+  listArea.appendChild(createVeilleListGroup('Sources', VEILLE_SOURCES.map(s => ({
+    icon: s.icon,
+    iconColor: s.iconColor,
+    text: s.name,
+    detail: s.description,
+  }))));
+
+  // --- Syntheses section (accordion) ---
+  const synthGroup = document.createElement('div');
+
+  const synthLabel = document.createElement('div');
+  synthLabel.textContent = 'Summaries';
+  synthLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+  synthGroup.appendChild(synthLabel);
+
+  const synthBox = document.createElement('div');
+  synthBox.style.cssText = `
+    background: #363636;
+    border-radius: 10px;
+    overflow: hidden;
+  `;
+
+  VEILLE_SYNTHESES.forEach((synth, i) => {
+    // Row header (clickable)
+    const rowEl = document.createElement('div');
+    rowEl.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      ${i < VEILLE_SYNTHESES.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+    `;
+    rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+    rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+    const iconEl = document.createElement('div');
+    iconEl.style.cssText = `
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #7C3AED;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    `;
+    const iconI = document.createElement('i');
+    iconI.className = 'fa-solid fa-file-lines';
+    iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+    iconEl.appendChild(iconI);
+
+    const textWrap = document.createElement('div');
+    textWrap.style.cssText = 'flex: 1; min-width: 0;';
+
+    const textMain = document.createElement('div');
+    textMain.textContent = synth.title;
+    textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+
+    const textSub = document.createElement('div');
+    textSub.textContent = synth.summary;
+    textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+
+    textWrap.appendChild(textMain);
+    textWrap.appendChild(textSub);
+
+    // Date badge
+    const dateBadge = document.createElement('div');
+    dateBadge.textContent = synth.date;
+    dateBadge.style.cssText = 'font-size: 11px; color: #A855F7; background: rgba(124, 58, 237, 0.12); padding: 2px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0;';
+
+    // Chevron
+    const chevron = document.createElement('i');
+    chevron.className = 'fa-solid fa-chevron-down';
+    chevron.style.cssText = 'font-size: 12px; color: #888888; transition: transform 0.2s ease; flex-shrink: 0;';
+
+    rowEl.appendChild(iconEl);
+    rowEl.appendChild(textWrap);
+    rowEl.appendChild(dateBadge);
+    rowEl.appendChild(chevron);
+
+    // Accordion content (hidden by default)
+    const accordionContent = document.createElement('div');
+    accordionContent.style.cssText = `
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: #2D2D2D;
+      ${i < VEILLE_SYNTHESES.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+    `;
+
+    const accordionInner = document.createElement('div');
+    accordionInner.style.cssText = 'padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;';
+
+    // Source badge
+    const sourceLine = document.createElement('div');
+    sourceLine.style.cssText = 'font-size: 11px; color: #A855F7; margin-bottom: 4px;';
+    const sourceIcon = document.createElement('i');
+    sourceIcon.className = 'fa-solid fa-bookmark';
+    sourceIcon.style.cssText = 'margin-right: 6px;';
+    sourceLine.appendChild(sourceIcon);
+    sourceLine.appendChild(document.createTextNode('Source: ' + synth.source));
+    accordionInner.appendChild(sourceLine);
+
+    // Analysis paragraphs
+    synth.analysis.forEach(para => {
+      const p = document.createElement('p');
+      p.textContent = para;
+      p.style.cssText = 'font-size: 12px; color: #CCCCCC; line-height: 1.6; margin: 0;';
+      accordionInner.appendChild(p);
+    });
+
+    // External link button
+    const linkBtn = document.createElement('a');
+    linkBtn.href = synth.link;
+    linkBtn.target = '_blank';
+    linkBtn.rel = 'noopener noreferrer';
+    linkBtn.textContent = 'View source';
+    linkBtn.style.cssText = `
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 6px 14px;
+      background: rgba(124, 58, 237, 0.15);
+      color: #A855F7;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      align-self: flex-start;
+      transition: background 0.15s ease;
+    `;
+    linkBtn.addEventListener('mouseenter', () => { linkBtn.style.background = 'rgba(124, 58, 237, 0.25)'; });
+    linkBtn.addEventListener('mouseleave', () => { linkBtn.style.background = 'rgba(124, 58, 237, 0.15)'; });
+    const linkIcon = document.createElement('i');
+    linkIcon.className = 'fa-solid fa-arrow-up-right-from-square';
+    linkIcon.style.cssText = 'font-size: 10px;';
+    linkBtn.prepend(linkIcon);
+    accordionInner.appendChild(linkBtn);
+
+    accordionContent.appendChild(accordionInner);
+
+    // Toggle accordion
+    let isOpen = false;
+    rowEl.addEventListener('click', () => {
+      isOpen = !isOpen;
+      if (isOpen) {
+        accordionContent.style.maxHeight = accordionContent.scrollHeight + 'px';
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        accordionContent.style.maxHeight = '0';
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    synthBox.appendChild(rowEl);
+    synthBox.appendChild(accordionContent);
   });
 
-  // Global keydown listener for this window
-  const newsKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', newsKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', newsKeydownHandler);
+  synthGroup.appendChild(synthBox);
+  listArea.appendChild(synthGroup);
 
-  content.appendChild(terminalInput);
-  setTimeout(() => terminalInput.focus(), 100);
+  content.appendChild(identity);
+  content.appendChild(listArea);
+
+  veilleWindow.appendChild(topBar);
+  veilleWindow.appendChild(content);
+  document.body.appendChild(veilleWindow);
 }
 
 function openAboutWindow() {
@@ -2519,6 +2738,7 @@ const APP_GRID_ITEMS = [
   { name: 'Rhythmbox',        icon: '/res/Rhythmbox_logo_3.4.4.svg.png', action: 'music' },
   { name: 'LibreOffice Calc', icon: '/res/excellogo.png',                 action: 'calc' },
   { name: 'Clauger',          icon: '/res/logoclauger.png',               action: 'clauger' },
+  { name: 'Tech Watch',       icon: '/res/veille-icon.svg',               action: 'veille' },
 ];
 
 const showApplicationsBtn = document.getElementById('show-applications');
@@ -2655,6 +2875,9 @@ function executeAppAction(action: string) {
       break;
     case 'clauger':
       openClaugerWindow();
+      break;
+    case 'veille':
+      openVeilleWindow();
       break;
     case 'noop':
       break;
