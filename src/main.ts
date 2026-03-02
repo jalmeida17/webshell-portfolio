@@ -3,7 +3,7 @@ import { createHelp } from "./commands/help";
 import { createBanner } from "./commands/banner";
 import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
-import { PROJECTS as PROJECTS_DATA, PROJECT_DETAILS, ProjectData } from "./commands/projects";
+import { PROJECT_DETAILS, ProjectData } from "./commands/projects";
 import { runBootSequence } from "./boot";
 import { VEILLE_SOURCES, VEILLE_SYNTHESES, VEILLE_METHODOLOGY } from "./commands/veille";
 
@@ -221,24 +221,7 @@ function commandHandler(input : string) {
         writeLines(["I don't want you to break the other projects.", "<br>"])
         break;
       }
-      writeLines(PROJECTS_DATA);
-      // Add click listeners to project links after they're rendered
-      // Calculate total animation time: 40ms per line * number of lines
-      const totalAnimationTime = PROJECTS_DATA.length * 40 + 100;
-      setTimeout(() => {
-        const projectLinks = document.querySelectorAll('.project-link');
-        projectLinks.forEach(link => {
-          link.addEventListener('click', (e) => {
-            const projectId = (e.target as HTMLElement).getAttribute('data-project-id');
-            if (projectId) {
-              const project = PROJECT_DETAILS.find(p => p.id === projectId);
-              if (project) {
-                openProjectDetailWindow(project);
-              }
-            }
-          });
-        });
-      }, totalAnimationTime);
+      openProjectsWindow();
       break;
     case 'career':
       if(bareMode) {
@@ -1086,101 +1069,552 @@ function openSkillsWindow() {
   document.body.appendChild(skillsWindow);
 }
 
-function openProjectDetailWindow(project: ProjectData) {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+// ═══════ PROJECTS APP ═══════
+let projectsWindow: HTMLDivElement | null = null;
 
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
+let projectImageManifest: Record<string, string[]> = {};
+
+async function loadProjectImageManifest() {
+  try {
+    const res = await fetch('/res/projects/manifest.json');
+    if (res.ok) projectImageManifest = await res.json();
+  } catch { /* no manifest yet */ }
+}
+
+function openProjectsWindow(targetProjectId?: string) {
+  if (projectsWindow && document.body.contains(projectsWindow)) {
+    bringToFront(projectsWindow);
+    return;
+  }
+
+  // Load manifest in background, re-render current project when ready
+  loadProjectImageManifest().then(() => {
+    if (activeProjectForRerender) renderProjectDetail(activeProjectForRerender);
+  });
+
+  projectsWindow = document.createElement('div');
   windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 50%; height: 75%;
-    ${position}: 5%; top: 12%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
+  projectsWindow.style.cssText = `
+    position: fixed;
+    width: 950px;
+    height: 720px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
   `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
+  projectsWindow.addEventListener('mousedown', () => bringToFront(projectsWindow!));
 
   let isWinMax = false;
   const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMinimize: () => { if (projectsWindow) projectsWindow.style.display = 'none'; },
     onMaximize: () => {
+      if (!projectsWindow) return;
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 50%; height: 75%; ${position}: 5%; top: 12%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        projectsWindow.style.width = '950px';
+        projectsWindow.style.height = '720px';
+        projectsWindow.style.left = '50%';
+        projectsWindow.style.top = '50%';
+        projectsWindow.style.transform = 'translate(-50%, -50%)';
+        projectsWindow.style.borderRadius = '6px';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(100% - 64px)';
-        newTerminal.style.height = 'calc(100% - 28px)';
-        newTerminal.style.left = '64px';
-        newTerminal.style.right = '0';
-        newTerminal.style.top = '28px';
-        newTerminal.style.transform = 'none';
-        newTerminal.style.borderRadius = '0';
+        projectsWindow.style.width = 'calc(100% - 64px)';
+        projectsWindow.style.height = 'calc(100% - 28px)';
+        projectsWindow.style.left = '64px';
+        projectsWindow.style.top = '28px';
+        projectsWindow.style.transform = 'none';
+        projectsWindow.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
-    onClose: () => document.body.removeChild(newTerminal),
+    onClose: () => {
+      if (projectsWindow && document.body.contains(projectsWindow)) {
+        document.body.removeChild(projectsWindow);
+        projectsWindow = null;
+      }
+    },
   });
 
-  const topBar = createTitleBar(`visitor@jalmeida17:$ ~/projects/${project.id}`, controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
+  const topBar = createTitleBar('Projects', controls);
+  makeDraggable(projectsWindow, topBar, () => isWinMax);
   topBar.addEventListener('dblclick', () => {
     const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
     if (maxBtn) maxBtn.click();
   });
 
-  const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+  // === Layout: sidebar + detail ===
+  const layout = document.createElement('div');
+  layout.style.cssText = 'flex: 1; display: flex; overflow: hidden;';
 
-  let statusBadge = '';
-  if (project.status) {
-    const statusColor = project.status === 'CLAUGER' ? '#298FDD' : '#FFA500';
-    statusBadge = `<span style='color: ${statusColor};'> - ${project.status}</span>`;
+  // --- Sidebar ---
+  const sidebar = document.createElement('div');
+  sidebar.style.cssText = `
+    width: 240px;
+    min-width: 240px;
+    background: #262626;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 12px 0;
+  `;
+
+  const sidebarButtons: HTMLDivElement[] = [];
+
+  PROJECT_DETAILS.forEach((project) => {
+    const btn = document.createElement('div');
+    btn.setAttribute('data-project-id', project.id);
+    btn.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      border-left: 3px solid transparent;
+    `;
+    btn.addEventListener('mouseenter', () => {
+      if (!btn.classList.contains('active-project')) btn.style.background = 'rgba(255,255,255,0.04)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      if (!btn.classList.contains('active-project')) btn.style.background = 'transparent';
+    });
+
+    const dot = document.createElement('div');
+    const dotColor = project.status === 'CLAUGER' ? '#0891B2' : project.status === 'Unfinished' ? '#D97706' : '#10B981';
+    dot.style.cssText = `width: 8px; height: 8px; border-radius: 50%; background: ${dotColor}; flex-shrink: 0;`;
+
+    const textWrap = document.createElement('div');
+    textWrap.style.cssText = 'flex: 1; min-width: 0;';
+    const nameEl = document.createElement('div');
+    nameEl.textContent = project.title;
+    nameEl.style.cssText = 'font-size: 12px; color: #EEEEEE; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+    const yearEl = document.createElement('div');
+    yearEl.textContent = project.year + (project.status ? ' \u00B7 ' + project.status : '');
+    yearEl.style.cssText = 'font-size: 10px; color: #888888; margin-top: 1px;';
+    textWrap.appendChild(nameEl);
+    textWrap.appendChild(yearEl);
+
+    btn.appendChild(dot);
+    btn.appendChild(textWrap);
+    sidebar.appendChild(btn);
+    sidebarButtons.push(btn);
+
+    btn.addEventListener('click', () => {
+      renderProjectDetail(project);
+      setActiveSidebarButton(btn);
+    });
+  });
+
+  function setActiveSidebarButton(activeBtn: HTMLDivElement) {
+    sidebarButtons.forEach(b => {
+      b.classList.remove('active-project');
+      b.style.background = 'transparent';
+      b.style.borderLeftColor = 'transparent';
+    });
+    activeBtn.classList.add('active-project');
+    activeBtn.style.background = 'rgba(16, 185, 129, 0.08)';
+    activeBtn.style.borderLeftColor = '#10B981';
   }
-  let projectHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/projects/${project.id}</p>`;
-  projectHTML += '<br>';
-  projectHTML += `<p style="animation: none;"><span class='command' style='font-size: 20px; text-decoration: underline;'>${project.title}</span>${statusBadge}</p>`;
-  projectHTML += `<p style="animation: none;"><span class='command'>${project.year} - Solo Project</span></p>`;
-  projectHTML += '<br>';
-  project.fullDescription.forEach(line => { projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`; });
-  projectHTML += '<br>';
-  projectHTML += `<p style="animation: none;"><span class='command'>Key Achievements:</span></p>`;
-  project.achievements.forEach(achievement => { projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${achievement}</p>`; });
-  projectHTML += '<br>';
-  projectHTML += `<p style="animation: none;"><span class='command'>Technologies:</span></p>`;
-  project.technologies.forEach(tech => { projectHTML += `<p style="animation: none;">${tech}</p>`; });
-  projectHTML += '<br>';
-  if (project.repository && project.repository.length > 0) {
-    projectHTML += `<p style="animation: none;"><span class='command'>Repository:</span></p>`;
-    project.repository.forEach(repo => { projectHTML += `<p style="animation: none;">${repo}</p>`; });
-    projectHTML += '<br>';
+
+  // --- Detail panel ---
+  const detail = document.createElement('div');
+  detail.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
+  `;
+
+  // Helper: GNOME list group
+  function createProjListGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex; align-items: flex-start; gap: 14px; padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px; height: 32px; border-radius: 8px; margin-top: 2px;
+        background: ${row.iconColor};
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 2px; line-height: 1.5;';
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
   }
-  content.innerHTML = projectHTML;
 
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
-  terminalInput.placeholder = 'Press Enter to close...';
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
+  // Helper: text block group
+  function createTextGroup(label: string, paragraphs: string[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
 
-  const projectDetailKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', projectDetailKeydownHandler);
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px;';
+
+    paragraphs.forEach(p => {
+      const pEl = document.createElement('p');
+      pEl.textContent = p;
+      pEl.style.cssText = 'font-size: 12px; color: #CCCCCC; line-height: 1.6; margin: 0;';
+      box.appendChild(pEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  // Helper: lightbox overlay
+  function openLightbox(allSrcs: string[], startIndex: number) {
+    let currentIdx = startIndex;
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; inset: 0; z-index: 99999;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      cursor: zoom-out;
+    `;
+
+    const img = document.createElement('img');
+    img.src = allSrcs[currentIdx];
+    img.style.cssText = 'max-width: 90%; max-height: 85%; border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); object-fit: contain; cursor: default;';
+    img.addEventListener('click', (e) => e.stopPropagation());
+
+    // Counter
+    const counter = document.createElement('div');
+    counter.style.cssText = 'position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 13px; color: #BBBBBB; font-family: "Ubuntu Sans", sans-serif;';
+
+    function updateCounter() {
+      counter.textContent = (currentIdx + 1) + ' / ' + allSrcs.length;
     }
-  };
-  document.addEventListener('keydown', projectDetailKeydownHandler);
+    updateCounter();
 
-  content.appendChild(terminalInput);
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-  setTimeout(() => terminalInput.focus(), 100);
+    function navigate(dir: number) {
+      currentIdx = (currentIdx + dir + allSrcs.length) % allSrcs.length;
+      img.src = allSrcs[currentIdx];
+      updateCounter();
+    }
+
+    // Nav buttons
+    function makeNavBtn(icon: string, side: 'left' | 'right') {
+      const btn = document.createElement('div');
+      btn.style.cssText = `
+        position: absolute; ${side}: 16px; top: 50%; transform: translateY(-50%);
+        width: 40px; height: 40px; border-radius: 50%;
+        background: rgba(255,255,255,0.1); color: #FFFFFF;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; font-size: 18px; transition: background 0.15s ease;
+      `;
+      btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(255,255,255,0.2)'; });
+      btn.addEventListener('mouseleave', () => { btn.style.background = 'rgba(255,255,255,0.1)'; });
+      const i = document.createElement('i');
+      i.className = icon;
+      btn.appendChild(i);
+      btn.addEventListener('click', (e) => { e.stopPropagation(); navigate(side === 'left' ? -1 : 1); });
+      return btn;
+    }
+
+    // Close button
+    const closeBtn = document.createElement('div');
+    closeBtn.style.cssText = `
+      position: absolute; top: 16px; right: 16px;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); color: #FFFFFF;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px; transition: background 0.15s ease;
+    `;
+    closeBtn.addEventListener('mouseenter', () => { closeBtn.style.background = 'rgba(255,255,255,0.2)'; });
+    closeBtn.addEventListener('mouseleave', () => { closeBtn.style.background = 'rgba(255,255,255,0.1)'; });
+    const closeIcon = document.createElement('i');
+    closeIcon.className = 'fa-solid fa-xmark';
+    closeBtn.appendChild(closeIcon);
+
+    function closeLightbox() {
+      document.removeEventListener('keydown', keyHandler);
+      if (document.body.contains(overlay)) document.body.removeChild(overlay);
+    }
+
+    closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLightbox(); });
+    overlay.addEventListener('click', closeLightbox);
+
+    function keyHandler(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') navigate(-1);
+      else if (e.key === 'ArrowRight') navigate(1);
+    }
+    document.addEventListener('keydown', keyHandler);
+
+    overlay.appendChild(img);
+    overlay.appendChild(counter);
+    overlay.appendChild(closeBtn);
+    if (allSrcs.length > 1) {
+      overlay.appendChild(makeNavBtn('fa-solid fa-chevron-left', 'left'));
+      overlay.appendChild(makeNavBtn('fa-solid fa-chevron-right', 'right'));
+    }
+    document.body.appendChild(overlay);
+  }
+
+  // Helper: image gallery
+  function createImageGallery(projectId: string, images: string[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = 'Screenshots';
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px;';
+
+    const allSrcs = images.map(img => '/res/projects/' + projectId + '/' + img);
+
+    images.forEach((img, idx) => {
+      const imgWrap = document.createElement('div');
+      imgWrap.style.cssText = 'border-radius: 8px; overflow: hidden; background: #1A1A1A; aspect-ratio: 16/10; cursor: pointer; transition: transform 0.2s ease;';
+      imgWrap.addEventListener('mouseenter', () => { imgWrap.style.transform = 'scale(1.02)'; });
+      imgWrap.addEventListener('mouseleave', () => { imgWrap.style.transform = 'scale(1)'; });
+
+      const imgEl = document.createElement('img');
+      imgEl.src = allSrcs[idx];
+      imgEl.alt = img;
+      imgEl.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+      imgEl.onerror = () => { imgWrap.style.display = 'none'; };
+
+      imgWrap.addEventListener('click', () => openLightbox(allSrcs, idx));
+
+      imgWrap.appendChild(imgEl);
+      grid.appendChild(imgWrap);
+    });
+
+    group.appendChild(grid);
+    return group;
+  }
+
+  let activeProjectForRerender: ProjectData | null = null;
+
+  function renderProjectDetail(project: ProjectData) {
+    activeProjectForRerender = project;
+    while (detail.firstChild) detail.removeChild(detail.firstChild);
+
+    const area = document.createElement('div');
+    area.style.cssText = 'padding: 28px; display: flex; flex-direction: column; gap: 20px;';
+
+    // --- Header ---
+    const header = document.createElement('div');
+    header.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';
+
+    const titleRow = document.createElement('div');
+    titleRow.style.cssText = 'display: flex; align-items: center; gap: 12px; flex-wrap: wrap;';
+    const titleEl = document.createElement('div');
+    titleEl.textContent = project.title;
+    titleEl.style.cssText = 'font-size: 22px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
+    titleRow.appendChild(titleEl);
+
+    if (project.status) {
+      const badge = document.createElement('span');
+      badge.textContent = project.status;
+      const bColor = project.status === 'CLAUGER' ? '#0891B2' : '#D97706';
+      badge.style.cssText = `font-size: 11px; font-weight: 600; color: ${bColor}; background: ${bColor}1A; padding: 3px 10px; border-radius: 12px;`;
+      titleRow.appendChild(badge);
+    }
+    header.appendChild(titleRow);
+
+    const yearEl = document.createElement('div');
+    yearEl.textContent = project.year;
+    yearEl.style.cssText = 'font-size: 13px; color: #888888;';
+    header.appendChild(yearEl);
+
+    area.appendChild(header);
+
+    // --- Description ---
+    area.appendChild(createTextGroup('Description', project.fullDescription));
+
+    // --- Images (from manifest) ---
+    const manifestImages = projectImageManifest[project.id] || [];
+    if (manifestImages.length > 0) {
+      area.appendChild(createImageGallery(project.id, manifestImages));
+    }
+
+    // --- Context (E4/E5) ---
+    if (project.context) {
+      area.appendChild(createProjListGroup('Organizational Context', [
+        { icon: 'fa-solid fa-building', iconColor: '#0891B2', text: project.context.organization, detail: project.context.organizationDesc },
+        { icon: 'fa-solid fa-user', iconColor: '#7C3AED', text: project.context.role, detail: 'Team: ' + project.context.teamSize },
+        { icon: 'fa-solid fa-calendar', iconColor: '#6366F1', text: 'Duration: ' + project.context.duration, detail: '' },
+      ]));
+    }
+
+    // --- Business Need ---
+    if (project.businessNeed) {
+      area.appendChild(createTextGroup('Business Need', [project.businessNeed]));
+    }
+
+    // --- Approach ---
+    if (project.approach && project.approach.length > 0) {
+      area.appendChild(createTextGroup('Approach & Methodology', project.approach));
+    }
+
+    // --- Tech Choices ---
+    if (project.techChoices && project.techChoices.length > 0) {
+      area.appendChild(createProjListGroup('Technical Choices (Justified)', project.techChoices.map(t => ({
+        icon: t.icon,
+        iconColor: t.iconColor,
+        text: t.name,
+        detail: t.justification,
+      }))));
+    }
+
+    // --- Architecture ---
+    if (project.architecture) {
+      area.appendChild(createTextGroup('Architecture', [project.architecture]));
+    }
+
+    // --- Achievements ---
+    if (project.achievements.length > 0) {
+      const achRows = project.achievements.map(a => ({
+        icon: 'fa-solid fa-check',
+        iconColor: '#10B981',
+        text: a.replace(/^[•\s]+/, ''),
+        detail: '',
+      }));
+      area.appendChild(createProjListGroup('Key Achievements', achRows));
+    }
+
+    // --- Results ---
+    if (project.results && project.results.length > 0) {
+      area.appendChild(createTextGroup('Results & Impact', project.results));
+    }
+
+    // --- Competencies (BTS Blocs) ---
+    if (project.competencies && project.competencies.length > 0) {
+      project.competencies.forEach(comp => {
+        const skillRows = comp.skills.map(s => ({
+          icon: 'fa-solid fa-graduation-cap',
+          iconColor: comp.color,
+          text: s,
+          detail: '',
+        }));
+        area.appendChild(createProjListGroup(comp.bloc, skillRows));
+      });
+    }
+
+    // --- Repository ---
+    if (project.repository && project.repository.length > 0) {
+      const repoGroup = document.createElement('div');
+      const repoLabel = document.createElement('div');
+      repoLabel.textContent = 'Links';
+      repoLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+      repoGroup.appendChild(repoLabel);
+
+      const repoBox = document.createElement('div');
+      repoBox.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+      project.repository.forEach((repoHtml, i) => {
+        const rowEl = document.createElement('div');
+        rowEl.style.cssText = `
+          display: flex; align-items: center; gap: 14px; padding: 11px 16px;
+          transition: background 0.15s ease;
+          ${i < project.repository.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+        `;
+        rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+        rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+        const iconEl = document.createElement('div');
+        iconEl.style.cssText = 'width: 32px; height: 32px; border-radius: 8px; background: #6E40C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
+        const iconI = document.createElement('i');
+        iconI.className = 'fa-solid fa-link';
+        iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+        iconEl.appendChild(iconI);
+
+        // Extract href and text from the HTML string safely
+        const tempAnchor = document.createElement('div');
+        tempAnchor.textContent = '';
+        const linkEl = document.createElement('a');
+        const hrefMatch = repoHtml.match(/href='([^']+)'/);
+        const textMatch = repoHtml.match(/>([^<]+)</);
+        if (hrefMatch) linkEl.href = hrefMatch[1];
+        if (textMatch) linkEl.textContent = textMatch[1];
+        linkEl.target = '_blank';
+        linkEl.rel = 'noopener noreferrer';
+        linkEl.style.cssText = 'font-size: 12px; color: #10B981; text-decoration: none; transition: opacity 0.2s;';
+        linkEl.addEventListener('mouseenter', () => { linkEl.style.opacity = '0.7'; });
+        linkEl.addEventListener('mouseleave', () => { linkEl.style.opacity = '1'; });
+
+        rowEl.appendChild(iconEl);
+        rowEl.appendChild(linkEl);
+        repoBox.appendChild(rowEl);
+      });
+
+      repoGroup.appendChild(repoBox);
+      area.appendChild(repoGroup);
+    }
+
+    detail.appendChild(area);
+  }
+
+  // Default: show first project or target
+  const initialProject = targetProjectId
+    ? PROJECT_DETAILS.find(p => p.id === targetProjectId) || PROJECT_DETAILS[0]
+    : PROJECT_DETAILS[0];
+  renderProjectDetail(initialProject);
+
+  const initialBtn = sidebarButtons.find(b => b.getAttribute('data-project-id') === initialProject.id);
+  if (initialBtn) setActiveSidebarButton(initialBtn);
+
+  layout.appendChild(sidebar);
+  layout.appendChild(detail);
+
+  projectsWindow.appendChild(topBar);
+  projectsWindow.appendChild(layout);
+  document.body.appendChild(projectsWindow);
 }
 
 let veilleWindow: HTMLDivElement | null = null;
@@ -3191,6 +3625,7 @@ const APP_GRID_ITEMS = [
   { name: 'Tech Watch',       icon: '/res/veille-icon.svg',               action: 'veille' },
   { name: 'Resume',           icon: '/res/resume-icon.svg',               action: 'resume' },
   { name: 'Skills',           icon: '/res/skills-icon.svg',               action: 'skills' },
+  { name: 'Projects',         icon: '/res/projects-icon.svg',             action: 'projects' },
 ];
 
 const showApplicationsBtn = document.getElementById('show-applications');
@@ -3336,6 +3771,9 @@ function executeAppAction(action: string) {
       break;
     case 'skills':
       openSkillsWindow();
+      break;
+    case 'projects':
+      openProjectsWindow();
       break;
     case 'noop':
       break;
