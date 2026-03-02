@@ -106,3 +106,104 @@ document.querySelectorAll('.veille-synth-card').forEach(card => {
     card.classList.toggle('expanded');
   });
 });
+
+// Project cards — expand/collapse detail on button click
+document.querySelectorAll('.project-expand-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.closest('.project-card').classList.toggle('expanded');
+  });
+});
+
+// Project images — fetch manifest and inject galleries + lightbox
+(async () => {
+  try {
+    const res = await fetch('/res/projects/manifest.json');
+    const manifest = await res.json();
+
+    // Create lightbox element using DOM methods
+    const lightbox = document.createElement('div');
+    lightbox.className = 'gui-lightbox';
+
+    const lbClose = document.createElement('button');
+    lbClose.className = 'gui-lightbox-close';
+    const closeIcon = document.createElement('i');
+    closeIcon.className = 'fa-solid fa-xmark';
+    lbClose.appendChild(closeIcon);
+
+    const lbPrev = document.createElement('button');
+    lbPrev.className = 'gui-lightbox-nav gui-lightbox-prev';
+    const prevIcon = document.createElement('i');
+    prevIcon.className = 'fa-solid fa-chevron-left';
+    lbPrev.appendChild(prevIcon);
+
+    const lbNext = document.createElement('button');
+    lbNext.className = 'gui-lightbox-nav gui-lightbox-next';
+    const nextIcon = document.createElement('i');
+    nextIcon.className = 'fa-solid fa-chevron-right';
+    lbNext.appendChild(nextIcon);
+
+    const lbImg = document.createElement('img');
+    lbImg.src = '';
+    lbImg.alt = 'Project screenshot';
+
+    lightbox.appendChild(lbClose);
+    lightbox.appendChild(lbPrev);
+    lightbox.appendChild(lbImg);
+    lightbox.appendChild(lbNext);
+    document.body.appendChild(lightbox);
+
+    let lbSrcs = [];
+    let lbIdx = 0;
+
+    function openLightbox(srcs, idx) {
+      lbSrcs = srcs;
+      lbIdx = idx;
+      lbImg.src = lbSrcs[lbIdx];
+      lbPrev.style.display = lbSrcs.length > 1 ? '' : 'none';
+      lbNext.style.display = lbSrcs.length > 1 ? '' : 'none';
+      lightbox.classList.add('active');
+    }
+    function closeLightbox() { lightbox.classList.remove('active'); }
+    function navLightbox(dir) {
+      lbIdx = (lbIdx + dir + lbSrcs.length) % lbSrcs.length;
+      lbImg.src = lbSrcs[lbIdx];
+    }
+
+    lbClose.addEventListener('click', closeLightbox);
+    lbPrev.addEventListener('click', () => navLightbox(-1));
+    lbNext.addEventListener('click', () => navLightbox(1));
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navLightbox(-1);
+      if (e.key === 'ArrowRight') navLightbox(1);
+    });
+
+    // Inject galleries into project cards
+    document.querySelectorAll('.project-card[data-project]').forEach(card => {
+      const projectId = card.dataset.project;
+      const images = manifest[projectId];
+      if (!images || images.length === 0) return;
+
+      const srcs = images.map(f => `/res/projects/${projectId}/${f}`);
+      const gallery = document.createElement('div');
+      gallery.className = 'project-gallery';
+
+      srcs.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.className = 'project-gallery-thumb';
+        img.src = src;
+        img.alt = `${projectId} screenshot ${i + 1}`;
+        img.addEventListener('click', () => openLightbox(srcs, i));
+        gallery.appendChild(img);
+      });
+
+      // Insert gallery at the top of .project-detail
+      const detail = card.querySelector('.project-detail');
+      if (detail) detail.insertBefore(gallery, detail.firstChild);
+    });
+  } catch (e) {
+    // Silently fail if manifest not available
+  }
+})();

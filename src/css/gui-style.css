@@ -145,7 +145,7 @@ body::before {
 .document-dl:hover { background:var(--accent); border-color:var(--accent); color:var(--text); }
 
 /* ═══════ PROJECTS — compact cards ═══════ */
-.projects-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; }
+.projects-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; align-items:start; }
 
 .project-card {
   background:var(--card); border:1px solid var(--border-s); border-radius:var(--r-lg);
@@ -178,6 +178,67 @@ body::before {
   transition:all 0.25s var(--ease);
 }
 .project-links a:hover { background:var(--accent); color:var(--text); border-color:var(--accent); }
+
+/* project expand / detail */
+.project-expand-btn {
+  display:inline-flex; align-items:center; gap:0.4rem; margin-top:1rem;
+  font-size:0.78rem; font-weight:600; color:var(--accent); cursor:pointer;
+  transition:all 0.25s var(--ease); user-select:none;
+}
+.project-expand-btn:hover { opacity:0.8; }
+.project-expand-btn i { transition:transform 0.3s var(--ease); font-size:0.65rem; }
+.project-card.expanded .project-expand-btn i { transform:rotate(180deg); }
+
+.project-detail {
+  max-height:0; overflow:hidden; transition:max-height 0.5s var(--ease), margin 0.3s var(--ease); margin-top:0;
+}
+.project-card.expanded .project-detail { max-height:2000px; margin-top:1.25rem; }
+
+.detail-section { margin-bottom:1.25rem; }
+.detail-section:last-child { margin-bottom:0; }
+.detail-section h4 { font-family:var(--font-d); font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent); margin-bottom:0.5rem; }
+.detail-section p { font-size:0.85rem; color:var(--text-2); line-height:1.7; margin-bottom:0.5rem; }
+.detail-section p:last-child { margin-bottom:0; }
+.detail-section ul { list-style:none; padding:0; }
+.detail-section ul li { font-size:0.85rem; color:var(--text-2); line-height:1.7; padding-left:1rem; position:relative; margin-bottom:0.35rem; }
+.detail-section ul li::before { content:''; position:absolute; left:0; top:0.65em; width:4px; height:4px; border-radius:50%; background:var(--accent); }
+.detail-section ul li strong { color:var(--text); }
+
+.competency-blocs { display:flex; flex-direction:column; gap:0.5rem; }
+.competency-bloc { font-size:0.82rem; color:var(--text-2); line-height:1.6; display:flex; align-items:baseline; gap:0.5rem; }
+.bloc-label { font-family:var(--font-d); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; flex-shrink:0; }
+
+/* project image gallery */
+.project-gallery { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.25rem; }
+.project-gallery-thumb {
+  width:120px; height:75px; object-fit:cover; border-radius:var(--r-sm);
+  border:1px solid var(--border-s); cursor:pointer; transition:all 0.25s var(--ease);
+}
+.project-gallery-thumb:hover { border-color:var(--accent); transform:scale(1.04); box-shadow:0 4px 16px rgba(0,0,0,0.4); }
+
+/* lightbox */
+.gui-lightbox {
+  position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.92); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s var(--ease);
+}
+.gui-lightbox.active { opacity:1; pointer-events:auto; }
+.gui-lightbox img { max-width:90vw; max-height:85vh; border-radius:var(--r-md); box-shadow:0 8px 40px rgba(0,0,0,0.6); }
+.gui-lightbox-close {
+  position:absolute; top:1.5rem; right:1.5rem; width:40px; height:40px;
+  display:flex; align-items:center; justify-content:center; border-radius:50%;
+  background:rgba(255,255,255,0.1); color:var(--text); font-size:1.1rem;
+  cursor:pointer; border:none; transition:background 0.2s;
+}
+.gui-lightbox-close:hover { background:rgba(255,255,255,0.2); }
+.gui-lightbox-nav {
+  position:absolute; top:50%; transform:translateY(-50%); width:44px; height:44px;
+  display:flex; align-items:center; justify-content:center; border-radius:50%;
+  background:rgba(255,255,255,0.1); color:var(--text); font-size:1rem;
+  cursor:pointer; border:none; transition:background 0.2s;
+}
+.gui-lightbox-nav:hover { background:rgba(255,255,255,0.2); }
+.gui-lightbox-prev { left:1.5rem; }
+.gui-lightbox-next { right:1.5rem; }
 
 /* ═══════ SKILLS — tag cloud ═══════ */
 .skills-block { margin-bottom:2.5rem; }

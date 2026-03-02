@@ -155,18 +155,156 @@
     </div>
   </section>
 
-  <!-- Projects — compact cards, no achievements list -->
+  <!-- Projects — cards with expandable E4/E5 detail -->
   <section id="projects" class="section">
     <div class="container">
       <h2 class="section-title reveal">Projects</h2>
       <div class="projects-grid">
 
-        <div class="project-card reveal">
+        <!-- FretClauger -->
+        <div class="project-card project-card--accent reveal" data-project="fretclauger">
           <div class="project-top">
-            <h3>Galaxy Swiss Bourdin</h3>
+            <h3>FretClauger</h3>
+            <div class="project-badges">
+              <span class="badge badge-pro">Clauger</span>
+              <span class="project-year">2024-2025</span>
+            </div>
+          </div>
+          <p class="project-desc">Full-stack transport &amp; freight management system replacing a legacy PHP form. Complete request workflow with carrier coordination, cost allocation, and document generation.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">Angular 19</span>
+              <span class="tech-tag">.NET Core</span>
+              <span class="tech-tag">SQL Server</span>
+              <span class="tech-tag">Docker</span>
+              <span class="tech-tag">Azure Entra ID</span>
+            </div>
+          </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>Clauger</strong> &mdash; International industrial refrigeration and HVAC company operating across 20+ countries.</p>
+              <p><strong>Role:</strong> Full Stack Developer (Internship) &middot; Solo developer with supervisor validation &middot; Oct 2024 - Dec 2025</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>The logistics department relied on an outdated PHP form to manage transport requests. This system was slow, lacked validation, had no tracking capabilities, and couldn't handle multi-site freight coordination. The company needed a modern, centralized platform for creating, tracking, and managing transport requests with carrier coordination, cost allocation, and document generation.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Approach &amp; Methodology</h4>
+              <ul>
+                <li>Conducted needs analysis with logistics staff to map the full transport request lifecycle.</li>
+                <li>Designed a relational database schema (SQL Server) to model transport requests, carriers, contacts, agencies, and cost allocation entities.</li>
+                <li>Developed iteratively with regular supervisor validation: data model &rarr; API endpoints &rarr; UI components.</li>
+                <li>Implemented Azure Entra ID (MSAL) authentication for SSO with Clauger's Microsoft ecosystem.</li>
+                <li>Added i18n support via Transloco from the start for French and English-speaking users.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>Angular 19:</strong> Imposed by Clauger's existing stack. Enterprise-grade framework with strong typing.</li>
+                <li><strong>.NET Core:</strong> Company standard for backend APIs. Native Azure and SQL Server integration.</li>
+                <li><strong>SQL Server:</strong> Company database standard. Relational model fits structured transport data.</li>
+                <li><strong>Azure Entra ID:</strong> Existing SSO infrastructure. MSAL integration for seamless employee authentication.</li>
+                <li><strong>PrimeNG:</strong> Rich Angular UI library for rapid development of tables, forms, and dialogs.</li>
+                <li><strong>Transloco:</strong> Runtime i18n for dynamic language switching.</li>
+                <li><strong>Docker:</strong> Containerized deployment for consistent environments.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Client-server: Angular SPA &harr; .NET Core REST API &harr; SQL Server. Azure Entra ID for authentication. Docker containers for deployment. Swagger for API documentation.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Results &amp; Impact</h4>
+              <ul>
+                <li>Successfully replaced the legacy PHP form with a modern, full-featured platform.</li>
+                <li>Used daily by ~15 logistics and admin staff for transport request management.</li>
+                <li>Reduced request processing errors through form validation and structured workflows.</li>
+                <li>Enabled cost tracking per project/activity, previously impossible with the old system.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Responding to IT service requests &middot; Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#7C3AED">Bloc 2</span> Maintaining local infrastructure &middot; Deploying containerized services</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Designing &amp; prototyping &middot; Secure development &middot; Solution integration</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MonBureauConnecte -->
+        <div class="project-card project-card--accent reveal reveal-delay-1" data-project="monbureaconnecte">
+          <div class="project-top">
+            <h3>MonBureauConnecte</h3>
+            <div class="project-badges">
+              <span class="badge badge-pro">Clauger</span>
+              <span class="project-year">2025</span>
+            </div>
+          </div>
+          <p class="project-desc">IoT smart building control app. Real-time temperature, lighting, occupancy, and window monitoring via industrial automates connected through an OPC service chain.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">Angular</span>
+              <span class="tech-tag">.NET</span>
+              <span class="tech-tag">SQL Server</span>
+              <span class="tech-tag">Docker</span>
+            </div>
+          </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>Clauger</strong> &mdash; International industrial refrigeration and HVAC company.</p>
+              <p><strong>Role:</strong> Full Stack Developer (Internship) &middot; Solo developer (OPC/automate layer pre-configured by infrastructure team) &middot; Jan 2025 - Feb 2025</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>Employees had no way to directly control their office environment without contacting facilities. The company wanted a self-service web interface connected to existing industrial automates (PLCs) via OPC protocol, letting users adjust temperature and lighting from their browser.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Approach &amp; Methodology</h4>
+              <ul>
+                <li>Analyzed the existing OPC data flow: automates write sensor data to SQL Server via an OPC server.</li>
+                <li>Designed .NET API to abstract the database layer with clean REST endpoints for each control type.</li>
+                <li>Built Angular frontend with real-time data display using polling for sensor readings.</li>
+                <li>Focused on UX simplicity: intuitive sliders for temperature, toggles for lights.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Three-tier: Industrial automates &harr; OPC Server &harr; SQL Server &harr; .NET REST API &harr; Angular SPA. The database acts as a shared communication layer between the OPC world and the web application.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Results &amp; Impact</h4>
+              <ul>
+                <li>Delivered a functional prototype for browser-based office environment control.</li>
+                <li>Demonstrated feasibility of bridging web technologies with industrial OPC automation.</li>
+                <li>Improved employee comfort by removing the need to contact facilities for basic adjustments.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Responding to incidents &middot; Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#7C3AED">Bloc 2</span> Administering infrastructure &middot; Maintaining local infrastructure</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Designing &amp; prototyping</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GSB Web App -->
+        <div class="project-card reveal reveal-delay-2" data-project="gsb-webapp">
+          <div class="project-top">
+            <h3>GSB Web App</h3>
             <span class="project-year">2025</span>
           </div>
-          <p class="project-desc">Full-stack bill management app for employees and administrators. Angular frontend, Node.js backend, MongoDB, deployed on AWS.</p>
+          <p class="project-desc">Full-stack expense report management app for the fictional pharmaceutical company Galaxy Swiss Bourdin (BTS SIO exam). Angular frontend, Node.js backend, MongoDB, deployed on AWS.</p>
           <div class="project-bottom">
             <div class="tech-tags">
               <span class="tech-tag">Angular</span>
@@ -179,14 +317,47 @@
               <a href="https://github.com/jalmeida17/bts-gsbbackend" target="_blank"><i class="fa-brands fa-github"></i></a>
             </div>
           </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>GSB (Galaxy Swiss Bourdin) &mdash; Fictional</strong> &mdash; Standard BTS SIO exam scenario. Pharmaceutical company whose sales representatives submit expense reports for reimbursement.</p>
+              <p><strong>Role:</strong> Solo Developer (BTS SIO exam project) &middot; Jan 2025 - Mar 2025</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>GSB sales representatives travel frequently and submit expense reports. The company needs a web application allowing employees to create and track expense reports, and administrators to review, validate, or reject them with role-based access and business rule validation.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>Angular:</strong> Strong typing, reactive forms ideal for expense report workflows.</li>
+                <li><strong>Node.js/Express:</strong> Lightweight REST API. Shared JS ecosystem with frontend.</li>
+                <li><strong>MongoDB:</strong> Document model suits varied expense report structures.</li>
+                <li><strong>AWS:</strong> Cloud deployment demonstrating infrastructure management skills.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Decoupled client-server: Angular SPA &harr; Node.js/Express REST API &harr; MongoDB. JWT authentication. Deployed on AWS EC2. Two separate Git repositories.</p>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Responding to IT service requests &middot; Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Designing &amp; prototyping &middot; Secure development</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="project-card reveal reveal-delay-1">
+        <!-- GSB Winform -->
+        <div class="project-card reveal reveal-delay-3" data-project="gsb-winform">
           <div class="project-top">
-            <h3>Medical Prescription System</h3>
+            <h3>GSB Winform</h3>
             <span class="project-year">2025</span>
           </div>
-          <p class="project-desc">WinForms desktop app for managing prescriptions, patient records, and pharmaceutical databases. SHA2-256 auth, PDF export, Docker.</p>
+          <p class="project-desc">WinForms desktop app for managing medical prescriptions, patient records, and pharmaceutical databases. SHA2-256 auth, PDF export with iText7, Docker.</p>
           <div class="project-bottom">
             <div class="tech-tags">
               <span class="tech-tag">.NET 8.0</span>
@@ -198,54 +369,106 @@
               <a href="https://github.com/jalmeida17/bts-gsb-winform" target="_blank"><i class="fa-brands fa-github"></i></a>
             </div>
           </div>
-        </div>
-
-        <div class="project-card project-card--accent reveal reveal-delay-2">
-          <div class="project-top">
-            <h3>FretClauger</h3>
-            <div class="project-badges">
-              <span class="badge badge-pro">Clauger</span>
-              <span class="project-year">2025</span>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>GSB (Galaxy Swiss Bourdin) &mdash; Fictional</strong> &mdash; Standard BTS SIO exam scenario. Doctors prescribe medications; the system manages prescriptions, patients, and the pharmaceutical catalog.</p>
+              <p><strong>Role:</strong> Solo Developer (BTS SIO exam project) &middot; Nov 2024 - Jan 2025</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>GSB doctors need a desktop application to manage medical prescriptions efficiently: patient records, pharmaceutical database, prescription creation with dosage management, secure authentication, and PDF export for printing and archival.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>.NET 8.0 / C#:</strong> Windows Forms for desktop UI. Mature ecosystem for enterprise desktop apps.</li>
+                <li><strong>MySQL:</strong> Relational database for structured medical data with referential integrity.</li>
+                <li><strong>Docker:</strong> Containerized MySQL for portable, reproducible development environments.</li>
+                <li><strong>iText7:</strong> Professional-grade PDF generation for prescription export.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Two-tier desktop: WinForms UI &harr; MySQL database. Business logic in the application layer with repository pattern. Docker-containerized MySQL instance.</p>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Responding to IT service requests</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#7C3AED">Bloc 2</span> Deploying containerized services</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Secure development</div>
+              </div>
             </div>
           </div>
-          <p class="project-desc">Internal transport & freight management system. Full workflow, Azure AD auth, multi-language support, PDF exports, email templates.</p>
+        </div>
+
+        <!-- RAW Fitness -->
+        <div class="project-card reveal" data-project="raw-fitness">
+          <div class="project-top">
+            <h3>RAW - Fitness Tracker</h3>
+            <span class="project-year">2026</span>
+          </div>
+          <p class="project-desc">Full-stack fitness app combining workout tracking, macro nutrition monitoring, progression analytics, and social networking. Live at stayraw.fr.</p>
           <div class="project-bottom">
             <div class="tech-tags">
-              <span class="tech-tag">Angular 19</span>
-              <span class="tech-tag">.NET Core</span>
-              <span class="tech-tag">SQL Server</span>
-              <span class="tech-tag">Docker</span>
-              <span class="tech-tag">Azure</span>
+              <span class="tech-tag">Next.js</span>
+              <span class="tech-tag">Supabase</span>
+              <span class="tech-tag">Vercel</span>
+            </div>
+            <div class="project-links">
+              <a href="https://www.stayraw.fr" target="_blank"><i class="fa-solid fa-globe"></i></a>
+            </div>
+          </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>Personal Project</strong> &mdash; Self-initiated to solve a personal need for a unified fitness tracking platform.</p>
+              <p><strong>Role:</strong> Solo Full Stack Developer &middot; Mar 2025 - Present</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>Existing fitness apps either focus on workouts OR nutrition, rarely both. I wanted a single platform to log workouts with progression tracking, monitor daily macros, calculate rep maxes, and share progress with friends.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>Next.js:</strong> React framework with SSR, file-based routing, and API routes for a full-stack app.</li>
+                <li><strong>Supabase:</strong> PostgreSQL-based BaaS with auth, realtime subscriptions, and storage.</li>
+                <li><strong>Vercel:</strong> Native Next.js hosting with automatic deployments and edge functions.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Serverless: Next.js (Vercel) &harr; Supabase (PostgreSQL + Auth + Realtime + Storage). API routes for server-side logic. Supabase handles authentication, database, and real-time subscriptions.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Results &amp; Impact</h4>
+              <ul>
+                <li>Live and functional at stayraw.fr, used personally and by friends.</li>
+                <li>Demonstrates ability to design, build, and deploy a complete SaaS-style application.</li>
+                <li>Showcases modern practices: serverless, BaaS, CI/CD, and real-time features.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Designing &amp; prototyping &middot; Secure development</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="project-card project-card--accent reveal reveal-delay-3">
-          <div class="project-top">
-            <h3>MonBureauConnecte</h3>
-            <div class="project-badges">
-              <span class="badge badge-pro">Clauger</span>
-              <span class="project-year">2025</span>
-            </div>
-          </div>
-          <p class="project-desc">Smart building control app. Monitor and adjust temperature, lights, light intensity, room occupancy, and window status via OPC automates connected through a DB service chain.</p>
-          <div class="project-bottom">
-            <div class="tech-tags">
-              <span class="tech-tag">Angular</span>
-              <span class="tech-tag">.NET</span>
-              <span class="tech-tag">SQL Server</span>
-              <span class="tech-tag">Docker</span>
-              <span class="tech-tag">Azure</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="project-card reveal">
+        <!-- WebShell Portfolio -->
+        <div class="project-card reveal reveal-delay-1" data-project="webshell-portfolio">
           <div class="project-top">
             <h3>WebShell Portfolio</h3>
             <span class="project-year">2025</span>
           </div>
-          <p class="project-desc">The Ubuntu terminal portfolio you're looking at! Interactive CLI, multi-window system, tech watch, desktop simulation with easter eggs.</p>
+          <p class="project-desc">Interactive Ubuntu terminal portfolio with working CLI, draggable app windows, GNOME-styled ecosystem, and easter eggs. You might be viewing it right now!</p>
           <div class="project-bottom">
             <div class="tech-tags">
               <span class="tech-tag">TypeScript</span>
@@ -257,27 +480,37 @@
               <a href="https://github.com/jalmeida17/webshell-portfolio" target="_blank"><i class="fa-brands fa-github"></i></a>
             </div>
           </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>Personal Project</strong> &mdash; Creative portfolio to showcase technical skills through an interactive Ubuntu desktop simulation.</p>
+              <p><strong>Role:</strong> Solo Developer &middot; Nov 2025 - Present</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>Standard portfolio websites are generic and forgettable. I wanted a portfolio that itself demonstrates technical ability &mdash; a pixel-perfect Ubuntu desktop with working terminal, draggable windows, a music player, and a full app ecosystem. The portfolio IS the project.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>TypeScript:</strong> Strong typing without framework overhead. Pure DOM manipulation showcases core web skills.</li>
+                <li><strong>Vite:</strong> Fast HMR and optimized production builds with minimal config.</li>
+                <li><strong>HTML5/CSS3:</strong> Advanced CSS for pixel-perfect Ubuntu theming: custom scrollbars, backdrop-filter, grid.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Developing business components &middot; Designing &amp; prototyping</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="project-card reveal">
-          <div class="project-top">
-            <h3>RAW - Fitness Tracker</h3>
-            <span class="project-year">2025</span>
-          </div>
-          <p class="project-desc">Full-stack fitness app with workout tracking, macro nutrition, progression analytics, and social features.</p>
-          <div class="project-bottom">
-            <div class="tech-tags">
-              <span class="tech-tag">Next.js</span>
-              <span class="tech-tag">Supabase</span>
-              <span class="tech-tag">Vercel</span>
-            </div>
-            <div class="project-links">
-              <a href="https://www.stayraw.fr" target="_blank"><i class="fa-solid fa-globe"></i></a>
-            </div>
-          </div>
-        </div>
-
-        <div class="project-card reveal reveal-delay-1">
+        <!-- Three.js Portfolio -->
+        <div class="project-card reveal reveal-delay-2" data-project="threejs-portfolio">
           <div class="project-top">
             <h3>Three.js Portfolio</h3>
             <div class="project-badges">
