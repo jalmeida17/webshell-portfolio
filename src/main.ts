@@ -4,8 +4,6 @@ import { createBanner } from "./commands/banner";
 import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
 import { PROJECTS as PROJECTS_DATA, PROJECT_DETAILS, ProjectData } from "./commands/projects";
-import { createCareer } from "./commands/career";
-import { EDUCATION } from "./commands/education";
 import { SKILLS } from "./commands/skills";
 import { runBootSequence } from "./boot";
 import { VEILLE_SOURCES, VEILLE_SYNTHESES, VEILLE_METHODOLOGY } from "./commands/veille";
@@ -24,7 +22,6 @@ const HELP = createHelp();
 const BANNER = createBanner();
 const ABOUT = createAbout();
 const DEFAULT = createDefault();
-const CAREER = createCareer();
 const SKILLS_DATA = SKILLS;
 
 //WRITELINESCOPY is used to during the "clear" command
@@ -250,14 +247,14 @@ function commandHandler(input : string) {
         writeLines(["Nothing to see here.", "<br>"])
         break;
       }
-      openCareerWindow();
+      openResumeWindow('career');
       break;
     case 'education':
       if(bareMode) {
         writeLines(["Nothing to see here.", "<br>"])
         break;
       }
-      openEducationWindow();
+      openResumeWindow('education');
       break;
     case 'skills':
       if(bareMode) {
@@ -768,162 +765,6 @@ function makeDraggable(windowEl: HTMLElement, titleBar: HTMLElement, isMaximized
 }
 
 // ─── End Helpers ───
-
-function openCareerWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
-  windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 40%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
-  `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
-
-  let isWinMax = false;
-  const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
-    onMaximize: () => {
-      const maxBtn = controls.querySelector('.window-btn-maximize');
-      if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
-        isWinMax = false;
-      } else {
-        newTerminal.style.width = 'calc(100% - 64px)';
-        newTerminal.style.height = 'calc(100% - 28px)';
-        newTerminal.style.left = '64px';
-        newTerminal.style.right = '0';
-        newTerminal.style.top = '28px';
-        newTerminal.style.transform = 'none';
-        newTerminal.style.borderRadius = '0';
-        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
-        isWinMax = true;
-      }
-    },
-    onClose: () => document.body.removeChild(newTerminal),
-  });
-
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/career', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
-  topBar.addEventListener('dblclick', () => {
-    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
-    if (maxBtn) maxBtn.click();
-  });
-
-  const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
-
-  let careerHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/career</p>`;
-  CAREER.forEach((line) => {
-    careerHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-  });
-  content.innerHTML = careerHTML;
-
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
-  terminalInput.placeholder = 'Press Enter to close...';
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
-
-  const careerKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', careerKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', careerKeydownHandler);
-
-  content.appendChild(terminalInput);
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-  setTimeout(() => terminalInput.focus(), 100);
-}
-
-function openEducationWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
-  windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 40%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
-  `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
-
-  let isWinMax = false;
-  const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
-    onMaximize: () => {
-      const maxBtn = controls.querySelector('.window-btn-maximize');
-      if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
-        isWinMax = false;
-      } else {
-        newTerminal.style.width = 'calc(100% - 64px)';
-        newTerminal.style.height = 'calc(100% - 28px)';
-        newTerminal.style.left = '64px';
-        newTerminal.style.right = '0';
-        newTerminal.style.top = '28px';
-        newTerminal.style.transform = 'none';
-        newTerminal.style.borderRadius = '0';
-        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
-        isWinMax = true;
-      }
-    },
-    onClose: () => document.body.removeChild(newTerminal),
-  });
-
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/education', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
-  topBar.addEventListener('dblclick', () => {
-    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
-    if (maxBtn) maxBtn.click();
-  });
-
-  const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
-
-  let educationHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/education</p>`;
-  EDUCATION.forEach((line) => {
-    educationHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-  });
-  content.innerHTML = educationHTML;
-
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
-  terminalInput.placeholder = 'Press Enter to close...';
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
-
-  const educationKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', educationKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', educationKeydownHandler);
-
-  content.appendChild(terminalInput);
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-  setTimeout(() => terminalInput.focus(), 100);
-}
 
 function openSkillsWindow() {
   const existingNewTerminals = document.querySelectorAll('.new-terminal');
@@ -1488,6 +1329,373 @@ function openVeilleWindow() {
   veilleWindow.appendChild(topBar);
   veilleWindow.appendChild(content);
   document.body.appendChild(veilleWindow);
+}
+
+// ═══════ RESUME APP (Career + Education) ═══════
+let resumeWindow: HTMLDivElement | null = null;
+
+function openResumeWindow(tab: 'career' | 'education' = 'career') {
+  if (resumeWindow && document.body.contains(resumeWindow)) {
+    bringToFront(resumeWindow);
+    return;
+  }
+
+  resumeWindow = document.createElement('div');
+  windowZIndex++;
+  resumeWindow.style.cssText = `
+    position: fixed;
+    width: 800px;
+    height: 700px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
+  `;
+  resumeWindow.addEventListener('mousedown', () => bringToFront(resumeWindow!));
+
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { if (resumeWindow) resumeWindow.style.display = 'none'; },
+    onMaximize: () => {
+      if (!resumeWindow) return;
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        resumeWindow.style.width = '800px';
+        resumeWindow.style.height = '700px';
+        resumeWindow.style.left = '50%';
+        resumeWindow.style.top = '50%';
+        resumeWindow.style.transform = 'translate(-50%, -50%)';
+        resumeWindow.style.borderRadius = '6px';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
+        isWinMax = false;
+      } else {
+        resumeWindow.style.width = 'calc(100% - 64px)';
+        resumeWindow.style.height = 'calc(100% - 28px)';
+        resumeWindow.style.left = '64px';
+        resumeWindow.style.top = '28px';
+        resumeWindow.style.transform = 'none';
+        resumeWindow.style.borderRadius = '0';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
+        isWinMax = true;
+      }
+    },
+    onClose: () => {
+      if (resumeWindow && document.body.contains(resumeWindow)) {
+        document.body.removeChild(resumeWindow);
+        resumeWindow = null;
+      }
+    },
+  });
+
+  const topBar = createTitleBar('Resume', controls);
+  makeDraggable(resumeWindow, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
+  });
+
+  // Content area
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
+  `;
+
+  // === Identity section ===
+  const identity = document.createElement('div');
+  identity.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 32px 28px;
+    gap: 12px;
+  `;
+
+  const iconWrap = document.createElement('div');
+  iconWrap.style.cssText = `
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #0891B2, #06B6D4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255,255,255,0.06);
+  `;
+  const resumeIconEl = document.createElement('i');
+  resumeIconEl.className = 'fa-solid fa-file-lines';
+  resumeIconEl.style.cssText = 'font-size: 42px; color: #FFFFFF;';
+  iconWrap.appendChild(resumeIconEl);
+
+  const idName = document.createElement('div');
+  idName.textContent = 'Resume';
+  idName.style.cssText = 'font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
+
+  const idTag = document.createElement('div');
+  idTag.textContent = 'Career & Education';
+  idTag.style.cssText = 'font-size: 13px; color: #999999; font-weight: 400;';
+
+  const idBadge = document.createElement('div');
+  idBadge.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 4px 12px;
+    background: rgba(8, 145, 178, 0.12);
+    border-radius: 20px;
+  `;
+  const rBadgeIcon = document.createElement('i');
+  rBadgeIcon.className = 'fa-solid fa-location-dot';
+  rBadgeIcon.style.cssText = 'font-size: 11px; color: #06B6D4;';
+  const rBadgeText = document.createElement('span');
+  rBadgeText.textContent = 'Lyon, France';
+  rBadgeText.style.cssText = 'font-size: 12px; color: #06B6D4; font-weight: 500;';
+  idBadge.appendChild(rBadgeIcon);
+  idBadge.appendChild(rBadgeText);
+
+  identity.appendChild(iconWrap);
+  identity.appendChild(idName);
+  identity.appendChild(idTag);
+  identity.appendChild(idBadge);
+
+  // === Tabs ===
+  const tabBar = document.createElement('div');
+  tabBar.style.cssText = `
+    display: flex;
+    gap: 0;
+    margin: 0 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  `;
+
+  const careerTab = document.createElement('button');
+  careerTab.textContent = 'Career';
+  careerTab.style.cssText = `
+    flex: 1;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid #06B6D4;
+    color: #06B6D4;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  `;
+
+  const educationTab = document.createElement('button');
+  educationTab.textContent = 'Education';
+  educationTab.style.cssText = `
+    flex: 1;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #888888;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  `;
+
+  tabBar.appendChild(careerTab);
+  tabBar.appendChild(educationTab);
+
+  // === List area ===
+  const listArea = document.createElement('div');
+  listArea.style.cssText = 'padding: 20px 28px 28px; display: flex; flex-direction: column; gap: 20px;';
+
+  // Helper: create GNOME-style listbox group
+  function createResumeListGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px; height: 32px; border-radius: 8px;
+        background: ${row.iconColor};
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  function clearListArea() {
+    while (listArea.firstChild) {
+      listArea.removeChild(listArea.firstChild);
+    }
+  }
+
+  // --- Career content ---
+  function renderCareerContent() {
+    clearListArea();
+
+    listArea.appendChild(createResumeListGroup('Position', [
+      { icon: 'fa-solid fa-briefcase', iconColor: '#0891B2', text: 'Full Stack Developer - Internship', detail: 'CLAUGER' },
+      { icon: 'fa-solid fa-calendar', iconColor: '#6366F1', text: 'August 2024 - Present', detail: 'Brignais, Auvergne-Rh\u00f4ne-Alpes, France' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Description', [
+      { icon: 'fa-solid fa-circle-info', iconColor: '#7C3AED', text: 'Fullstack Developer at Clauger', detail: 'Focused on developing and maintaining web applications using modern technologies.' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Projects', [
+      { icon: 'fa-solid fa-truck', iconColor: '#059669', text: 'Internal Transport App', detail: 'Development of a internal web application for merchandise transport.' },
+      { icon: 'fa-solid fa-shield-halved', iconColor: '#DC2626', text: 'Cyber Security Platform', detail: 'Currently building a cyber security education platform.' },
+      { icon: 'fa-solid fa-gears', iconColor: '#D97706', text: 'Automation', detail: 'Automation of data processing tasks.' },
+      { icon: 'fa-solid fa-ellipsis', iconColor: '#6B7280', text: 'And More', detail: 'And many other little projects...' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Technologies', [
+      { icon: 'fa-brands fa-angular', iconColor: '#DD0031', text: 'Angular', detail: 'Frontend framework' },
+      { icon: 'fa-solid fa-code', iconColor: '#512BD4', text: '.NET / C#', detail: 'Backend framework' },
+      { icon: 'fa-solid fa-database', iconColor: '#003545', text: 'MariaDB / SQL', detail: 'Database management' },
+      { icon: 'fa-solid fa-infinity', iconColor: '#0078D4', text: 'DevOps & Azure', detail: 'CI/CD, cloud infrastructure' },
+      { icon: 'fa-solid fa-bolt', iconColor: '#0066FF', text: 'Power Automate & Power BI', detail: 'Microsoft Power Platform' },
+      { icon: 'fa-brands fa-git-alt', iconColor: '#F05032', text: 'Git', detail: 'Version control' },
+    ]));
+  }
+
+  // --- Education content ---
+  function renderEducationContent() {
+    clearListArea();
+
+    listArea.appendChild(createResumeListGroup('BTS SIO - SLAM', [
+      { icon: 'fa-solid fa-graduation-cap', iconColor: '#0891B2', text: 'NEXA DIGITAL SCHOOL', detail: '2024 - 2026' },
+      { icon: 'fa-solid fa-location-dot', iconColor: '#6366F1', text: 'Lyon, Auvergne-Rh\u00f4ne-Alpes, France', detail: 'Two-year technical degree in IT \u2014 Software Solutions and Business Applications' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Description', [
+      { icon: 'fa-solid fa-circle-info', iconColor: '#7C3AED', text: 'SLAM Specialization', detail: 'Gained solid experience in software development, databases, web technologies, and project management, with a strong focus on practical, real-world applications.' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Achievements', [
+      { icon: 'fa-solid fa-globe', iconColor: '#059669', text: 'Full-Stack Bill Manager', detail: 'Developed a full-stack bill manager web application.' },
+      { icon: 'fa-solid fa-desktop', iconColor: '#7C3AED', text: 'Winforms Prescription App', detail: 'Developed a winforms application to manage medical prescriptions.' },
+      { icon: 'fa-solid fa-dumbbell', iconColor: '#DC2626', text: 'Gym Social Network', detail: 'Currently building a gym social network platform.' },
+      { icon: 'fa-solid fa-ellipsis', iconColor: '#6B7280', text: 'And More', detail: 'And other less important school projects...' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Key Courses', [
+      { icon: 'fa-brands fa-react', iconColor: '#61DAFB', text: 'React', detail: 'Frontend library' },
+      { icon: 'fa-brands fa-node-js', iconColor: '#339933', text: 'Node.js', detail: 'Backend runtime' },
+      { icon: 'fa-brands fa-aws', iconColor: '#FF9900', text: 'AWS & MongoDB', detail: 'Cloud & NoSQL' },
+      { icon: 'fa-solid fa-shield-halved', iconColor: '#DC2626', text: 'Cybersecurity', detail: 'Security fundamentals' },
+      { icon: 'fa-solid fa-diagram-project', iconColor: '#0891B2', text: 'Software Project Management', detail: 'Agile methodologies' },
+    ]));
+
+    // Separator
+    const sep = document.createElement('div');
+    sep.style.cssText = 'height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0;';
+    listArea.appendChild(sep);
+
+    listArea.appendChild(createResumeListGroup('BAC G\u00e9n\u00e9ral - NSI & AMC (European Section)', [
+      { icon: 'fa-solid fa-graduation-cap', iconColor: '#0891B2', text: 'Lyc\u00e9e Polyvalent Aragon Picasso', detail: '2023 - 2024' },
+      { icon: 'fa-solid fa-location-dot', iconColor: '#6366F1', text: 'Givors, Auvergne-Rh\u00f4ne-Alpes, France', detail: 'General Baccalaur\u00e9at with focus on Computer Science (NSI) and Global English Studies (AMC)' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Achievements', [
+      { icon: 'fa-solid fa-language', iconColor: '#059669', text: 'Self-Taught Languages', detail: 'Mostly self-taught in English and Spanish.' },
+      { icon: 'fa-solid fa-globe', iconColor: '#0078D4', text: 'European Section', detail: 'Improved technical English skills through the European section.' },
+      { icon: 'fa-solid fa-users', iconColor: '#7C3AED', text: 'Team Projects', detail: 'Active participation in school team coding projects.' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Key Courses', [
+      { icon: 'fa-solid fa-code', iconColor: '#0891B2', text: 'Programming Fundamentals', detail: 'Core programming concepts' },
+      { icon: 'fa-solid fa-cube', iconColor: '#7C3AED', text: 'Object-Oriented Programming', detail: 'OOP paradigms' },
+      { icon: 'fa-solid fa-database', iconColor: '#003545', text: 'Databases Intro', detail: 'SQL fundamentals' },
+      { icon: 'fa-solid fa-network-wired', iconColor: '#6366F1', text: 'Networks Introduction', detail: 'Networking basics' },
+      { icon: 'fa-solid fa-book', iconColor: '#D97706', text: 'English History & Culture', detail: 'European section coursework' },
+    ]));
+  }
+
+  // Tab switching
+  careerTab.addEventListener('click', () => {
+    careerTab.style.borderBottomColor = '#06B6D4';
+    careerTab.style.color = '#06B6D4';
+    educationTab.style.borderBottomColor = 'transparent';
+    educationTab.style.color = '#888888';
+    renderCareerContent();
+  });
+
+  educationTab.addEventListener('click', () => {
+    educationTab.style.borderBottomColor = '#06B6D4';
+    educationTab.style.color = '#06B6D4';
+    careerTab.style.borderBottomColor = 'transparent';
+    careerTab.style.color = '#888888';
+    renderEducationContent();
+  });
+
+  // Default: show selected tab
+  if (tab === 'education') {
+    educationTab.style.borderBottomColor = '#06B6D4';
+    educationTab.style.color = '#06B6D4';
+    careerTab.style.borderBottomColor = 'transparent';
+    careerTab.style.color = '#888888';
+    renderEducationContent();
+  } else {
+    renderCareerContent();
+  }
+
+  content.appendChild(identity);
+  content.appendChild(tabBar);
+  content.appendChild(listArea);
+
+  resumeWindow.appendChild(topBar);
+  resumeWindow.appendChild(content);
+  document.body.appendChild(resumeWindow);
 }
 
 function openAboutWindow() {
@@ -2739,6 +2947,7 @@ const APP_GRID_ITEMS = [
   { name: 'LibreOffice Calc', icon: '/res/excellogo.png',                 action: 'calc' },
   { name: 'Clauger',          icon: '/res/logoclauger.png',               action: 'clauger' },
   { name: 'Tech Watch',       icon: '/res/veille-icon.svg',               action: 'veille' },
+  { name: 'Resume',           icon: '/res/resume-icon.svg',               action: 'resume' },
 ];
 
 const showApplicationsBtn = document.getElementById('show-applications');
@@ -2878,6 +3087,9 @@ function executeAppAction(action: string) {
       break;
     case 'veille':
       openVeilleWindow();
+      break;
+    case 'resume':
+      openResumeWindow();
       break;
     case 'noop':
       break;
