@@ -312,6 +312,21 @@ function startBoot(overlay: HTMLElement, output: HTMLElement, resolve: () => voi
   );
   desktopElements.forEach((el) => (el.style.visibility = "hidden"));
 
+  // Skip boot with 3 space presses
+  let spaceCount = 0;
+  let skipTriggered = false;
+  const onSpace = (e: KeyboardEvent) => {
+    if (e.code === "Space") {
+      spaceCount++;
+      if (spaceCount >= 3 && !skipTriggered) {
+        skipTriggered = true;
+        window.removeEventListener("keydown", onSpace);
+        skipToLogin(overlay, output, desktopElements, resolve);
+      }
+    }
+  };
+  window.addEventListener("keydown", onSpace);
+
   // Play BIOS beep - user has interacted so audio is unlocked
   playBiosBeep();
 
@@ -320,8 +335,10 @@ function startBoot(overlay: HTMLElement, output: HTMLElement, resolve: () => voi
 
   // Phase 2: GRUB (waits for Enter or 10s)
   setTimeout(async () => {
+    if (skipTriggered) return;
     await waitForGrub(output);
 
+    if (skipTriggered) return;
     // Phase 3: Post-GRUB (Loading, kernel, systemd)
     playBootSound();
     scheduleLines(output, POST_GRUB_LINES);
@@ -331,8 +348,10 @@ function startBoot(overlay: HTMLElement, output: HTMLElement, resolve: () => voi
 
     // Phase 4: Login screen
     setTimeout(async () => {
+      if (skipTriggered) return;
+      window.removeEventListener("keydown", onSpace);
       stopBootSound();
-      output.innerHTML = "";
+      while (output.firstChild) output.removeChild(output.firstChild);
       overlay.style.background = "#3B3B3B";
 
       await showLoginScreen(overlay);
@@ -349,6 +368,29 @@ function startBoot(overlay: HTMLElement, output: HTMLElement, resolve: () => voi
       }, 1000);
     }, lastDelay + 600);
   }, 5200);
+}
+
+async function skipToLogin(
+  overlay: HTMLElement,
+  output: HTMLElement,
+  desktopElements: NodeListOf<HTMLElement>,
+  resolve: () => void,
+): Promise<void> {
+  stopBootSound();
+  while (output.firstChild) output.removeChild(output.firstChild);
+  overlay.style.background = "#3B3B3B";
+
+  await showLoginScreen(overlay);
+
+  const topbar = document.getElementById("desktop-topbar");
+  if (topbar) topbar.style.zIndex = "";
+  desktopElements.forEach((el) => (el.style.visibility = "visible"));
+  overlay.classList.add("boot-fade-out");
+
+  setTimeout(() => {
+    overlay.remove();
+    resolve();
+  }, 1000);
 }
 
 export function runBootSequence(): Promise<void> {
