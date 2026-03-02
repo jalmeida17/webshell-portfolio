@@ -117,11 +117,36 @@ export const PROJECT_DETAILS: ProjectData[] = [
     repository: []
   },
   {
+    id: 'monbureaconnecte',
+    title: 'MonBureauConnecte - Smart Building Control',
+    year: '2025',
+    status: 'CLAUGER',
+    shortDescription: "IoT building management via OPC automates - <i class='fa-brands fa-angular'></i> <i class='fa-solid fa-code'></i> <i class='fa-solid fa-database'></i> <i class='fa-brands fa-docker'></i>",
+    fullDescription: [
+      'MonBureauConnecte is an internal web application that allows users to monitor and control',
+      'smart building systems in real time. Users can check and adjust temperature, toggle lights,',
+      'set light intensity, detect room occupancy, and check window status — all powered by',
+      'industrial automates connected through an OPC service chain via a database.'
+    ],
+    achievements: [
+      '• Real-time temperature monitoring and control',
+      '• Light management with intensity adjustment',
+      '• Room occupancy detection through automate sensors',
+      '• Window open/close status monitoring',
+      '• OPC service chain integration for industrial automate communication',
+      '• Full-stack Angular/.NET architecture with Docker deployment'
+    ],
+    technologies: [
+      "<i class='fa-brands fa-angular'></i> Angular&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-code'></i> .NET&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-database'></i> SQL Server",
+      "<i class='fa-brands fa-docker'></i> Docker&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-brands fa-microsoft'></i> Azure"
+    ],
+    repository: []
+  },
+  {
     id: 'raw-fitness',
     title: 'RAW - Fitness Tracker & Social Platform',
     year: '2025',
-    status: 'In Progress',
-    shortDescription: "Bodybuilding workouts & macros tracking with social features - <i class='fa-brands fa-react'></i> <i class='fa-brands fa-node-js'></i> <i class='fa-solid fa-database'></i> <i class='fa-brands fa-docker'></i>",
+    shortDescription: "Bodybuilding workouts & macros tracking with social features - <i class='fa-brands fa-react'></i> <i class='fa-solid fa-database'></i> <i class='fa-solid fa-cloud'></i>",
     fullDescription: [
       'A comprehensive full-stack fitness application that combines workout tracking,',
       'macro nutrition monitoring, and social networking features. RAW enables users to',
@@ -135,11 +160,10 @@ export const PROJECT_DETAILS: ProjectData[] = [
       '• Social feed featuring friend activity and achievements',
     ],
     technologies: [
-      "<i class='fa-brands fa-react'></i> React&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-brands fa-node-js'></i> Node.js&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-database'></i> MySQL",
-      "<i class='fa-brands fa-docker'></i> Docker"
+      "<i class='fa-brands fa-react'></i> Next.js&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-database'></i> Supabase&nbsp;&nbsp;&nbsp;&nbsp;<i class='fa-solid fa-cloud'></i> Vercel"
     ],
     repository: [
-      "<a href='https://github.com/jalmeida17/StayRaw' target='_blank' style='color: #298FDD;'>github.com/jalmeida17/StayRaw</a>"
+      "<a href='https://www.stayraw.fr' target='_blank' style='color: #298FDD;'>www.stayraw.fr</a>"
     ]
   },
   {

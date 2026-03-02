@@ -3,355 +3,298 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="stylesheet" href="src/css/css-reset.css">
   <link rel="stylesheet" href="src/css/gui-style.css">
   <link rel="icon" type="image/x-png" href="/res/logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://kit.fontawesome.com/d5effce557.js" crossorigin="anonymous"></script>
-  <title>Joao Almeida - Portfolio</title>
+  <title>Joao Almeida - Full Stack Developer</title>
+  <meta name="description" content="Portfolio of Joao Almeida, Full Stack Developer. Explore my projects, skills, and experience.">
 </head>
 
 <body>
   <!-- Navigation -->
-  <nav class="navbar">
+  <nav class="navbar" id="navbar">
     <div class="nav-container">
       <div class="nav-brand">
-        <img src="/res/logo.png" alt="Logo" class="nav-logo">
         <div class="nav-brand-text">
           <h1>Joao Almeida</h1>
           <p class="nav-subtitle">Full Stack Developer</p>
         </div>
       </div>
-      <ul class="nav-menu">
+      <ul class="nav-menu" id="navMenu">
         <li><a href="#about">About</a></li>
         <li><a href="#career">Career</a></li>
-        <li><a href="#education">Education</a></li>
         <li><a href="#projects">Projects</a></li>
         <li><a href="#skills">Skills</a></li>
         <li><a href="#news">News</a></li>
         <li><a href="#contact">Contact</a></li>
-        <li><a href="index.html" class="terminal-link"><i class="fa-solid fa-terminal"></i> Terminal Version</a></li>
       </ul>
-      <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
         <i class="fa-solid fa-bars"></i>
       </button>
     </div>
   </nav>
 
-  <!-- Hero Section -->
+  <!-- Hero -->
   <section class="hero">
     <div class="hero-content">
       <div class="hero-image">
         <img src="/res/profile.png" alt="Joao Almeida">
       </div>
-      <h2 class="hero-title">Hi, I'm Joao Almeida</h2>
-      <p class="hero-description">Full Stack Developer passionate about coding and tech in general.</p>
+      <div class="hero-label">
+        <span class="dot"></span>
+        Available for opportunities
+      </div>
+      <h2 class="hero-title">Hi, I'm <span class="accent">Joao</span>.<br>I build things for the web.</h2>
+      <p class="hero-description">Full Stack Developer passionate about crafting modern web applications with clean code and great user experiences.</p>
       <div class="hero-buttons">
         <a href="#contact" class="btn btn-primary">Get In Touch</a>
         <a href="/res/cv.pdf" download="CV_Joao_Almeida.pdf" class="btn btn-secondary">
-          <i class="fa-solid fa-download"></i> Download CV
+          <i class="fa-solid fa-arrow-down"></i> Download CV
         </a>
       </div>
     </div>
   </section>
 
-  <!-- About Section -->
+  <!-- About — split layout with text + stats -->
   <section id="about" class="section">
     <div class="container">
-      <h2 class="section-title">About Me</h2>
-      <div class="about-content">
-        <div class="about-text">
-          <p>Hi, I'm Joao! I'm a Full Stack Developer passionate about coding and tech in general. I love building web applications and exploring new technologies.</p>
-          <p>Currently working as a Full Stack Developer Intern at CLAUGER, where I develop and maintain web applications using modern technologies like Angular, .NET, and more.</p>
-          <p>I'm always eager to learn new things and take on challenging projects that push my skills to the next level.</p>
+      <div class="about-layout">
+        <div class="about-left reveal">
+          <p class="section-label">Introduction</p>
+          <h2 class="section-title">About Me</h2>
+          <div class="about-text">
+            <p>Hi, I'm Joao! I'm a Full Stack Developer passionate about coding and tech in general. I love building web applications and exploring new technologies that push boundaries.</p>
+            <p>Currently working as a Full Stack Developer Intern at Clauger, where I develop and maintain web applications using Angular, .NET, and more. I'm always eager to learn and take on challenging projects.</p>
+          </div>
+        </div>
+        <div class="about-right reveal reveal-delay-2">
+          <div class="stat-card">
+            <div class="stat-number">10+</div>
+            <div class="stat-label">Projects</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">2+</div>
+            <div class="stat-label">Year XP</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">10+</div>
+            <div class="stat-label">Technologies</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">4</div>
+            <div class="stat-label">Spoken Languages</div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Career Section -->
+  <!-- Career — minimal timeline style, no card wrapper -->
   <section id="career" class="section section-alt">
-    <div class="container">
-      <h2 class="section-title">Career</h2>
-      <div class="career-content">
-        <div class="career-card">
-          <div class="career-header">
-            <div>
-              <h3>Full Stack Developer - Internship</h3>
-              <h4>CLAUGER</h4>
-            </div>
-            <div class="career-period">
-              <span>August 2024 - Present</span>
-            </div>
-          </div>
-          <p class="career-location">Brignais, Auvergne-Rhône-Alpes, France</p>
-          <p class="career-description">Fullstack Developer at Clauger, focused on developing and maintaining web applications using modern technologies.</p>
-
-          <div class="career-section">
-            <h5>Projects:</h5>
-            <ul>
-              <li>Development of a internal web application for merchandise transport.</li>
-              <li>Currently building a cyber security education platform.</li>
-              <li>Automation of data processing tasks.</li>
-              <li>And many other little projects...</li>
-            </ul>
-          </div>
-
-          <div class="career-section">
-            <h5>Technologies:</h5>
-            <div class="tech-tags">
-              <span class="tech-tag"><i class="fa-brands fa-angular"></i> Angular</span>
-              <span class="tech-tag"><i class="fa-solid fa-code"></i> .NET</span>
-              <span class="tech-tag"><i class="fa-solid fa-hashtag"></i> C#</span>
-              <span class="tech-tag"><i class="fa-solid fa-database"></i> MariaDB</span>
-              <span class="tech-tag"><i class="fa-solid fa-database"></i> SQL</span>
-              <span class="tech-tag"><i class="fa-solid fa-infinity"></i> DevOps</span>
-              <span class="tech-tag"><i class="fa-solid fa-layer-group"></i> PrimeNG</span>
-              <span class="tech-tag"><i class="fa-brands fa-git-alt"></i> Git</span>
-              <span class="tech-tag"><i class="fa-brands fa-microsoft"></i> Azure</span>
-              <span class="tech-tag"><i class="fa-solid fa-bolt"></i> Power Automate</span>
-              <span class="tech-tag"><i class="fa-brands fa-windows"></i> Power BI</span>
-            </div>
+    <div class="container container-narrow">
+      <div class="career-entry reveal">
+        <div class="career-meta">
+          <span class="career-date">Aug 2024 &mdash; Present</span>
+          <span class="career-place">Brignais, France</span>
+        </div>
+        <div class="career-body">
+          <h3>Full Stack Developer <span class="career-type">Internship</span></h3>
+          <h4>Clauger</h4>
+          <p>Developing and maintaining internal web applications — transport management, cybersecurity education platform, data automation, and more.</p>
+          <div class="tech-tags">
+            <span class="tech-tag">Angular</span>
+            <span class="tech-tag">.NET</span>
+            <span class="tech-tag">C#</span>
+            <span class="tech-tag">MariaDB</span>
+            <span class="tech-tag">Azure</span>
+            <span class="tech-tag">Docker</span>
+            <span class="tech-tag">Git</span>
           </div>
         </div>
+      </div>
+
+      <div class="divider reveal"></div>
+
+      <!-- Education inline, same section to avoid repetition -->
+      <div class="career-entry reveal">
+        <div class="career-meta">
+          <span class="career-date">2024 &mdash; 2026</span>
+          <span class="career-place">Lyon, France</span>
+        </div>
+        <div class="career-body">
+          <h3>BTS SIO - SLAM <span class="career-type">Degree</span></h3>
+          <h4>Nexa Digital School</h4>
+          <p>Two-year technical degree in Software Solutions and Business Applications. Full-stack web apps, databases, cybersecurity, and project management.</p>
+        </div>
+      </div>
+
+      <div class="career-entry reveal">
+        <div class="career-meta">
+          <span class="career-date">2023 &mdash; 2024</span>
+          <span class="career-place">Givors, France</span>
+        </div>
+        <div class="career-body">
+          <h3>BAC G&eacute;n&eacute;ral - NSI & AMC <span class="career-type">Baccalaur&eacute;at</span></h3>
+          <h4>Lyc&eacute;e Aragon Picasso</h4>
+          <p>General Baccalaur&eacute;at with a focus on Computer Science and Global English Studies (European section).</p>
+        </div>
+      </div>
+
+      <!-- Document download -->
+      <div class="document-row reveal">
+        <img src="/res/excellogo.png" alt="Excel" class="document-icon">
+        <div class="document-info">
+          <strong>E4 - Tableau de synth&egrave;se</strong>
+          <span>BTS SIO 2025 exam document</span>
+        </div>
+        <a href="/excel/BTS SIO 2025 - E4 - Tableau de synthèse - Joao.xlsx" download class="document-dl">
+          <i class="fa-solid fa-arrow-down"></i>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- Education Section -->
-  <section id="education" class="section">
+  <!-- Projects — compact cards, no achievements list -->
+  <section id="projects" class="section">
     <div class="container">
-      <h2 class="section-title">Education</h2>
-      <div class="education-content">
-
-        <!-- Education 1: BTS SIO -->
-        <div class="education-card">
-          <div class="education-header">
-            <div>
-              <h3>BTS SIO - SLAM</h3>
-              <h4>NEXA DIGITAL SCHOOL</h4>
-            </div>
-            <div class="education-period">
-              <span>2024 - 2026</span>
-            </div>
-          </div>
-          <p class="education-location">Lyon, Auvergne-Rhône-Alpes, France</p>
-          <p class="education-description">Two-year technical degree in IT with a specialization in Software Solutions and Business Applications (SLAM). Gained solid experience in software development, databases, web technologies, and project management, with a strong focus on practical, real-world applications.</p>
-
-          <div class="education-section">
-            <h5>Achievements:</h5>
-            <ul>
-              <li>Developed a full-stack bill manager web application</li>
-              <li>Developed a winforms application to manage medical prescriptions.</li>
-              <li>Currently building a gym social network platform.</li>
-              <li>And other less important school projects...</li>
-            </ul>
-          </div>
-
-          <div class="education-section">
-            <h5>Key Courses:</h5>
-            <div class="tech-tags">
-              <span class="tech-tag"><i class="fa-brands fa-react"></i> React</span>
-              <span class="tech-tag"><i class="fa-brands fa-git-alt"></i> Git</span>
-              <span class="tech-tag"><i class="fa-solid fa-database"></i> SQL</span>
-              <span class="tech-tag"><i class="fa-brands fa-node-js"></i> Node.js</span>
-              <span class="tech-tag"><i class="fa-brands fa-aws"></i> AWS & MongoDB</span>
-              <span class="tech-tag"><i class="fa-solid fa-shield-halved"></i> Cybersecurity</span>
-              <span class="tech-tag"><i class="fa-solid fa-diagram-project"></i> Software Project Management</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Education 2: BAC Général -->
-        <div class="education-card">
-          <div class="education-header">
-            <div>
-              <h3>BAC Général - NSI & AMC (European Section)</h3>
-              <h4>Lycée Polyvalent Aragon Picasso</h4>
-            </div>
-            <div class="education-period">
-              <span>2023 - 2024</span>
-            </div>
-          </div>
-          <p class="education-location">Givors, Auvergne-Rhône-Alpes, France</p>
-          <p class="education-description">General Baccalauréat with a focus on Computer Science (NSI) and Global English Studies (AMC), including a European section in English. Developed strong foundations in IT, programming, and intercultural communication.</p>
-
-          <div class="education-section">
-            <h5>Achievements:</h5>
-            <ul>
-              <li>Mostly self-taught in English and Spanish</li>
-              <li>Improved technical English skills through the European section</li>
-              <li>Active participation in school team coding projects</li>
-            </ul>
-          </div>
-
-          <div class="education-section">
-            <h5>Key Courses:</h5>
-            <div class="tech-tags">
-              <span class="tech-tag"><i class="fa-solid fa-code"></i> Programming Fundamentals</span>
-              <span class="tech-tag"><i class="fa-solid fa-globe"></i> Web Development Basics</span>
-              <span class="tech-tag"><i class="fa-solid fa-cube"></i> Object-Oriented Programming</span>
-              <span class="tech-tag"><i class="fa-solid fa-database"></i> Databases Intro</span>
-              <span class="tech-tag"><i class="fa-solid fa-network-wired"></i> Networks Introduction</span>
-              <span class="tech-tag"><i class="fa-solid fa-book"></i> English History & Culture</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- Projects Section -->
-  <section id="projects" class="section section-alt">
-    <div class="container">
-      <h2 class="section-title">Projects</h2>
+      <h2 class="section-title reveal">Projects</h2>
       <div class="projects-grid">
 
-        <!-- Project 1: Galaxy Swiss Bourdin -->
-        <div class="project-card">
-          <div class="project-header">
+        <div class="project-card reveal">
+          <div class="project-top">
             <h3>Galaxy Swiss Bourdin</h3>
-            <span class="project-year">2024</span>
+            <span class="project-year">2025</span>
           </div>
-          <p class="project-type">Solo Project</p>
-          <p class="project-description">A comprehensive bill management application designed for employees and administrators. Built as part of a school examination project, it demonstrates full-stack development skills with separate frontend and backend repositories.</p>
-
-          <div class="project-section">
-            <h4>Key Achievements:</h4>
-            <ul>
-              <li>Full-stack development with modern architecture</li>
-              <li>Angular frontend expertise with responsive design</li>
-              <li>Node.js backend with MongoDB integration</li>
-              <li>AWS deployment and cloud infrastructure</li>
-            </ul>
-          </div>
-
-          <div class="project-section">
-            <h4>Technologies:</h4>
+          <p class="project-desc">Full-stack bill management app for employees and administrators. Angular frontend, Node.js backend, MongoDB, deployed on AWS.</p>
+          <div class="project-bottom">
             <div class="tech-tags">
-              <span class="tech-tag"><i class="fa-brands fa-angular"></i> Angular</span>
-              <span class="tech-tag"><i class="fa-brands fa-node-js"></i> Node.js</span>
-              <span class="tech-tag"><i class="fa-solid fa-leaf"></i> MongoDB</span>
-              <span class="tech-tag"><i class="fa-brands fa-aws"></i> AWS</span>
+              <span class="tech-tag">Angular</span>
+              <span class="tech-tag">Node.js</span>
+              <span class="tech-tag">MongoDB</span>
+              <span class="tech-tag">AWS</span>
             </div>
-          </div>
-
-          <div class="project-links">
-            <a href="https://github.com/jalmeida17/bts-gsbfrontend-angular" target="_blank" class="project-link">
-              <i class="fa-brands fa-github"></i> Frontend
-            </a>
-            <a href="https://github.com/jalmeida17/bts-gsbbackend" target="_blank" class="project-link">
-              <i class="fa-brands fa-github"></i> Backend
-            </a>
+            <div class="project-links">
+              <a href="https://github.com/jalmeida17/bts-gsbfrontend-angular" target="_blank"><i class="fa-brands fa-github"></i></a>
+              <a href="https://github.com/jalmeida17/bts-gsbbackend" target="_blank"><i class="fa-brands fa-github"></i></a>
+            </div>
           </div>
         </div>
 
-        <!-- Project 2: Medical Prescription Management System -->
-        <div class="project-card">
-          <div class="project-header">
-            <h3>Medical Prescription Management System</h3>
-            <span class="project-year">2024</span>
+        <div class="project-card reveal reveal-delay-1">
+          <div class="project-top">
+            <h3>Medical Prescription System</h3>
+            <span class="project-year">2025</span>
           </div>
-          <p class="project-type">Solo Project</p>
-          <p class="project-description">A Windows Forms desktop application for managing medical prescriptions, patient records, and pharmaceutical databases. Built as part of a BTS educational project demonstrating database design, CRUD operations, and enterprise application architecture.</p>
-
-          <div class="project-section">
-            <h4>Key Achievements:</h4>
-            <ul>
-              <li>Secure authentication with SHA2-256 encryption</li>
-              <li>Professional PDF prescription export with iText7</li>
-              <li>Docker containerization for database services</li>
-              <li>Comprehensive patient and medicine management</li>
-            </ul>
-          </div>
-
-          <div class="project-section">
-            <h4>Technologies:</h4>
+          <p class="project-desc">WinForms desktop app for managing prescriptions, patient records, and pharmaceutical databases. SHA2-256 auth, PDF export, Docker.</p>
+          <div class="project-bottom">
             <div class="tech-tags">
-              <span class="tech-tag"><i class="fa-solid fa-code"></i> .NET 8.0</span>
-              <span class="tech-tag"><i class="fa-solid fa-hashtag"></i> C#</span>
-              <span class="tech-tag"><i class="fa-solid fa-database"></i> MySQL</span>
-              <span class="tech-tag"><i class="fa-brands fa-docker"></i> Docker</span>
-              <span class="tech-tag"><i class="fa-solid fa-file-pdf"></i> PDF Generation</span>
+              <span class="tech-tag">.NET 8.0</span>
+              <span class="tech-tag">C#</span>
+              <span class="tech-tag">MySQL</span>
+              <span class="tech-tag">Docker</span>
             </div>
-          </div>
-
-          <div class="project-links">
-            <a href="https://github.com/jalmeida17/bts-gsb-winform" target="_blank" class="project-link">
-              <i class="fa-brands fa-github"></i> View Project
-            </a>
+            <div class="project-links">
+              <a href="https://github.com/jalmeida17/bts-gsb-winform" target="_blank"><i class="fa-brands fa-github"></i></a>
+            </div>
           </div>
         </div>
 
-        <!-- Project 3: WebShell Portfolio -->
-        <div class="project-card">
-          <div class="project-header">
+        <div class="project-card project-card--accent reveal reveal-delay-2">
+          <div class="project-top">
+            <h3>FretClauger</h3>
+            <div class="project-badges">
+              <span class="badge badge-pro">Clauger</span>
+              <span class="project-year">2025</span>
+            </div>
+          </div>
+          <p class="project-desc">Internal transport & freight management system. Full workflow, Azure AD auth, multi-language support, PDF exports, email templates.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">Angular 19</span>
+              <span class="tech-tag">.NET Core</span>
+              <span class="tech-tag">SQL Server</span>
+              <span class="tech-tag">Docker</span>
+              <span class="tech-tag">Azure</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card project-card--accent reveal reveal-delay-3">
+          <div class="project-top">
+            <h3>MonBureauConnecte</h3>
+            <div class="project-badges">
+              <span class="badge badge-pro">Clauger</span>
+              <span class="project-year">2025</span>
+            </div>
+          </div>
+          <p class="project-desc">Smart building control app. Monitor and adjust temperature, lights, light intensity, room occupancy, and window status via OPC automates connected through a DB service chain.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">Angular</span>
+              <span class="tech-tag">.NET</span>
+              <span class="tech-tag">SQL Server</span>
+              <span class="tech-tag">Docker</span>
+              <span class="tech-tag">Azure</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-card reveal">
+          <div class="project-top">
             <h3>WebShell Portfolio</h3>
-            <span class="project-year">2024</span>
+            <span class="project-year">2025</span>
           </div>
-          <p class="project-type">Solo Project</p>
-          <p class="project-description">An Ubuntu-themed terminal portfolio website featuring an interactive command-line interface with multiple terminal windows, RSS news integration, and a fully responsive Ubuntu desktop simulation.</p>
-
-          <div class="project-section">
-            <h4>Key Achievements:</h4>
-            <ul>
-              <li>Pixel-perfect Ubuntu desktop simulation</li>
-              <li>Interactive multi-window terminal system</li>
-              <li>RSS feed integration for live news</li>
-              <li>Custom command-line interface with easter eggs</li>
-            </ul>
-          </div>
-
-          <div class="project-section">
-            <h4>Technologies:</h4>
+          <p class="project-desc">The Ubuntu terminal portfolio you're looking at! Interactive CLI, multi-window system, RSS news, desktop simulation with easter eggs.</p>
+          <div class="project-bottom">
             <div class="tech-tags">
-              <span class="tech-tag"><i class="fa-brands fa-js"></i> TypeScript</span>
-              <span class="tech-tag"><i class="fa-brands fa-html5"></i> HTML5</span>
-              <span class="tech-tag"><i class="fa-brands fa-css3-alt"></i> CSS3</span>
-              <span class="tech-tag"><i class="fa-solid fa-fire"></i> Vite</span>
+              <span class="tech-tag">TypeScript</span>
+              <span class="tech-tag">HTML5</span>
+              <span class="tech-tag">CSS3</span>
+              <span class="tech-tag">Vite</span>
             </div>
-          </div>
-
-          <div class="project-links">
-            <a href="https://github.com/jalmeida17/webshell-portfolio" target="_blank" class="project-link">
-              <i class="fa-brands fa-github"></i> View Project
-            </a>
+            <div class="project-links">
+              <a href="https://github.com/jalmeida17/webshell-portfolio" target="_blank"><i class="fa-brands fa-github"></i></a>
+            </div>
           </div>
         </div>
 
-        <!-- Project 4: Three.js Portfolio Prototype -->
-        <div class="project-card">
-          <div class="project-header">
-            <h3>Three.js Portfolio Prototype</h3>
-            <span class="project-year">2024</span>
+        <div class="project-card reveal">
+          <div class="project-top">
+            <h3>RAW - Fitness Tracker</h3>
+            <span class="project-year">2025</span>
           </div>
-          <p class="project-type">Solo Project - <span class="project-status">Unfinished</span></p>
-          <p class="project-description">An experimental 3D portfolio using World of Warcraft assets and Three.js. This project showcases advanced 3D web development techniques by integrating WoW.tools assets to build immersive interactive environments.</p>
-
-          <div class="project-section">
-            <h4>Key Achievements:</h4>
-            <ul>
-              <li>Immersive 3D web experience with Three.js</li>
-              <li>Integration with WoW.tools API for game assets</li>
-              <li>Advanced 3D rendering and optimization techniques</li>
-              <li>Innovative portfolio concept and design</li>
-            </ul>
-          </div>
-
-          <div class="project-section">
-            <h4>Technologies:</h4>
+          <p class="project-desc">Full-stack fitness app with workout tracking, macro nutrition, progression analytics, and social features.</p>
+          <div class="project-bottom">
             <div class="tech-tags">
-              <span class="tech-tag"><i class="fa-brands fa-react"></i> React</span>
-              <span class="tech-tag"><i class="fa-solid fa-cube"></i> Three.js</span>
-              <span class="tech-tag"><i class="fa-solid fa-gamepad"></i> WoW.tools</span>
+              <span class="tech-tag">Next.js</span>
+              <span class="tech-tag">Supabase</span>
+              <span class="tech-tag">Vercel</span>
+            </div>
+            <div class="project-links">
+              <a href="https://www.stayraw.fr" target="_blank"><i class="fa-solid fa-globe"></i></a>
             </div>
           </div>
+        </div>
 
-          <div class="project-links">
-            <a href="https://github.com/jalmeida17/wow-portfolio" target="_blank" class="project-link">
-              <i class="fa-brands fa-github"></i> View Project
-            </a>
+        <div class="project-card reveal reveal-delay-1">
+          <div class="project-top">
+            <h3>Three.js Portfolio</h3>
+            <div class="project-badges">
+              <span class="badge badge-wip">Unfinished</span>
+              <span class="project-year">2025</span>
+            </div>
+          </div>
+          <p class="project-desc">Experimental 3D portfolio with World of Warcraft assets. Immersive Three.js environments, WoW.tools API integration.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">React</span>
+              <span class="tech-tag">Three.js</span>
+              <span class="tech-tag">WoW.tools</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/jalmeida17/wow-portfolio" target="_blank"><i class="fa-brands fa-github"></i></a>
+            </div>
           </div>
         </div>
 
@@ -359,70 +302,56 @@
     </div>
   </section>
 
-  <!-- Skills Section -->
-  <section id="skills" class="section">
-    <div class="container">
-      <h2 class="section-title">Skills</h2>
-      <div class="skills-grid">
+  <!-- Skills — flat tag cloud, no cards -->
+  <section id="skills" class="section section-alt">
+    <div class="container container-narrow">
+      <h2 class="section-title reveal">Skills</h2>
 
-        <div class="skill-category">
-          <h3><i class="fa-solid fa-code"></i> Frontend Development</h3>
-          <div class="skill-tags">
-            <span class="skill-tag">Angular</span>
-            <span class="skill-tag">React</span>
-            <span class="skill-tag">TypeScript</span>
-            <span class="skill-tag">JavaScript</span>
-            <span class="skill-tag">HTML5</span>
-            <span class="skill-tag">CSS3</span>
-            <span class="skill-tag">PrimeNG</span>
-          </div>
+      <div class="skills-block reveal">
+        <h3>Tech Stack</h3>
+        <div class="skill-cloud">
+          <span class="skill-pill pill-lg">Angular</span>
+          <span class="skill-pill pill-lg">React</span>
+          <span class="skill-pill pill-lg">Next.js</span>
+          <span class="skill-pill pill-lg">TypeScript</span>
+          <span class="skill-pill">.NET / C#</span>
+          <span class="skill-pill">Node.js</span>
+          <span class="skill-pill">Supabase</span>
+          <span class="skill-pill">Python</span>
+          <span class="skill-pill">MongoDB</span>
+          <span class="skill-pill">MySQL</span>
+          <span class="skill-pill">MariaDB</span>
+          <span class="skill-pill">SQL</span>
+          <span class="skill-pill">Docker</span>
+          <span class="skill-pill">Azure</span>
+          <span class="skill-pill">AWS</span>
+          <span class="skill-pill">Vercel</span>
+          <span class="skill-pill">Git</span>
+          <span class="skill-pill pill-sm">PrimeNG</span>
+          <span class="skill-pill pill-sm">Vite</span>
+          <span class="skill-pill pill-sm">REST APIs</span>
+          <span class="skill-pill pill-sm">Power Automate</span>
+          <span class="skill-pill pill-sm">Power BI</span>
         </div>
+      </div>
 
-        <div class="skill-category">
-          <h3><i class="fa-solid fa-server"></i> Backend Development</h3>
-          <div class="skill-tags">
-            <span class="skill-tag">.NET</span>
-            <span class="skill-tag">C#</span>
-            <span class="skill-tag">Node.js</span>
-            <span class="skill-tag">Python</span>
-            <span class="skill-tag">REST APIs</span>
-          </div>
+      <div class="skills-footer reveal">
+        <div class="skills-footer-group">
+          <span class="skills-footer-label">Soft skills</span>
+          <span>Team player &middot; Disciplined &middot; Patient &middot; Easygoing</span>
         </div>
-
-        <div class="skill-category">
-          <h3><i class="fa-solid fa-database"></i> Databases</h3>
-          <div class="skill-tags">
-            <span class="skill-tag">MongoDB</span>
-            <span class="skill-tag">MySQL</span>
-            <span class="skill-tag">MariaDB</span>
-            <span class="skill-tag">SQL</span>
-          </div>
+        <div class="skills-footer-group">
+          <span class="skills-footer-label">Languages</span>
+          <span>&#127468;&#127463; English &middot; &#127467;&#127479; French &middot; &#127477;&#127481; Portuguese &middot; &#127466;&#127480; Spanish</span>
         </div>
-
-        <div class="skill-category">
-          <h3><i class="fa-solid fa-tools"></i> Tools & DevOps</h3>
-          <div class="skill-tags">
-            <span class="skill-tag">Git</span>
-            <span class="skill-tag">Docker</span>
-            <span class="skill-tag">Azure</span>
-            <span class="skill-tag">AWS</span>
-            <span class="skill-tag">Vite</span>
-            <span class="skill-tag">Power Automate</span>
-            <span class="skill-tag">Power BI</span>
-          </div>
-        </div>
-
       </div>
     </div>
   </section>
 
-  <!-- News Section -->
-  <section id="news" class="section section-alt">
+  <!-- News -->
+  <section id="news" class="section">
     <div class="container">
-      <h2 class="section-title">Today's Tech & Science Headlines</h2>
-      <div class="news-intro">
-        <p>Stay up to date with the latest news from the tech and science world.</p>
-      </div>
+      <h2 class="section-title reveal">Headlines</h2>
       <div id="news-content" class="news-grid">
         <div class="news-loading">
           <i class="fa-solid fa-spinner fa-spin"></i>
@@ -432,50 +361,34 @@
     </div>
   </section>
 
-  <!-- Contact Section -->
-  <section id="contact" class="section">
-    <div class="container">
-      <h2 class="section-title">Get In Touch</h2>
-      <div class="contact-content">
-        <p class="contact-intro">Feel free to reach out to me through any of these platforms:</p>
-        <div class="contact-grid">
-
-          <a href="mailto:joa.almeidasantos@gmail.com" class="contact-card">
-            <i class="fa-solid fa-envelope"></i>
-            <h3>Email</h3>
-            <p>joa.almeidasantos@gmail.com</p>
-          </a>
-
-          <a href="https://github.com/jalmeida17" target="_blank" class="contact-card">
-            <i class="fa-brands fa-github"></i>
-            <h3>GitHub</h3>
-            <p>github.com/jalmeida17</p>
-          </a>
-
-          <a href="https://www.linkedin.com/in/joão-almeida-santos-315b7b300/" target="_blank" class="contact-card">
-            <i class="fa-brands fa-linkedin"></i>
-            <h3>LinkedIn</h3>
-            <p>linkedin.com/in/joão-almeida-santos</p>
-          </a>
-
-          <a href="tel:+33767392800" class="contact-card">
-            <i class="fa-solid fa-phone"></i>
-            <h3>Phone</h3>
-            <p>+33 7 67 39 28 00</p>
-          </a>
-
-          <a href="https://steamcommunity.com/profiles/76561198876096005" target="_blank" class="contact-card">
-            <i class="fa-brands fa-steam"></i>
-            <h3>Steam</h3>
-            <p>steam/76561198876096005</p>
-          </a>
-
-          <div class="contact-card">
-            <i class="fa-brands fa-discord"></i>
-            <h3>Discord</h3>
-            <p>yazh17#6007</p>
-          </div>
-
+  <!-- Contact — horizontal inline -->
+  <section id="contact" class="section section-alt">
+    <div class="container container-narrow">
+      <h2 class="section-title reveal">Get In Touch</h2>
+      <div class="contact-list reveal">
+        <a href="mailto:joa.almeidasantos@gmail.com" class="contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <span>joa.almeidasantos@gmail.com</span>
+        </a>
+        <a href="https://github.com/jalmeida17" target="_blank" class="contact-item">
+          <i class="fa-brands fa-github"></i>
+          <span>jalmeida17</span>
+        </a>
+        <a href="https://www.linkedin.com/in/jo%C3%A3o-almeida-santos-315b7b300/" target="_blank" class="contact-item">
+          <i class="fa-brands fa-linkedin"></i>
+          <span>Jo&atilde;o Almeida Santos</span>
+        </a>
+        <a href="tel:+33767392800" class="contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <span>+33 7 67 39 28 00</span>
+        </a>
+        <a href="https://steamcommunity.com/profiles/76561198876096005" target="_blank" class="contact-item">
+          <i class="fa-brands fa-steam"></i>
+          <span>Steam</span>
+        </a>
+        <div class="contact-item">
+          <i class="fa-brands fa-discord"></i>
+          <span>yazh17#6007</span>
         </div>
       </div>
     </div>
@@ -484,11 +397,7 @@
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <p>&copy; 2024 Joao Almeida. All rights reserved.</p>
-      <p>
-        <a href="index.html">Terminal Version</a> |
-        <a href="https://github.com/jalmeida17/webshell-portfolio" target="_blank">View Source</a>
-      </p>
+      <p>&copy; 2025 Joao Almeida &middot; <a href="index.html"><i class="fa-solid fa-terminal"></i> Terminal Version</a> &middot; <a href="https://github.com/jalmeida17/webshell-portfolio" target="_blank">Source</a></p>
     </div>
   </footer>
 

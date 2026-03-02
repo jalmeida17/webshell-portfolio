@@ -1,21 +1,24 @@
+// ═══════════════════════════════════════════
+// GUI Main — Dark Editorial Portfolio
+// ═══════════════════════════════════════════
+
 // Mobile menu toggle
 const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-const navMenu = document.querySelector('.nav-menu');
+const navMenu = document.getElementById('navMenu');
 
 if (mobileMenuToggle && navMenu) {
   mobileMenuToggle.addEventListener('click', () => {
     navMenu.classList.toggle('active');
     const icon = mobileMenuToggle.querySelector('i');
     if (navMenu.classList.contains('active')) {
-      icon.className = 'fa-solid fa-times';
+      icon.className = 'fa-solid fa-xmark';
     } else {
       icon.className = 'fa-solid fa-bars';
     }
   });
 
   // Close menu when clicking on a link
-  const navLinks = navMenu.querySelectorAll('a');
-  navLinks.forEach(link => {
+  navMenu.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       navMenu.classList.remove('active');
       const icon = mobileMenuToggle.querySelector('i');
@@ -23,6 +26,20 @@ if (mobileMenuToggle && navMenu) {
     });
   });
 }
+
+// Navbar scroll effect
+const navbar = document.getElementById('navbar');
+let lastScroll = 0;
+
+window.addEventListener('scroll', () => {
+  const currentScroll = window.pageYOffset;
+  if (currentScroll > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+  lastScroll = currentScroll;
+}, { passive: true });
 
 // Smooth scroll with offset for fixed navbar
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -33,8 +50,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     e.preventDefault();
     const target = document.querySelector(href);
     if (target) {
-      const navbarHeight = document.querySelector('.navbar').offsetHeight;
-      const targetPosition = target.offsetTop - navbarHeight - 20;
+      const navbarHeight = navbar.offsetHeight;
+      const targetPosition = target.offsetTop - navbarHeight - 24;
       window.scrollTo({
         top: targetPosition,
         behavior: 'smooth'
@@ -43,54 +60,46 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// Add active state to nav links on scroll
+// Active nav link tracking
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-menu a[href^="#"]');
 
 window.addEventListener('scroll', () => {
   let current = '';
-  const navbarHeight = document.querySelector('.navbar').offsetHeight;
+  const navbarHeight = navbar.offsetHeight;
 
   sections.forEach(section => {
     const sectionTop = section.offsetTop - navbarHeight - 100;
-    const sectionHeight = section.clientHeight;
     if (window.pageYOffset >= sectionTop) {
       current = section.getAttribute('id');
     }
   });
 
   navLinks.forEach(link => {
-    link.style.borderBottomColor = 'transparent';
+    link.classList.remove('active');
     if (link.getAttribute('href') === `#${current}`) {
-      link.style.borderBottomColor = 'var(--primary-color)';
+      link.classList.add('active');
     }
   });
-});
+}, { passive: true });
 
-// Intersection Observer for fade-in animations
-const observerOptions = {
-  threshold: 0.1,
-  rootMargin: '0px 0px -100px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
+// Scroll reveal animations
+const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
-      entry.target.style.transform = 'translateY(0)';
+      entry.target.classList.add('visible');
     }
   });
-}, observerOptions);
-
-// Observe elements for animation
-document.querySelectorAll('.project-card, .skill-category, .contact-card, .career-card, .education-card').forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(20px)';
-  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-  observer.observe(el);
+}, {
+  threshold: 0.08,
+  rootMargin: '0px 0px -60px 0px'
 });
 
-// Fetch and display news
+document.querySelectorAll('.reveal').forEach(el => {
+  revealObserver.observe(el);
+});
+
+// Fetch and display news using safe DOM construction
 async function fetchNews() {
   const newsContent = document.getElementById('news-content');
   if (!newsContent) return;
@@ -104,80 +113,79 @@ async function fetchNews() {
   ];
 
   try {
-    let newsHTML = '';
+    // Clear loading state
+    newsContent.textContent = '';
 
     for (const feed of feeds) {
+      const categoryDiv = document.createElement('div');
+      categoryDiv.className = 'news-category reveal';
+
+      const titleH3 = document.createElement('h3');
+      titleH3.className = 'news-category-title';
+      const titleIcon = document.createElement('i');
+      titleIcon.className = feed.icon;
+      titleH3.appendChild(titleIcon);
+      titleH3.appendChild(document.createTextNode(' ' + feed.category));
+      categoryDiv.appendChild(titleH3);
+
       try {
         const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=5`);
         const data = await response.json();
 
         if (data.status === 'ok' && data.items && data.items.length > 0) {
-          newsHTML += `
-            <div class="news-category">
-              <h3 class="news-category-title">
-                <i class="${feed.icon}"></i>
-                ${feed.category}
-              </h3>
-          `;
-
           data.items.forEach(item => {
-            const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
+            const newsItem = document.createElement('div');
+            newsItem.className = 'news-item';
 
-            let description = '';
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'news-item-title';
+            const titleLink = document.createElement('a');
+            titleLink.href = item.link;
+            titleLink.target = '_blank';
+            titleLink.rel = 'noopener noreferrer';
+            const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
+            titleLink.textContent = title;
+            titleDiv.appendChild(titleLink);
+            newsItem.appendChild(titleDiv);
+
             if (item.description) {
               const tempDiv = document.createElement('div');
-              tempDiv.innerHTML = item.description;
-              const textContent = tempDiv.textContent || tempDiv.innerText || '';
-              description = textContent.length > 120 ? textContent.substring(0, 120) + '...' : textContent;
+              tempDiv.textContent = item.description.replace(/<[^>]*>/g, '');
+              const textContent = tempDiv.textContent || '';
+              const description = textContent.length > 120 ? textContent.substring(0, 120) + '...' : textContent;
+              if (description) {
+                const descP = document.createElement('p');
+                descP.className = 'news-item-description';
+                descP.textContent = description;
+                newsItem.appendChild(descP);
+              }
             }
 
-            newsHTML += `
-              <div class="news-item">
-                <div class="news-item-title">
-                  <a href="${item.link}" target="_blank" rel="noopener noreferrer">${title}</a>
-                </div>
-                ${description ? `<p class="news-item-description">${description}</p>` : ''}
-              </div>
-            `;
+            categoryDiv.appendChild(newsItem);
           });
-
-          newsHTML += `</div>`;
         } else {
-          newsHTML += `
-            <div class="news-category">
-              <h3 class="news-category-title">
-                <i class="${feed.icon}"></i>
-                ${feed.category}
-              </h3>
-              <p style="color: #888;">Unable to fetch news from this source.</p>
-            </div>
-          `;
+          const errorP = document.createElement('p');
+          errorP.style.color = 'var(--clr-text-tertiary)';
+          errorP.textContent = 'Unable to fetch news from this source.';
+          categoryDiv.appendChild(errorP);
         }
       } catch (err) {
-        newsHTML += `
-          <div class="news-category">
-            <h3 class="news-category-title">
-              <i class="${feed.icon}"></i>
-              ${feed.category}
-            </h3>
-            <p style="color: #888;">Failed to load news.</p>
-          </div>
-        `;
+        const errorP = document.createElement('p');
+        errorP.style.color = 'var(--clr-text-tertiary)';
+        errorP.textContent = 'Failed to load news.';
+        categoryDiv.appendChild(errorP);
       }
+
+      newsContent.appendChild(categoryDiv);
+      revealObserver.observe(categoryDiv);
     }
 
-    newsContent.innerHTML = newsHTML;
-
-    // Observe news categories for animation
-    document.querySelectorAll('.news-category').forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(20px)';
-      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-      observer.observe(el);
-    });
-
   } catch (error) {
-    newsContent.innerHTML = '<div class="news-error">Failed to fetch news feeds. Please try again later.</div>';
+    newsContent.textContent = '';
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'news-error';
+    errorDiv.textContent = 'Failed to fetch news feeds. Please try again later.';
+    newsContent.appendChild(errorDiv);
   }
 }
 
