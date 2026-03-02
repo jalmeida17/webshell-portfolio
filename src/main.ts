@@ -7,7 +7,6 @@ import { PROJECTS as PROJECTS_DATA, PROJECT_DETAILS, ProjectData } from "./comma
 import { createCareer } from "./commands/career";
 import { EDUCATION } from "./commands/education";
 import { SKILLS } from "./commands/skills";
-import { CLAUGER } from "./commands/clauger";
 import { runBootSequence } from "./boot";
 
 //mutWriteLines gets deleted and reassigned
@@ -796,12 +795,13 @@ function openCareerWindow() {
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
+        newTerminal.style.width = 'calc(100% - 64px)';
+        newTerminal.style.height = 'calc(100% - 28px)';
+        newTerminal.style.left = '64px';
+        newTerminal.style.right = '0';
+        newTerminal.style.top = '28px';
+        newTerminal.style.transform = 'none';
+        newTerminal.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
@@ -873,12 +873,13 @@ function openEducationWindow() {
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
+        newTerminal.style.width = 'calc(100% - 64px)';
+        newTerminal.style.height = 'calc(100% - 28px)';
+        newTerminal.style.left = '64px';
+        newTerminal.style.right = '0';
+        newTerminal.style.top = '28px';
+        newTerminal.style.transform = 'none';
+        newTerminal.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
@@ -950,12 +951,13 @@ function openSkillsWindow() {
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
+        newTerminal.style.width = 'calc(100% - 64px)';
+        newTerminal.style.height = 'calc(100% - 28px)';
+        newTerminal.style.left = '64px';
+        newTerminal.style.right = '0';
+        newTerminal.style.top = '28px';
+        newTerminal.style.transform = 'none';
+        newTerminal.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
@@ -1027,12 +1029,13 @@ function openProjectDetailWindow(project: ProjectData) {
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
+        newTerminal.style.width = 'calc(100% - 64px)';
+        newTerminal.style.height = 'calc(100% - 28px)';
+        newTerminal.style.left = '64px';
+        newTerminal.style.right = '0';
+        newTerminal.style.top = '28px';
+        newTerminal.style.transform = 'none';
+        newTerminal.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
@@ -1123,12 +1126,13 @@ async function openNewsWindow() {
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
+        newTerminal.style.width = 'calc(100% - 64px)';
+        newTerminal.style.height = 'calc(100% - 28px)';
+        newTerminal.style.left = '64px';
+        newTerminal.style.right = '0';
+        newTerminal.style.top = '28px';
+        newTerminal.style.transform = 'none';
+        newTerminal.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
@@ -1291,12 +1295,13 @@ function openAboutWindow() {
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
+        newTerminal.style.width = 'calc(100% - 64px)';
+        newTerminal.style.height = 'calc(100% - 28px)';
+        newTerminal.style.left = '64px';
+        newTerminal.style.right = '0';
+        newTerminal.style.top = '28px';
+        newTerminal.style.transform = 'none';
+        newTerminal.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
@@ -1401,116 +1406,243 @@ function openAboutWindow() {
   setTimeout(() => terminalInput.focus(), 100);
 }
 
-function openClaugerWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+let claugerWindow: HTMLDivElement | null = null;
 
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
+function openClaugerWindow() {
+  if (claugerWindow && document.body.contains(claugerWindow)) {
+    bringToFront(claugerWindow);
+    return;
+  }
+
+  claugerWindow = document.createElement('div');
   windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 50%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
+  claugerWindow.style.cssText = `
+    position: fixed;
+    width: 750px;
+    height: 620px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
   `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
+  claugerWindow.addEventListener('mousedown', () => bringToFront(claugerWindow!));
 
   let isWinMax = false;
   const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMinimize: () => { if (claugerWindow) claugerWindow.style.display = 'none'; },
     onMaximize: () => {
+      if (!claugerWindow) return;
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 50%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
+        claugerWindow.style.width = '750px';
+        claugerWindow.style.height = '620px';
+        claugerWindow.style.left = '50%';
+        claugerWindow.style.top = '50%';
+        claugerWindow.style.transform = 'translate(-50%, -50%)';
+        claugerWindow.style.borderRadius = '6px';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
+        claugerWindow.style.width = 'calc(100% - 64px)';
+        claugerWindow.style.height = 'calc(100% - 28px)';
+        claugerWindow.style.left = '64px';
+        claugerWindow.style.top = '28px';
+        claugerWindow.style.transform = 'none';
+        claugerWindow.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
-    onClose: () => document.body.removeChild(newTerminal),
+    onClose: () => {
+      if (claugerWindow && document.body.contains(claugerWindow)) {
+        document.body.removeChild(claugerWindow);
+        claugerWindow = null;
+      }
+    },
   });
 
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/clauger', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
+  const topBar = createTitleBar('Clauger', controls, '/res/logoclauger.png');
+  makeDraggable(claugerWindow, topBar, () => isWinMax);
   topBar.addEventListener('dblclick', () => {
     const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
     if (maxBtn) maxBtn.click();
   });
 
+  // Content area — GNOME "About" style layout
   const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
-
-  // Add Clauger content with prompt and logo
-  let claugerHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/clauger</p>`;
-
-  // Add logo with white background similar to /about profile image
-  claugerHTML += `
-    <div style="display: flex; justify-content: flex-start; margin: 20px 0;">
-      <img src="/res/logo-clauger.png" style="width: 150px; height: 100px; border-radius: 8px; border: 2px solid ${command.colors.border.color}; object-fit: contain; background: #FFFFFF; padding: 10px;">
-    </div>
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
   `;
 
-  CLAUGER.forEach((line) => {
-    if (line === '<br>') {
-      claugerHTML += '<br>';
-    } else {
-      claugerHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
-  });
-
-  content.innerHTML = claugerHTML;
-
-  // Add input for closing
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
+  // === Identity section (centered logo + name + tagline) ===
+  const identity = document.createElement('div');
+  identity.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 32px 28px;
+    gap: 12px;
   `;
-  terminalInput.placeholder = 'Press Enter to close...';
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
+  const logoWrap = document.createElement('div');
+  logoWrap.style.cssText = `
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255,255,255,0.06);
+  `;
 
-  // Global keydown listener for this window
-  const claugerKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', claugerKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', claugerKeydownHandler);
+  const logoImg = document.createElement('img');
+  logoImg.src = '/res/logo-clauger.png';
+  logoImg.alt = 'Clauger';
+  logoImg.style.cssText = 'width: 68px; height: 68px; object-fit: contain;';
+  logoWrap.appendChild(logoImg);
 
-  content.appendChild(terminalInput);
+  const idName = document.createElement('div');
+  idName.textContent = 'Clauger';
+  idName.style.cssText = 'font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
 
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
+  const idTag = document.createElement('div');
+  idTag.textContent = 'Industrial Refrigeration & HVAC Solutions';
+  idTag.style.cssText = 'font-size: 13px; color: #999999; font-weight: 400;';
 
-  setTimeout(() => terminalInput.focus(), 100);
+  const idBadge = document.createElement('div');
+  idBadge.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 4px 12px;
+    background: rgba(41, 143, 221, 0.12);
+    border-radius: 20px;
+  `;
+  const badgeIcon = document.createElement('i');
+  badgeIcon.className = 'fa-solid fa-globe';
+  badgeIcon.style.cssText = 'font-size: 11px; color: #298FDD;';
+  const badgeText = document.createElement('span');
+  badgeText.textContent = '20+ countries worldwide';
+  badgeText.style.cssText = 'font-size: 12px; color: #298FDD; font-weight: 500;';
+  idBadge.appendChild(badgeIcon);
+  idBadge.appendChild(badgeText);
+
+  identity.appendChild(logoWrap);
+  identity.appendChild(idName);
+  identity.appendChild(idTag);
+  identity.appendChild(idBadge);
+
+  // === Listbox groups (GNOME Settings style) ===
+  const listArea = document.createElement('div');
+  listArea.style.cssText = 'padding: 0 28px 28px; display: flex; flex-direction: column; gap: 20px;';
+
+  // Helper: create a GNOME-style listbox group
+  function createListGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
+
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = `
+      background: #363636;
+      border-radius: 10px;
+      overflow: hidden;
+    `;
+
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: ${row.iconColor};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  listArea.appendChild(createListGroup('Core Expertise', [
+    { icon: 'fa-solid fa-snowflake',       iconColor: '#298FDD', text: 'Industrial Refrigeration',       detail: 'Large-scale cooling systems for industrial facilities' },
+    { icon: 'fa-solid fa-warehouse',        iconColor: '#5B7FCC', text: 'Cold Storage',                   detail: 'Temperature-controlled warehousing solutions' },
+    { icon: 'fa-solid fa-leaf',             iconColor: '#48A56A', text: 'Energy Efficiency',              detail: 'Sustainable and eco-friendly cooling technologies' },
+    { icon: 'fa-solid fa-utensils',         iconColor: '#D4763E', text: 'Food & Beverage Processing',    detail: 'Process refrigeration for production lines' },
+  ]));
+
+  listArea.appendChild(createListGroup('Industries', [
+    { icon: 'fa-solid fa-industry',         iconColor: '#7C6DAF', text: 'Food Processing & Production',  detail: 'End-to-end cold chain for food manufacturers' },
+    { icon: 'fa-solid fa-truck-fast',        iconColor: '#CC6B5B', text: 'Cold Chain Logistics',          detail: 'Transport and distribution refrigeration' },
+    { icon: 'fa-solid fa-capsules',          iconColor: '#4CA8A8', text: 'Pharmaceuticals',               detail: 'Precision temperature control for pharma storage' },
+    { icon: 'fa-solid fa-flask',             iconColor: '#A0873C', text: 'Chemical Industry',             detail: 'Specialized cooling for chemical processes' },
+  ]));
+
+  listArea.appendChild(createListGroup('About', [
+    { icon: 'fa-solid fa-location-dot',      iconColor: '#666666', text: 'Headquartered in France',       detail: 'Global operations across Europe, Americas & Asia' },
+    { icon: 'fa-solid fa-clock-rotate-left',  iconColor: '#666666', text: 'Decades of Experience',         detail: 'Engineering excellence since the 20th century' },
+    { icon: 'fa-solid fa-handshake',          iconColor: '#666666', text: 'My Current Employer',           detail: 'Where I work as a Full Stack Developer' },
+  ]));
+
+  content.appendChild(identity);
+  content.appendChild(listArea);
+
+  claugerWindow.appendChild(topBar);
+  claugerWindow.appendChild(content);
+  document.body.appendChild(claugerWindow);
 }
 
 initEventListeners();
@@ -1530,6 +1662,7 @@ if (terminalIcon) {
         USERINPUT.focus();
       } else {
         // Close terminal
+        resetMainTerminalGeometry();
         mainEl.style.display = 'none';
         terminalIcon.classList.remove('active');
       }
@@ -1558,9 +1691,26 @@ if (minimizeButton && mainElement && terminalIcon) {
   });
 }
 
+function resetMainTerminalGeometry() {
+  if (!mainElement || !maximizeButton) return;
+  mainElement.style.width = "50%";
+  mainElement.style.height = "80%";
+  mainElement.style.position = "absolute";
+  mainElement.style.left = "50%";
+  mainElement.style.top = "50%";
+  mainElement.style.transform = "translate(-50%, -50%)";
+  mainElement.style.margin = "";
+  mainElement.style.marginTop = "";
+  mainElement.style.flex = "";
+  mainElement.style.borderRadius = "8px 8px 2px 2px";
+  maximizeButton.replaceChildren(createSvgIcon('maximize'));
+  isMaximized = false;
+}
+
 // Close button functionality
 if (closeButton && mainElement && terminalIcon) {
   closeButton.addEventListener('click', () => {
+    resetMainTerminalGeometry();
     mainElement.style.display = 'none';
     terminalIcon.classList.remove('active');
   });
@@ -1578,18 +1728,20 @@ if (maximizeButton && mainElement) {
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
+      mainElement.style.borderRadius = "8px 8px 2px 2px";
       maximizeButton.replaceChildren(createSvgIcon('maximize'));
       isMaximized = false;
     } else {
-      mainElement.style.width = "95%";
-      mainElement.style.height = "";
-      mainElement.style.position = "";
-      mainElement.style.left = "52%";
-      mainElement.style.top = "50%";
-      mainElement.style.transform = "translate(-50%, -50%)";
+      mainElement.style.width = "calc(100% - 64px)";
+      mainElement.style.height = "calc(100% - 28px)";
+      mainElement.style.position = "fixed";
+      mainElement.style.left = "64px";
+      mainElement.style.top = "28px";
+      mainElement.style.transform = "none";
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
+      mainElement.style.borderRadius = "0";
       maximizeButton.replaceChildren(createSvgIcon('maximize-restore'));
       isMaximized = true;
     }
@@ -2048,14 +2200,16 @@ function openCalcWindow() {
         calcWindow.style.left = '50%';
         calcWindow.style.top = '50%';
         calcWindow.style.transform = 'translate(-50%, -50%)';
+        calcWindow.style.borderRadius = '6px';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isCalcMaximized = false;
       } else {
-        calcWindow.style.width = 'calc(95% - 32px)';
-        calcWindow.style.height = '90%';
-        calcWindow.style.left = 'calc(50% + 32px)';
-        calcWindow.style.top = '50%';
-        calcWindow.style.transform = 'translate(-50%, -50%)';
+        calcWindow.style.width = 'calc(100% - 64px)';
+        calcWindow.style.height = 'calc(100% - 28px)';
+        calcWindow.style.left = '64px';
+        calcWindow.style.top = '28px';
+        calcWindow.style.transform = 'none';
+        calcWindow.style.borderRadius = '0';
         if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isCalcMaximized = true;
       }
