@@ -3,12 +3,9 @@ import { createHelp } from "./commands/help";
 import { createBanner } from "./commands/banner";
 import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
-import { PROJECTS as PROJECTS_DATA, PROJECT_DETAILS, ProjectData } from "./commands/projects";
-import { createCareer } from "./commands/career";
-import { EDUCATION } from "./commands/education";
-import { SKILLS } from "./commands/skills";
-import { CLAUGER } from "./commands/clauger";
+import { PROJECT_DETAILS, ProjectData } from "./commands/projects";
 import { runBootSequence } from "./boot";
+import { VEILLE_SOURCES, VEILLE_SYNTHESES, VEILLE_METHODOLOGY } from "./commands/veille";
 
 //mutWriteLines gets deleted and reassigned
 let mutWriteLines = document.getElementById("write-lines");
@@ -24,8 +21,6 @@ const HELP = createHelp();
 const BANNER = createBanner();
 const ABOUT = createAbout();
 const DEFAULT = createDefault();
-const CAREER = createCareer();
-const SKILLS_DATA = SKILLS;
 
 //WRITELINESCOPY is used to during the "clear" command
 const WRITELINESCOPY = mutWriteLines;
@@ -39,7 +34,7 @@ const PRE_USER = document.getElementById("pre-user");
 const HOST = document.getElementById("host");
 const USER = document.getElementById("user");
 const PROMPT = document.getElementById("prompt");
-const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "news", "cv", "gui", "clauger"];
+const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "veille", "cv", "gui", "clauger"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
@@ -226,38 +221,21 @@ function commandHandler(input : string) {
         writeLines(["I don't want you to break the other projects.", "<br>"])
         break;
       }
-      writeLines(PROJECTS_DATA);
-      // Add click listeners to project links after they're rendered
-      // Calculate total animation time: 40ms per line * number of lines
-      const totalAnimationTime = PROJECTS_DATA.length * 40 + 100;
-      setTimeout(() => {
-        const projectLinks = document.querySelectorAll('.project-link');
-        projectLinks.forEach(link => {
-          link.addEventListener('click', (e) => {
-            const projectId = (e.target as HTMLElement).getAttribute('data-project-id');
-            if (projectId) {
-              const project = PROJECT_DETAILS.find(p => p.id === projectId);
-              if (project) {
-                openProjectDetailWindow(project);
-              }
-            }
-          });
-        });
-      }, totalAnimationTime);
+      openProjectsWindow();
       break;
     case 'career':
       if(bareMode) {
         writeLines(["Nothing to see here.", "<br>"])
         break;
       }
-      openCareerWindow();
+      openResumeWindow('career');
       break;
     case 'education':
       if(bareMode) {
         writeLines(["Nothing to see here.", "<br>"])
         break;
       }
-      openEducationWindow();
+      openResumeWindow('education');
       break;
     case 'skills':
       if(bareMode) {
@@ -266,12 +244,12 @@ function commandHandler(input : string) {
       }
       openSkillsWindow();
       break;
-    case 'news':
+    case 'veille':
       if(bareMode) {
-        writeLines(["No news for you.", "<br>"])
+        writeLines(["No tech watch for you.", "<br>"])
         break;
       }
-      openNewsWindow();
+      openVeilleWindow();
       break;
     case 'cv':
       if(bareMode) {
@@ -491,8 +469,8 @@ const initEventListeners = () => {
 
   window.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
-    // Don't focus main input if clicking on a new terminal
-    if (target.closest('.new-terminal')) return;
+    // Don't focus main input if clicking on a new terminal or app grid overlay
+    if (target.closest('.new-terminal') || target.closest('#app-grid-overlay')) return;
     USERINPUT.focus();
   });
 
@@ -633,6 +611,48 @@ function bringToFront(element: HTMLElement) {
 
 // ─── Window Management Helpers ───
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function createSvgIcon(type: 'minimize' | 'maximize' | 'maximize-restore' | 'close'): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 12 12');
+
+  if (type === 'minimize') {
+    const line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', '2'); line.setAttribute('y1', '6');
+    line.setAttribute('x2', '10'); line.setAttribute('y2', '6');
+    svg.appendChild(line);
+  } else if (type === 'maximize') {
+    const rect = document.createElementNS(SVG_NS, 'rect');
+    rect.setAttribute('x', '2'); rect.setAttribute('y', '2');
+    rect.setAttribute('width', '8'); rect.setAttribute('height', '8');
+    rect.setAttribute('rx', '1');
+    svg.appendChild(rect);
+  } else if (type === 'maximize-restore') {
+    const back = document.createElementNS(SVG_NS, 'rect');
+    back.setAttribute('x', '3.5'); back.setAttribute('y', '1');
+    back.setAttribute('width', '7.5'); back.setAttribute('height', '7.5');
+    back.setAttribute('rx', '1');
+    svg.appendChild(back);
+    const front = document.createElementNS(SVG_NS, 'rect');
+    front.setAttribute('x', '1'); front.setAttribute('y', '3.5');
+    front.setAttribute('width', '7.5'); front.setAttribute('height', '7.5');
+    front.setAttribute('rx', '1');
+    svg.appendChild(front);
+  } else if (type === 'close') {
+    const l1 = document.createElementNS(SVG_NS, 'line');
+    l1.setAttribute('x1', '3'); l1.setAttribute('y1', '3');
+    l1.setAttribute('x2', '9'); l1.setAttribute('y2', '9');
+    svg.appendChild(l1);
+    const l2 = document.createElementNS(SVG_NS, 'line');
+    l2.setAttribute('x1', '9'); l2.setAttribute('y1', '3');
+    l2.setAttribute('x2', '3'); l2.setAttribute('y2', '9');
+    svg.appendChild(l2);
+  }
+
+  return svg;
+}
+
 function createWindowControls(options: {
   onMinimize?: () => void;
   onMaximize?: () => void;
@@ -644,7 +664,7 @@ function createWindowControls(options: {
   if (options.onMinimize) {
     const minBtn = document.createElement('button');
     minBtn.className = 'window-btn';
-    minBtn.textContent = '─';
+    minBtn.appendChild(createSvgIcon('minimize'));
     minBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onMinimize!(); });
     container.appendChild(minBtn);
   }
@@ -652,14 +672,14 @@ function createWindowControls(options: {
   if (options.onMaximize) {
     const maxBtn = document.createElement('button');
     maxBtn.className = 'window-btn window-btn-maximize';
-    maxBtn.textContent = '□';
+    maxBtn.appendChild(createSvgIcon('maximize'));
     maxBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onMaximize!(); });
     container.appendChild(maxBtn);
   }
 
   const closeBtn = document.createElement('button');
   closeBtn.className = 'window-btn window-btn-close';
-  closeBtn.textContent = '✕';
+  closeBtn.appendChild(createSvgIcon('close'));
   closeBtn.addEventListener('click', (e) => { e.stopPropagation(); options.onClose(); });
   container.appendChild(closeBtn);
 
@@ -727,502 +747,1631 @@ function makeDraggable(windowEl: HTMLElement, titleBar: HTMLElement, isMaximized
 
 // ─── End Helpers ───
 
-function openCareerWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
-  windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 40%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
-  `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
-
-  let isWinMax = false;
-  const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
-    onMaximize: () => {
-      const maxBtn = controls.querySelector('.window-btn-maximize');
-      if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
-        isWinMax = false;
-      } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
-        isWinMax = true;
-      }
-    },
-    onClose: () => document.body.removeChild(newTerminal),
-  });
-
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/career', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
-  topBar.addEventListener('dblclick', () => {
-    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
-    if (maxBtn) maxBtn.click();
-  });
-
-  const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
-
-  let careerHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/career</p>`;
-  CAREER.forEach((line) => {
-    careerHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-  });
-  content.innerHTML = careerHTML;
-
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
-  terminalInput.placeholder = 'Press Enter to close...';
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
-
-  const careerKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', careerKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', careerKeydownHandler);
-
-  content.appendChild(terminalInput);
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-  setTimeout(() => terminalInput.focus(), 100);
-}
-
-function openEducationWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
-  windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 40%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
-  `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
-
-  let isWinMax = false;
-  const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
-    onMaximize: () => {
-      const maxBtn = controls.querySelector('.window-btn-maximize');
-      if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
-        isWinMax = false;
-      } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
-        isWinMax = true;
-      }
-    },
-    onClose: () => document.body.removeChild(newTerminal),
-  });
-
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/education', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
-  topBar.addEventListener('dblclick', () => {
-    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
-    if (maxBtn) maxBtn.click();
-  });
-
-  const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
-
-  let educationHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/education</p>`;
-  EDUCATION.forEach((line) => {
-    educationHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-  });
-  content.innerHTML = educationHTML;
-
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
-  terminalInput.placeholder = 'Press Enter to close...';
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
-
-  const educationKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', educationKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', educationKeydownHandler);
-
-  content.appendChild(terminalInput);
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-  setTimeout(() => terminalInput.focus(), 100);
-}
+// ═══════ SKILLS APP ═══════
+let skillsWindow: HTMLDivElement | null = null;
 
 function openSkillsWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+  if (skillsWindow && document.body.contains(skillsWindow)) {
+    bringToFront(skillsWindow);
+    return;
+  }
 
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
+  skillsWindow = document.createElement('div');
   windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 40%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
+  skillsWindow.style.cssText = `
+    position: fixed;
+    width: 800px;
+    height: 700px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
   `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
+  skillsWindow.addEventListener('mousedown', () => bringToFront(skillsWindow!));
 
   let isWinMax = false;
   const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMinimize: () => { if (skillsWindow) skillsWindow.style.display = 'none'; },
     onMaximize: () => {
+      if (!skillsWindow) return;
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        skillsWindow.style.width = '800px';
+        skillsWindow.style.height = '700px';
+        skillsWindow.style.left = '50%';
+        skillsWindow.style.top = '50%';
+        skillsWindow.style.transform = 'translate(-50%, -50%)';
+        skillsWindow.style.borderRadius = '6px';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        skillsWindow.style.width = 'calc(100% - 64px)';
+        skillsWindow.style.height = 'calc(100% - 28px)';
+        skillsWindow.style.left = '64px';
+        skillsWindow.style.top = '28px';
+        skillsWindow.style.transform = 'none';
+        skillsWindow.style.borderRadius = '0';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
-    onClose: () => document.body.removeChild(newTerminal),
+    onClose: () => {
+      if (skillsWindow && document.body.contains(skillsWindow)) {
+        document.body.removeChild(skillsWindow);
+        skillsWindow = null;
+      }
+    },
   });
 
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/skills', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
+  const topBar = createTitleBar('Skills', controls);
+  makeDraggable(skillsWindow, topBar, () => isWinMax);
   topBar.addEventListener('dblclick', () => {
     const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
     if (maxBtn) maxBtn.click();
   });
 
+  // Content area
   const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
+  `;
 
-  let skillsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/skills</p>`;
-  SKILLS_DATA.forEach((line) => {
-    skillsHTML += line === '<br>' ? '<br>' : `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-  });
-  content.innerHTML = skillsHTML;
+  // === Identity section ===
+  const identity = document.createElement('div');
+  identity.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 32px 28px;
+    gap: 12px;
+  `;
 
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
-  terminalInput.placeholder = 'Press Enter to close...';
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
+  const iconWrap = document.createElement('div');
+  iconWrap.style.cssText = `
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #D97706, #F59E0B);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255,255,255,0.06);
+  `;
+  const skillsIconEl = document.createElement('i');
+  skillsIconEl.className = 'fa-solid fa-star';
+  skillsIconEl.style.cssText = 'font-size: 42px; color: #FFFFFF;';
+  iconWrap.appendChild(skillsIconEl);
 
-  const skillsKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', skillsKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', skillsKeydownHandler);
+  const idName = document.createElement('div');
+  idName.textContent = 'Skills';
+  idName.style.cssText = 'font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
 
-  content.appendChild(terminalInput);
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-  setTimeout(() => terminalInput.focus(), 100);
+  const idTag = document.createElement('div');
+  idTag.textContent = 'Technical & Soft Skills';
+  idTag.style.cssText = 'font-size: 13px; color: #999999; font-weight: 400;';
+
+  identity.appendChild(iconWrap);
+  identity.appendChild(idName);
+  identity.appendChild(idTag);
+
+  // === List area ===
+  const listArea = document.createElement('div');
+  listArea.style.cssText = 'padding: 0 28px 28px; display: flex; flex-direction: column; gap: 20px;';
+
+  // Helper: GNOME-style listbox group with pill badges
+  function createSkillGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px; height: 32px; border-radius: 8px;
+        background: ${row.iconColor};
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  // Helper: progress bar row
+  function createLangGroup(label: string, langs: { flag: string; name: string; pct: number }[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+    langs.forEach((lang, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < langs.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const flag = document.createElement('div');
+      flag.textContent = lang.flag;
+      flag.style.cssText = 'font-size: 22px; flex-shrink: 0; width: 32px; text-align: center;';
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+
+      const nameRow = document.createElement('div');
+      nameRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;';
+      const nameText = document.createElement('div');
+      nameText.textContent = lang.name;
+      nameText.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500;';
+      const pctText = document.createElement('div');
+      pctText.textContent = lang.pct + '%';
+      pctText.style.cssText = 'font-size: 11px; color: #F59E0B; font-weight: 600;';
+      nameRow.appendChild(nameText);
+      nameRow.appendChild(pctText);
+
+      const barBg = document.createElement('div');
+      barBg.style.cssText = 'height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden;';
+      const barFill = document.createElement('div');
+      barFill.style.cssText = `height: 100%; width: ${lang.pct}%; background: linear-gradient(90deg, #D97706, #F59E0B); border-radius: 2px; transition: width 0.6s ease;`;
+      barBg.appendChild(barFill);
+
+      textWrap.appendChild(nameRow);
+      textWrap.appendChild(barBg);
+
+      rowEl.appendChild(flag);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  // --- Programming Languages ---
+  listArea.appendChild(createSkillGroup('Programming Languages', [
+    { icon: 'fa-brands fa-js', iconColor: '#F7DF1E', text: 'JavaScript', detail: 'ES6+, DOM, async/await' },
+    { icon: 'fa-brands fa-js', iconColor: '#3178C6', text: 'TypeScript', detail: 'Typed JavaScript' },
+    { icon: 'fa-solid fa-hashtag', iconColor: '#512BD4', text: 'C#', detail: '.NET ecosystem' },
+    { icon: 'fa-brands fa-python', iconColor: '#3776AB', text: 'Python', detail: 'Scripting & automation' },
+    { icon: 'fa-brands fa-html5', iconColor: '#E34F26', text: 'HTML5', detail: 'Semantic markup' },
+    { icon: 'fa-brands fa-css3-alt', iconColor: '#1572B6', text: 'CSS3', detail: 'Styling & animations' },
+  ]));
+
+  // --- Frameworks & Libraries ---
+  listArea.appendChild(createSkillGroup('Frameworks & Libraries', [
+    { icon: 'fa-brands fa-react', iconColor: '#61DAFB', text: 'React.js', detail: 'Component-based UI' },
+    { icon: 'fa-brands fa-react', iconColor: '#000000', text: 'Next.js', detail: 'React framework' },
+    { icon: 'fa-brands fa-angular', iconColor: '#DD0031', text: 'Angular', detail: 'Enterprise frontend' },
+    { icon: 'fa-brands fa-node-js', iconColor: '#339933', text: 'Node.js', detail: 'Server-side JS' },
+    { icon: 'fa-solid fa-code', iconColor: '#512BD4', text: '.NET / ASP.NET', detail: 'Backend framework' },
+    { icon: 'fa-solid fa-layer-group', iconColor: '#DD0031', text: 'PrimeNG', detail: 'Angular UI library' },
+    { icon: 'fa-solid fa-database', iconColor: '#3ECF8E', text: 'Supabase', detail: 'Backend as a service' },
+  ]));
+
+  // --- Databases ---
+  listArea.appendChild(createSkillGroup('Databases', [
+    { icon: 'fa-solid fa-database', iconColor: '#003545', text: 'MariaDB', detail: 'Relational database' },
+    { icon: 'fa-solid fa-leaf', iconColor: '#47A248', text: 'MongoDB', detail: 'NoSQL document store' },
+    { icon: 'fa-solid fa-database', iconColor: '#336791', text: 'SQL', detail: 'Query language' },
+  ]));
+
+  // --- Cloud & DevOps ---
+  listArea.appendChild(createSkillGroup('Cloud & DevOps', [
+    { icon: 'fa-brands fa-git-alt', iconColor: '#F05032', text: 'Git', detail: 'Version control' },
+    { icon: 'fa-brands fa-github', iconColor: '#6E40C9', text: 'GitHub', detail: 'Code hosting & CI' },
+    { icon: 'fa-brands fa-aws', iconColor: '#FF9900', text: 'AWS', detail: 'Cloud services' },
+    { icon: 'fa-brands fa-microsoft', iconColor: '#0078D4', text: 'Azure', detail: 'Microsoft cloud' },
+    { icon: 'fa-solid fa-bolt', iconColor: '#0066FF', text: 'Power Automate', detail: 'Workflow automation' },
+    { icon: 'fa-brands fa-windows', iconColor: '#0078D4', text: 'Power BI', detail: 'Data visualization' },
+    { icon: 'fa-solid fa-infinity', iconColor: '#0891B2', text: 'DevOps', detail: 'CI/CD pipelines' },
+    { icon: 'fa-solid fa-cloud', iconColor: '#000000', text: 'Vercel', detail: 'Deployment platform' },
+  ]));
+
+  // --- Other Tools ---
+  listArea.appendChild(createSkillGroup('Other Tools & Technologies', [
+    { icon: 'fa-brands fa-google', iconColor: '#4285F4', text: 'Google Workspace', detail: 'Docs, Sheets, Drive' },
+    { icon: 'fa-solid fa-robot', iconColor: '#7C3AED', text: 'Generative AI', detail: 'LLMs, prompt engineering' },
+    { icon: 'fa-solid fa-film', iconColor: '#DC2626', text: 'Video Editing', detail: 'Content production' },
+    { icon: 'fa-brands fa-youtube', iconColor: '#FF0000', text: 'Content Creation', detail: 'YouTube, social media' },
+    { icon: 'fa-solid fa-laptop', iconColor: '#6B7280', text: 'Hardware', detail: 'PC building & repair' },
+    { icon: 'fa-solid fa-microchip', iconColor: '#059669', text: 'BIOS', detail: 'Firmware configuration' },
+    { icon: 'fa-solid fa-palette', iconColor: '#00C4CC', text: 'Canva', detail: 'Graphic design' },
+  ]));
+
+  // --- Separator ---
+  const sep = document.createElement('div');
+  sep.style.cssText = 'height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0;';
+  listArea.appendChild(sep);
+
+  // --- Soft Skills ---
+  listArea.appendChild(createSkillGroup('Soft Skills', [
+    { icon: 'fa-solid fa-users', iconColor: '#0891B2', text: 'Team Working', detail: 'Collaborative mindset' },
+    { icon: 'fa-solid fa-medal', iconColor: '#D97706', text: 'Disciplined', detail: 'Consistent & focused' },
+    { icon: 'fa-solid fa-clock', iconColor: '#7C3AED', text: 'Patient', detail: 'Methodical approach' },
+    { icon: 'fa-solid fa-smile', iconColor: '#059669', text: 'Easygoing', detail: 'Friendly & approachable' },
+  ]));
+
+  // --- Separator ---
+  const sep2 = document.createElement('div');
+  sep2.style.cssText = 'height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0;';
+  listArea.appendChild(sep2);
+
+  // --- Languages ---
+  listArea.appendChild(createLangGroup('Languages', [
+    { flag: '\uD83C\uDDEC\uD83C\uDDE7', name: 'English', pct: 95 },
+    { flag: '\uD83C\uDDEB\uD83C\uDDF7', name: 'French', pct: 90 },
+    { flag: '\uD83C\uDDF5\uD83C\uDDF9', name: 'Portuguese', pct: 85 },
+    { flag: '\uD83C\uDDEA\uD83C\uDDF8', name: 'Spanish', pct: 70 },
+  ]));
+
+  content.appendChild(identity);
+  content.appendChild(listArea);
+
+  skillsWindow.appendChild(topBar);
+  skillsWindow.appendChild(content);
+  document.body.appendChild(skillsWindow);
 }
 
-function openProjectDetailWindow(project: ProjectData) {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+// ═══════ PROJECTS APP ═══════
+let projectsWindow: HTMLDivElement | null = null;
 
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
-  windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 50%; height: 75%;
-    ${position}: 5%; top: 12%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
-  `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
+let projectImageManifest: Record<string, string[]> = {};
 
-  let isWinMax = false;
-  const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
-    onMaximize: () => {
-      const maxBtn = controls.querySelector('.window-btn-maximize');
-      if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 50%; height: 75%; ${position}: 5%; top: 12%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
-        isWinMax = false;
-      } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
-        isWinMax = true;
-      }
-    },
-    onClose: () => document.body.removeChild(newTerminal),
-  });
-
-  const topBar = createTitleBar(`visitor@jalmeida17:$ ~/projects/${project.id}`, controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
-  topBar.addEventListener('dblclick', () => {
-    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
-    if (maxBtn) maxBtn.click();
-  });
-
-  const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
-
-  let statusBadge = '';
-  if (project.status) {
-    const statusColor = project.status === 'CLAUGER' ? '#298FDD' : '#FFA500';
-    statusBadge = `<span style='color: ${statusColor};'> - ${project.status}</span>`;
-  }
-  let projectHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/projects/${project.id}</p>`;
-  projectHTML += '<br>';
-  projectHTML += `<p style="animation: none;"><span class='command' style='font-size: 20px; text-decoration: underline;'>${project.title}</span>${statusBadge}</p>`;
-  projectHTML += `<p style="animation: none;"><span class='command'>${project.year} - Solo Project</span></p>`;
-  projectHTML += '<br>';
-  project.fullDescription.forEach(line => { projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`; });
-  projectHTML += '<br>';
-  projectHTML += `<p style="animation: none;"><span class='command'>Key Achievements:</span></p>`;
-  project.achievements.forEach(achievement => { projectHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${achievement}</p>`; });
-  projectHTML += '<br>';
-  projectHTML += `<p style="animation: none;"><span class='command'>Technologies:</span></p>`;
-  project.technologies.forEach(tech => { projectHTML += `<p style="animation: none;">${tech}</p>`; });
-  projectHTML += '<br>';
-  if (project.repository && project.repository.length > 0) {
-    projectHTML += `<p style="animation: none;"><span class='command'>Repository:</span></p>`;
-    project.repository.forEach(repo => { projectHTML += `<p style="animation: none;">${repo}</p>`; });
-    projectHTML += '<br>';
-  }
-  content.innerHTML = projectHTML;
-
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `width: 100%; background: ${command.colors.background}; color: ${command.colors.foreground}; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 16px; margin-top: 10px;`;
-  terminalInput.placeholder = 'Press Enter to close...';
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); document.body.removeChild(newTerminal); } });
-
-  const projectDetailKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault(); document.body.removeChild(newTerminal); document.removeEventListener('keydown', projectDetailKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', projectDetailKeydownHandler);
-
-  content.appendChild(terminalInput);
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-  setTimeout(() => terminalInput.focus(), 100);
-}
-
-async function openNewsWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
-
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
-  windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 55%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
-  `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
-
-  let isWinMax = false;
-  const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
-    onMaximize: () => {
-      const maxBtn = controls.querySelector('.window-btn-maximize');
-      if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 55%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
-        isWinMax = false;
-      } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
-        isWinMax = true;
-      }
-    },
-    onClose: () => document.body.removeChild(newTerminal),
-  });
-
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/news', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
-  topBar.addEventListener('dblclick', () => {
-    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
-    if (maxBtn) maxBtn.click();
-  });
-
-  const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
-
-  let newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
-  newsHTML += '<br>';
-  newsHTML += `<p style="animation: none;"><span style="color: #E95420; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
-  newsHTML += '<br>';
-  newsHTML += '<p style="animation: none; color: #888;">Fetching latest news...</p>';
-  
-  content.innerHTML = newsHTML;
-
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
-
-  // Fetch RSS feeds
+async function loadProjectImageManifest() {
   try {
-    const feeds = [
-      { category: '🔧 Development', url: 'https://github.blog/feed/', color: '#E95420' },
-      { category: '💻 Tech', url: 'https://techcrunch.com/feed/', color: '#E95420' },
-      { category: '🔬 Science', url: 'https://www.sciencealert.com/rss', color: '#E95420' },
-      { category: '🤖 AI', url: 'https://venturebeat.com/feed/', color: '#E95420' },
-      { category: '🎨 Design', url: 'https://www.smashingmagazine.com/feed/', color: '#E95420' }
-    ];
+    const res = await fetch('/res/projects/manifest.json');
+    if (res.ok) projectImageManifest = await res.json();
+  } catch { /* no manifest yet */ }
+}
 
-    newsHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/news</p>`;
-    newsHTML += '<br>';
-    newsHTML += `<p style="animation: none;"><span style="color: #E95420; font-weight: bold;">📰 Today's Tech & Science Headlines</span></p>`;
-    newsHTML += '<br>';
-
-    for (let feedIndex = 0; feedIndex < feeds.length; feedIndex++) {
-      const feed = feeds[feedIndex];
-      newsHTML += `<p style="animation: none; margin-top: 10px;"><span style="color: ${feed.color}; font-weight: bold;">${feed.category}</span></p>`;
-
-      try {
-        // you're a bitch if you use my api key lol
-        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=2`);
-        const data = await response.json();
-
-        if (data.status === 'ok' && data.items && data.items.length > 0) {
-          // Loop through each news item (max 2)
-          for (let i = 0; i < Math.min(data.items.length, 2); i++) {
-            const item = data.items[i];
-            const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
-
-            // Get description/content preview
-            let description = '';
-            if (item.description) {
-              // Strip HTML tags and get first 100 characters
-              const tempDiv = document.createElement('div');
-              tempDiv.innerHTML = item.description;
-              const textContent = tempDiv.textContent || tempDiv.innerText || '';
-              description = textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
-            }
-
-            // Display title and description
-            newsHTML += `<div style="margin-left: 10px; max-width: 90%;">`;
-            newsHTML += `<p style="animation: none; margin: 0;">• <a href="${item.link}" target="_blank" style="color: ${command.colors.foreground}; text-decoration: underline;">${title}</a></p>`;
-            if (description) {
-              newsHTML += `<p style="animation: none; margin: 5px 0 0 10px; color: #888; font-size: 13px; font-style: italic; max-width: 95%; word-wrap: break-word;">${description}</p>`;
-            }
-            newsHTML += `</div>`;
-
-            // Add spacing between news items
-            if (i < Math.min(data.items.length, 2) - 1) {
-              newsHTML += `<div style="margin: 15px 0;"></div>`;
-            }
-          }
-        } else {
-          newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Unable to fetch feed (API limit or feed issue)</p>`;
-        }
-      } catch (err) {
-        newsHTML += `<p style="animation: none; margin-left: 10px; color: #888;">• Failed to load (${err instanceof Error ? err.message : 'unknown error'})</p>`;
-      }
-
-      newsHTML += '<br>';
-
-      // Add divider between subjects (but not after the last one)
-      if (feedIndex < feeds.length - 1) {
-        newsHTML += `<div style="border-top: 1px solid #444; margin: 20px 0;"></div>`;
-      }
-    }
-
-    content.innerHTML = newsHTML;
-  } catch (error) {
-    content.innerHTML += '<p style="animation: none; color: #ff6b6b;">Failed to fetch news feeds.</p>';
+function openProjectsWindow(targetProjectId?: string) {
+  if (projectsWindow && document.body.contains(projectsWindow)) {
+    bringToFront(projectsWindow);
+    return;
   }
 
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
-  `;
-  terminalInput.placeholder = 'Press Enter to close...';
-
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
+  // Load manifest in background, re-render current project when ready
+  loadProjectImageManifest().then(() => {
+    if (activeProjectForRerender) renderProjectDetail(activeProjectForRerender);
   });
 
-  // Global keydown listener for this window
-  const newsKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', newsKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', newsKeydownHandler);
+  projectsWindow = document.createElement('div');
+  windowZIndex++;
+  projectsWindow.style.cssText = `
+    position: fixed;
+    width: 950px;
+    height: 720px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
+  `;
+  projectsWindow.addEventListener('mousedown', () => bringToFront(projectsWindow!));
 
-  content.appendChild(terminalInput);
-  setTimeout(() => terminalInput.focus(), 100);
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { if (projectsWindow) projectsWindow.style.display = 'none'; },
+    onMaximize: () => {
+      if (!projectsWindow) return;
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        projectsWindow.style.width = '950px';
+        projectsWindow.style.height = '720px';
+        projectsWindow.style.left = '50%';
+        projectsWindow.style.top = '50%';
+        projectsWindow.style.transform = 'translate(-50%, -50%)';
+        projectsWindow.style.borderRadius = '6px';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
+        isWinMax = false;
+      } else {
+        projectsWindow.style.width = 'calc(100% - 64px)';
+        projectsWindow.style.height = 'calc(100% - 28px)';
+        projectsWindow.style.left = '64px';
+        projectsWindow.style.top = '28px';
+        projectsWindow.style.transform = 'none';
+        projectsWindow.style.borderRadius = '0';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
+        isWinMax = true;
+      }
+    },
+    onClose: () => {
+      if (projectsWindow && document.body.contains(projectsWindow)) {
+        document.body.removeChild(projectsWindow);
+        projectsWindow = null;
+      }
+    },
+  });
+
+  const topBar = createTitleBar('Projects', controls);
+  makeDraggable(projectsWindow, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
+  });
+
+  // === Layout: sidebar + detail ===
+  const layout = document.createElement('div');
+  layout.style.cssText = 'flex: 1; display: flex; overflow: hidden;';
+
+  // --- Sidebar ---
+  const sidebar = document.createElement('div');
+  sidebar.style.cssText = `
+    width: 240px;
+    min-width: 240px;
+    background: #262626;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 12px 0;
+  `;
+
+  const sidebarButtons: HTMLDivElement[] = [];
+
+  PROJECT_DETAILS.forEach((project) => {
+    const btn = document.createElement('div');
+    btn.setAttribute('data-project-id', project.id);
+    btn.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      border-left: 3px solid transparent;
+    `;
+    btn.addEventListener('mouseenter', () => {
+      if (!btn.classList.contains('active-project')) btn.style.background = 'rgba(255,255,255,0.04)';
+    });
+    btn.addEventListener('mouseleave', () => {
+      if (!btn.classList.contains('active-project')) btn.style.background = 'transparent';
+    });
+
+    const dot = document.createElement('div');
+    const dotColor = project.status === 'CLAUGER' ? '#0891B2' : project.status === 'Unfinished' ? '#D97706' : '#10B981';
+    dot.style.cssText = `width: 8px; height: 8px; border-radius: 50%; background: ${dotColor}; flex-shrink: 0;`;
+
+    const textWrap = document.createElement('div');
+    textWrap.style.cssText = 'flex: 1; min-width: 0;';
+    const nameEl = document.createElement('div');
+    nameEl.textContent = project.title;
+    nameEl.style.cssText = 'font-size: 12px; color: #EEEEEE; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+    const yearEl = document.createElement('div');
+    yearEl.textContent = project.year + (project.status ? ' \u00B7 ' + project.status : '');
+    yearEl.style.cssText = 'font-size: 10px; color: #888888; margin-top: 1px;';
+    textWrap.appendChild(nameEl);
+    textWrap.appendChild(yearEl);
+
+    btn.appendChild(dot);
+    btn.appendChild(textWrap);
+    sidebar.appendChild(btn);
+    sidebarButtons.push(btn);
+
+    btn.addEventListener('click', () => {
+      renderProjectDetail(project);
+      setActiveSidebarButton(btn);
+    });
+  });
+
+  function setActiveSidebarButton(activeBtn: HTMLDivElement) {
+    sidebarButtons.forEach(b => {
+      b.classList.remove('active-project');
+      b.style.background = 'transparent';
+      b.style.borderLeftColor = 'transparent';
+    });
+    activeBtn.classList.add('active-project');
+    activeBtn.style.background = 'rgba(16, 185, 129, 0.08)';
+    activeBtn.style.borderLeftColor = '#10B981';
+  }
+
+  // --- Detail panel ---
+  const detail = document.createElement('div');
+  detail.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
+  `;
+
+  // Helper: GNOME list group
+  function createProjListGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex; align-items: flex-start; gap: 14px; padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px; height: 32px; border-radius: 8px; margin-top: 2px;
+        background: ${row.iconColor};
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 2px; line-height: 1.5;';
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  // Helper: text block group
+  function createTextGroup(label: string, paragraphs: string[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px;';
+
+    paragraphs.forEach(p => {
+      const pEl = document.createElement('p');
+      pEl.textContent = p;
+      pEl.style.cssText = 'font-size: 12px; color: #CCCCCC; line-height: 1.6; margin: 0;';
+      box.appendChild(pEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  // Helper: lightbox overlay
+  function openLightbox(allSrcs: string[], startIndex: number) {
+    let currentIdx = startIndex;
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed; inset: 0; z-index: 99999;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      cursor: zoom-out;
+    `;
+
+    const img = document.createElement('img');
+    img.src = allSrcs[currentIdx];
+    img.style.cssText = 'max-width: 90%; max-height: 85%; border-radius: 8px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); object-fit: contain; cursor: default;';
+    img.addEventListener('click', (e) => e.stopPropagation());
+
+    // Counter
+    const counter = document.createElement('div');
+    counter.style.cssText = 'position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 13px; color: #BBBBBB; font-family: "Ubuntu Sans", sans-serif;';
+
+    function updateCounter() {
+      counter.textContent = (currentIdx + 1) + ' / ' + allSrcs.length;
+    }
+    updateCounter();
+
+    function navigate(dir: number) {
+      currentIdx = (currentIdx + dir + allSrcs.length) % allSrcs.length;
+      img.src = allSrcs[currentIdx];
+      updateCounter();
+    }
+
+    // Nav buttons
+    function makeNavBtn(icon: string, side: 'left' | 'right') {
+      const btn = document.createElement('div');
+      btn.style.cssText = `
+        position: absolute; ${side}: 16px; top: 50%; transform: translateY(-50%);
+        width: 40px; height: 40px; border-radius: 50%;
+        background: rgba(255,255,255,0.1); color: #FFFFFF;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; font-size: 18px; transition: background 0.15s ease;
+      `;
+      btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(255,255,255,0.2)'; });
+      btn.addEventListener('mouseleave', () => { btn.style.background = 'rgba(255,255,255,0.1)'; });
+      const i = document.createElement('i');
+      i.className = icon;
+      btn.appendChild(i);
+      btn.addEventListener('click', (e) => { e.stopPropagation(); navigate(side === 'left' ? -1 : 1); });
+      return btn;
+    }
+
+    // Close button
+    const closeBtn = document.createElement('div');
+    closeBtn.style.cssText = `
+      position: absolute; top: 16px; right: 16px;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); color: #FFFFFF;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px; transition: background 0.15s ease;
+    `;
+    closeBtn.addEventListener('mouseenter', () => { closeBtn.style.background = 'rgba(255,255,255,0.2)'; });
+    closeBtn.addEventListener('mouseleave', () => { closeBtn.style.background = 'rgba(255,255,255,0.1)'; });
+    const closeIcon = document.createElement('i');
+    closeIcon.className = 'fa-solid fa-xmark';
+    closeBtn.appendChild(closeIcon);
+
+    function closeLightbox() {
+      document.removeEventListener('keydown', keyHandler);
+      if (document.body.contains(overlay)) document.body.removeChild(overlay);
+    }
+
+    closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLightbox(); });
+    overlay.addEventListener('click', closeLightbox);
+
+    function keyHandler(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') navigate(-1);
+      else if (e.key === 'ArrowRight') navigate(1);
+    }
+    document.addEventListener('keydown', keyHandler);
+
+    overlay.appendChild(img);
+    overlay.appendChild(counter);
+    overlay.appendChild(closeBtn);
+    if (allSrcs.length > 1) {
+      overlay.appendChild(makeNavBtn('fa-solid fa-chevron-left', 'left'));
+      overlay.appendChild(makeNavBtn('fa-solid fa-chevron-right', 'right'));
+    }
+    document.body.appendChild(overlay);
+  }
+
+  // Helper: image gallery
+  function createImageGallery(projectId: string, images: string[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = 'Screenshots';
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px;';
+
+    const allSrcs = images.map(img => '/res/projects/' + projectId + '/' + img);
+
+    images.forEach((img, idx) => {
+      const imgWrap = document.createElement('div');
+      imgWrap.style.cssText = 'border-radius: 8px; overflow: hidden; background: #1A1A1A; aspect-ratio: 16/10; cursor: pointer; transition: transform 0.2s ease;';
+      imgWrap.addEventListener('mouseenter', () => { imgWrap.style.transform = 'scale(1.02)'; });
+      imgWrap.addEventListener('mouseleave', () => { imgWrap.style.transform = 'scale(1)'; });
+
+      const imgEl = document.createElement('img');
+      imgEl.src = allSrcs[idx];
+      imgEl.alt = img;
+      imgEl.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+      imgEl.onerror = () => { imgWrap.style.display = 'none'; };
+
+      imgWrap.addEventListener('click', () => openLightbox(allSrcs, idx));
+
+      imgWrap.appendChild(imgEl);
+      grid.appendChild(imgWrap);
+    });
+
+    group.appendChild(grid);
+    return group;
+  }
+
+  let activeProjectForRerender: ProjectData | null = null;
+
+  function renderProjectDetail(project: ProjectData) {
+    activeProjectForRerender = project;
+    while (detail.firstChild) detail.removeChild(detail.firstChild);
+
+    const area = document.createElement('div');
+    area.style.cssText = 'padding: 28px; display: flex; flex-direction: column; gap: 20px;';
+
+    // --- Header ---
+    const header = document.createElement('div');
+    header.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';
+
+    const titleRow = document.createElement('div');
+    titleRow.style.cssText = 'display: flex; align-items: center; gap: 12px; flex-wrap: wrap;';
+    const titleEl = document.createElement('div');
+    titleEl.textContent = project.title;
+    titleEl.style.cssText = 'font-size: 22px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
+    titleRow.appendChild(titleEl);
+
+    if (project.status) {
+      const badge = document.createElement('span');
+      badge.textContent = project.status;
+      const bColor = project.status === 'CLAUGER' ? '#0891B2' : '#D97706';
+      badge.style.cssText = `font-size: 11px; font-weight: 600; color: ${bColor}; background: ${bColor}1A; padding: 3px 10px; border-radius: 12px;`;
+      titleRow.appendChild(badge);
+    }
+    header.appendChild(titleRow);
+
+    const yearEl = document.createElement('div');
+    yearEl.textContent = project.year;
+    yearEl.style.cssText = 'font-size: 13px; color: #888888;';
+    header.appendChild(yearEl);
+
+    area.appendChild(header);
+
+    // --- Description ---
+    area.appendChild(createTextGroup('Description', project.fullDescription));
+
+    // --- Images (from manifest) ---
+    const manifestImages = projectImageManifest[project.id] || [];
+    if (manifestImages.length > 0) {
+      area.appendChild(createImageGallery(project.id, manifestImages));
+    }
+
+    // --- Context (E4/E5) ---
+    if (project.context) {
+      area.appendChild(createProjListGroup('Organizational Context', [
+        { icon: 'fa-solid fa-building', iconColor: '#0891B2', text: project.context.organization, detail: project.context.organizationDesc },
+        { icon: 'fa-solid fa-user', iconColor: '#7C3AED', text: project.context.role, detail: 'Team: ' + project.context.teamSize },
+        { icon: 'fa-solid fa-calendar', iconColor: '#6366F1', text: 'Duration: ' + project.context.duration, detail: '' },
+      ]));
+    }
+
+    // --- Business Need ---
+    if (project.businessNeed) {
+      area.appendChild(createTextGroup('Business Need', [project.businessNeed]));
+    }
+
+    // --- Approach ---
+    if (project.approach && project.approach.length > 0) {
+      area.appendChild(createTextGroup('Approach & Methodology', project.approach));
+    }
+
+    // --- Tech Choices ---
+    if (project.techChoices && project.techChoices.length > 0) {
+      area.appendChild(createProjListGroup('Technical Choices (Justified)', project.techChoices.map(t => ({
+        icon: t.icon,
+        iconColor: t.iconColor,
+        text: t.name,
+        detail: t.justification,
+      }))));
+    }
+
+    // --- Architecture ---
+    if (project.architecture) {
+      area.appendChild(createTextGroup('Architecture', [project.architecture]));
+    }
+
+    // --- Achievements ---
+    if (project.achievements.length > 0) {
+      const achRows = project.achievements.map(a => ({
+        icon: 'fa-solid fa-check',
+        iconColor: '#10B981',
+        text: a.replace(/^[•\s]+/, ''),
+        detail: '',
+      }));
+      area.appendChild(createProjListGroup('Key Achievements', achRows));
+    }
+
+    // --- Results ---
+    if (project.results && project.results.length > 0) {
+      area.appendChild(createTextGroup('Results & Impact', project.results));
+    }
+
+    // --- Competencies (BTS Blocs) ---
+    if (project.competencies && project.competencies.length > 0) {
+      project.competencies.forEach(comp => {
+        const skillRows = comp.skills.map(s => ({
+          icon: 'fa-solid fa-graduation-cap',
+          iconColor: comp.color,
+          text: s,
+          detail: '',
+        }));
+        area.appendChild(createProjListGroup(comp.bloc, skillRows));
+      });
+    }
+
+    // --- Repository ---
+    if (project.repository && project.repository.length > 0) {
+      const repoGroup = document.createElement('div');
+      const repoLabel = document.createElement('div');
+      repoLabel.textContent = 'Links';
+      repoLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+      repoGroup.appendChild(repoLabel);
+
+      const repoBox = document.createElement('div');
+      repoBox.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+      project.repository.forEach((repoHtml, i) => {
+        const rowEl = document.createElement('div');
+        rowEl.style.cssText = `
+          display: flex; align-items: center; gap: 14px; padding: 11px 16px;
+          transition: background 0.15s ease;
+          ${i < project.repository.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+        `;
+        rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+        rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+        const iconEl = document.createElement('div');
+        iconEl.style.cssText = 'width: 32px; height: 32px; border-radius: 8px; background: #6E40C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
+        const iconI = document.createElement('i');
+        iconI.className = 'fa-solid fa-link';
+        iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+        iconEl.appendChild(iconI);
+
+        // Extract href and text from the HTML string safely
+        const tempAnchor = document.createElement('div');
+        tempAnchor.textContent = '';
+        const linkEl = document.createElement('a');
+        const hrefMatch = repoHtml.match(/href='([^']+)'/);
+        const textMatch = repoHtml.match(/>([^<]+)</);
+        if (hrefMatch) linkEl.href = hrefMatch[1];
+        if (textMatch) linkEl.textContent = textMatch[1];
+        linkEl.target = '_blank';
+        linkEl.rel = 'noopener noreferrer';
+        linkEl.style.cssText = 'font-size: 12px; color: #10B981; text-decoration: none; transition: opacity 0.2s;';
+        linkEl.addEventListener('mouseenter', () => { linkEl.style.opacity = '0.7'; });
+        linkEl.addEventListener('mouseleave', () => { linkEl.style.opacity = '1'; });
+
+        rowEl.appendChild(iconEl);
+        rowEl.appendChild(linkEl);
+        repoBox.appendChild(rowEl);
+      });
+
+      repoGroup.appendChild(repoBox);
+      area.appendChild(repoGroup);
+    }
+
+    detail.appendChild(area);
+  }
+
+  // Default: show first project or target
+  const initialProject = targetProjectId
+    ? PROJECT_DETAILS.find(p => p.id === targetProjectId) || PROJECT_DETAILS[0]
+    : PROJECT_DETAILS[0];
+  renderProjectDetail(initialProject);
+
+  const initialBtn = sidebarButtons.find(b => b.getAttribute('data-project-id') === initialProject.id);
+  if (initialBtn) setActiveSidebarButton(initialBtn);
+
+  layout.appendChild(sidebar);
+  layout.appendChild(detail);
+
+  projectsWindow.appendChild(topBar);
+  projectsWindow.appendChild(layout);
+  document.body.appendChild(projectsWindow);
+}
+
+let veilleWindow: HTMLDivElement | null = null;
+
+function openVeilleWindow() {
+  if (veilleWindow && document.body.contains(veilleWindow)) {
+    bringToFront(veilleWindow);
+    return;
+  }
+
+  veilleWindow = document.createElement('div');
+  windowZIndex++;
+  veilleWindow.style.cssText = `
+    position: fixed;
+    width: 800px;
+    height: 700px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
+  `;
+  veilleWindow.addEventListener('mousedown', () => bringToFront(veilleWindow!));
+
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { if (veilleWindow) veilleWindow.style.display = 'none'; },
+    onMaximize: () => {
+      if (!veilleWindow) return;
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        veilleWindow.style.width = '800px';
+        veilleWindow.style.height = '700px';
+        veilleWindow.style.left = '50%';
+        veilleWindow.style.top = '50%';
+        veilleWindow.style.transform = 'translate(-50%, -50%)';
+        veilleWindow.style.borderRadius = '6px';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
+        isWinMax = false;
+      } else {
+        veilleWindow.style.width = 'calc(100% - 64px)';
+        veilleWindow.style.height = 'calc(100% - 28px)';
+        veilleWindow.style.left = '64px';
+        veilleWindow.style.top = '28px';
+        veilleWindow.style.transform = 'none';
+        veilleWindow.style.borderRadius = '0';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
+        isWinMax = true;
+      }
+    },
+    onClose: () => {
+      if (veilleWindow && document.body.contains(veilleWindow)) {
+        document.body.removeChild(veilleWindow);
+        veilleWindow = null;
+      }
+    },
+  });
+
+  const topBar = createTitleBar('Tech Watch', controls);
+  makeDraggable(veilleWindow, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
+  });
+
+  // Content area
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
+  `;
+
+  // === Identity section ===
+  const identity = document.createElement('div');
+  identity.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 32px 28px;
+    gap: 12px;
+  `;
+
+  const iconWrap = document.createElement('div');
+  iconWrap.style.cssText = `
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #7C3AED, #A855F7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255,255,255,0.06);
+  `;
+  const brainIcon = document.createElement('i');
+  brainIcon.className = 'fa-solid fa-brain';
+  brainIcon.style.cssText = 'font-size: 42px; color: #FFFFFF;';
+  iconWrap.appendChild(brainIcon);
+
+  const idName = document.createElement('div');
+  idName.textContent = 'Tech Watch';
+  idName.style.cssText = 'font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
+
+  const idTag = document.createElement('div');
+  idTag.textContent = 'Intelligence Artificielle & Machine Learning';
+  idTag.style.cssText = 'font-size: 13px; color: #999999; font-weight: 400;';
+
+  const idBadge = document.createElement('div');
+  idBadge.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 4px 12px;
+    background: rgba(124, 58, 237, 0.12);
+    border-radius: 20px;
+  `;
+  const badgeIcon = document.createElement('i');
+  badgeIcon.className = 'fa-solid fa-graduation-cap';
+  badgeIcon.style.cssText = 'font-size: 11px; color: #A855F7;';
+  const badgeText = document.createElement('span');
+  badgeText.textContent = 'BTS SIO \u2014 Daily to weekly';
+  badgeText.style.cssText = 'font-size: 12px; color: #A855F7; font-weight: 500;';
+  idBadge.appendChild(badgeIcon);
+  idBadge.appendChild(badgeText);
+
+  identity.appendChild(iconWrap);
+  identity.appendChild(idName);
+  identity.appendChild(idTag);
+  identity.appendChild(idBadge);
+
+  // === List groups ===
+  const listArea = document.createElement('div');
+  listArea.style.cssText = 'padding: 0 28px 28px; display: flex; flex-direction: column; gap: 20px;';
+
+  // Helper: GNOME-style listbox group (same pattern as Clauger)
+  function createVeilleListGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
+
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = `
+      background: #363636;
+      border-radius: 10px;
+      overflow: hidden;
+    `;
+
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: ${row.iconColor};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  // --- Methodology section ---
+  listArea.appendChild(createVeilleListGroup('Subject & Methodology', [
+    { icon: 'fa-solid fa-brain',        iconColor: '#7C3AED', text: 'Subject',    detail: VEILLE_METHODOLOGY.subject },
+    { icon: 'fa-solid fa-magnifying-glass', iconColor: '#6366F1', text: 'Objective',  detail: VEILLE_METHODOLOGY.description },
+    { icon: 'fa-solid fa-clock',         iconColor: '#0891B2', text: 'Frequency',  detail: VEILLE_METHODOLOGY.frequency },
+    { icon: 'fa-solid fa-screwdriver-wrench', iconColor: '#059669', text: 'Tools',      detail: VEILLE_METHODOLOGY.tools },
+  ]));
+
+  // --- Sources section ---
+  listArea.appendChild(createVeilleListGroup('Sources', VEILLE_SOURCES.map(s => ({
+    icon: s.icon,
+    iconColor: s.iconColor,
+    text: s.name,
+    detail: s.description,
+  }))));
+
+  // --- Syntheses section (accordion) ---
+  const synthGroup = document.createElement('div');
+
+  const synthLabel = document.createElement('div');
+  synthLabel.textContent = 'Summaries';
+  synthLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+  synthGroup.appendChild(synthLabel);
+
+  const synthBox = document.createElement('div');
+  synthBox.style.cssText = `
+    background: #363636;
+    border-radius: 10px;
+    overflow: hidden;
+  `;
+
+  VEILLE_SYNTHESES.forEach((synth, i) => {
+    // Row header (clickable)
+    const rowEl = document.createElement('div');
+    rowEl.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      ${i < VEILLE_SYNTHESES.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+    `;
+    rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+    rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+    const iconEl = document.createElement('div');
+    iconEl.style.cssText = `
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #7C3AED;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    `;
+    const iconI = document.createElement('i');
+    iconI.className = 'fa-solid fa-file-lines';
+    iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+    iconEl.appendChild(iconI);
+
+    const textWrap = document.createElement('div');
+    textWrap.style.cssText = 'flex: 1; min-width: 0;';
+
+    const textMain = document.createElement('div');
+    textMain.textContent = synth.title;
+    textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+
+    const textSub = document.createElement('div');
+    textSub.textContent = synth.summary;
+    textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+
+    textWrap.appendChild(textMain);
+    textWrap.appendChild(textSub);
+
+    // Date badge
+    const dateBadge = document.createElement('div');
+    dateBadge.textContent = synth.date;
+    dateBadge.style.cssText = 'font-size: 11px; color: #A855F7; background: rgba(124, 58, 237, 0.12); padding: 2px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0;';
+
+    // Chevron
+    const chevron = document.createElement('i');
+    chevron.className = 'fa-solid fa-chevron-down';
+    chevron.style.cssText = 'font-size: 12px; color: #888888; transition: transform 0.2s ease; flex-shrink: 0;';
+
+    rowEl.appendChild(iconEl);
+    rowEl.appendChild(textWrap);
+    rowEl.appendChild(dateBadge);
+    rowEl.appendChild(chevron);
+
+    // Accordion content (hidden by default)
+    const accordionContent = document.createElement('div');
+    accordionContent.style.cssText = `
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: #2D2D2D;
+      ${i < VEILLE_SYNTHESES.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+    `;
+
+    const accordionInner = document.createElement('div');
+    accordionInner.style.cssText = 'padding: 16px 20px; display: flex; flex-direction: column; gap: 10px;';
+
+    // Source badge
+    const sourceLine = document.createElement('div');
+    sourceLine.style.cssText = 'font-size: 11px; color: #A855F7; margin-bottom: 4px;';
+    const sourceIcon = document.createElement('i');
+    sourceIcon.className = 'fa-solid fa-bookmark';
+    sourceIcon.style.cssText = 'margin-right: 6px;';
+    sourceLine.appendChild(sourceIcon);
+    sourceLine.appendChild(document.createTextNode('Source: ' + synth.source));
+    accordionInner.appendChild(sourceLine);
+
+    // Analysis paragraphs
+    synth.analysis.forEach(para => {
+      const p = document.createElement('p');
+      p.textContent = para;
+      p.style.cssText = 'font-size: 12px; color: #CCCCCC; line-height: 1.6; margin: 0;';
+      accordionInner.appendChild(p);
+    });
+
+    // External link button
+    const linkBtn = document.createElement('a');
+    linkBtn.href = synth.link;
+    linkBtn.target = '_blank';
+    linkBtn.rel = 'noopener noreferrer';
+    linkBtn.textContent = 'View source';
+    linkBtn.style.cssText = `
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 6px 14px;
+      background: rgba(124, 58, 237, 0.15);
+      color: #A855F7;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      align-self: flex-start;
+      transition: background 0.15s ease;
+    `;
+    linkBtn.addEventListener('mouseenter', () => { linkBtn.style.background = 'rgba(124, 58, 237, 0.25)'; });
+    linkBtn.addEventListener('mouseleave', () => { linkBtn.style.background = 'rgba(124, 58, 237, 0.15)'; });
+    const linkIcon = document.createElement('i');
+    linkIcon.className = 'fa-solid fa-arrow-up-right-from-square';
+    linkIcon.style.cssText = 'font-size: 10px;';
+    linkBtn.prepend(linkIcon);
+    accordionInner.appendChild(linkBtn);
+
+    accordionContent.appendChild(accordionInner);
+
+    // Toggle accordion
+    let isOpen = false;
+    rowEl.addEventListener('click', () => {
+      isOpen = !isOpen;
+      if (isOpen) {
+        accordionContent.style.maxHeight = accordionContent.scrollHeight + 'px';
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        accordionContent.style.maxHeight = '0';
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    synthBox.appendChild(rowEl);
+    synthBox.appendChild(accordionContent);
+  });
+
+  synthGroup.appendChild(synthBox);
+  listArea.appendChild(synthGroup);
+
+  content.appendChild(identity);
+  content.appendChild(listArea);
+
+  veilleWindow.appendChild(topBar);
+  veilleWindow.appendChild(content);
+  document.body.appendChild(veilleWindow);
+}
+
+// ═══════ RESUME APP (Career + Education) ═══════
+let resumeWindow: HTMLDivElement | null = null;
+
+function openResumeWindow(tab: 'career' | 'education' = 'career') {
+  if (resumeWindow && document.body.contains(resumeWindow)) {
+    bringToFront(resumeWindow);
+    return;
+  }
+
+  resumeWindow = document.createElement('div');
+  windowZIndex++;
+  resumeWindow.style.cssText = `
+    position: fixed;
+    width: 800px;
+    height: 700px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
+  `;
+  resumeWindow.addEventListener('mousedown', () => bringToFront(resumeWindow!));
+
+  let isWinMax = false;
+  const controls = createWindowControls({
+    onMinimize: () => { if (resumeWindow) resumeWindow.style.display = 'none'; },
+    onMaximize: () => {
+      if (!resumeWindow) return;
+      const maxBtn = controls.querySelector('.window-btn-maximize');
+      if (isWinMax) {
+        resumeWindow.style.width = '800px';
+        resumeWindow.style.height = '700px';
+        resumeWindow.style.left = '50%';
+        resumeWindow.style.top = '50%';
+        resumeWindow.style.transform = 'translate(-50%, -50%)';
+        resumeWindow.style.borderRadius = '6px';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
+        isWinMax = false;
+      } else {
+        resumeWindow.style.width = 'calc(100% - 64px)';
+        resumeWindow.style.height = 'calc(100% - 28px)';
+        resumeWindow.style.left = '64px';
+        resumeWindow.style.top = '28px';
+        resumeWindow.style.transform = 'none';
+        resumeWindow.style.borderRadius = '0';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
+        isWinMax = true;
+      }
+    },
+    onClose: () => {
+      if (resumeWindow && document.body.contains(resumeWindow)) {
+        document.body.removeChild(resumeWindow);
+        resumeWindow = null;
+      }
+    },
+  });
+
+  const topBar = createTitleBar('Resume', controls);
+  makeDraggable(resumeWindow, topBar, () => isWinMax);
+  topBar.addEventListener('dblclick', () => {
+    const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
+    if (maxBtn) maxBtn.click();
+  });
+
+  // Content area
+  const content = document.createElement('div');
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
+  `;
+
+  // === Identity section ===
+  const identity = document.createElement('div');
+  identity.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 32px 28px;
+    gap: 12px;
+  `;
+
+  const iconWrap = document.createElement('div');
+  iconWrap.style.cssText = `
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #0891B2, #06B6D4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255,255,255,0.06);
+  `;
+  const resumeIconEl = document.createElement('i');
+  resumeIconEl.className = 'fa-solid fa-file-lines';
+  resumeIconEl.style.cssText = 'font-size: 42px; color: #FFFFFF;';
+  iconWrap.appendChild(resumeIconEl);
+
+  const idName = document.createElement('div');
+  idName.textContent = 'Resume';
+  idName.style.cssText = 'font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
+
+  const idTag = document.createElement('div');
+  idTag.textContent = 'Career & Education';
+  idTag.style.cssText = 'font-size: 13px; color: #999999; font-weight: 400;';
+
+  const idBadge = document.createElement('div');
+  idBadge.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 4px 12px;
+    background: rgba(8, 145, 178, 0.12);
+    border-radius: 20px;
+  `;
+  const rBadgeIcon = document.createElement('i');
+  rBadgeIcon.className = 'fa-solid fa-location-dot';
+  rBadgeIcon.style.cssText = 'font-size: 11px; color: #06B6D4;';
+  const rBadgeText = document.createElement('span');
+  rBadgeText.textContent = 'Lyon, France';
+  rBadgeText.style.cssText = 'font-size: 12px; color: #06B6D4; font-weight: 500;';
+  idBadge.appendChild(rBadgeIcon);
+  idBadge.appendChild(rBadgeText);
+
+  identity.appendChild(iconWrap);
+  identity.appendChild(idName);
+  identity.appendChild(idTag);
+  identity.appendChild(idBadge);
+
+  // === Tabs ===
+  const tabBar = document.createElement('div');
+  tabBar.style.cssText = `
+    display: flex;
+    gap: 0;
+    margin: 0 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  `;
+
+  const careerTab = document.createElement('button');
+  careerTab.textContent = 'Career';
+  careerTab.style.cssText = `
+    flex: 1;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid #06B6D4;
+    color: #06B6D4;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  `;
+
+  const educationTab = document.createElement('button');
+  educationTab.textContent = 'Education';
+  educationTab.style.cssText = `
+    flex: 1;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #888888;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  `;
+
+  tabBar.appendChild(careerTab);
+  tabBar.appendChild(educationTab);
+
+  // === List area ===
+  const listArea = document.createElement('div');
+  listArea.style.cssText = 'padding: 20px 28px 28px; display: flex; flex-direction: column; gap: 20px;';
+
+  // Helper: create GNOME-style listbox group
+  function createResumeListGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'background: #363636; border-radius: 10px; overflow: hidden;';
+
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px; height: 32px; border-radius: 8px;
+        background: ${row.iconColor};
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  function clearListArea() {
+    while (listArea.firstChild) {
+      listArea.removeChild(listArea.firstChild);
+    }
+  }
+
+  // --- Career content ---
+  function renderCareerContent() {
+    clearListArea();
+
+    listArea.appendChild(createResumeListGroup('Position', [
+      { icon: 'fa-solid fa-briefcase', iconColor: '#0891B2', text: 'Full Stack Developer - Internship', detail: 'CLAUGER' },
+      { icon: 'fa-solid fa-calendar', iconColor: '#6366F1', text: 'August 2024 - Present', detail: 'Brignais, Auvergne-Rh\u00f4ne-Alpes, France' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Description', [
+      { icon: 'fa-solid fa-circle-info', iconColor: '#7C3AED', text: 'Fullstack Developer at Clauger', detail: 'Focused on developing and maintaining web applications using modern technologies.' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Projects', [
+      { icon: 'fa-solid fa-truck', iconColor: '#059669', text: 'Internal Transport App', detail: 'Development of a internal web application for merchandise transport.' },
+      { icon: 'fa-solid fa-shield-halved', iconColor: '#DC2626', text: 'Cyber Security Platform', detail: 'Currently building a cyber security education platform.' },
+      { icon: 'fa-solid fa-gears', iconColor: '#D97706', text: 'Automation', detail: 'Automation of data processing tasks.' },
+      { icon: 'fa-solid fa-ellipsis', iconColor: '#6B7280', text: 'And More', detail: 'And many other little projects...' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Technologies', [
+      { icon: 'fa-brands fa-angular', iconColor: '#DD0031', text: 'Angular', detail: 'Frontend framework' },
+      { icon: 'fa-solid fa-code', iconColor: '#512BD4', text: '.NET / C#', detail: 'Backend framework' },
+      { icon: 'fa-solid fa-database', iconColor: '#003545', text: 'MariaDB / SQL', detail: 'Database management' },
+      { icon: 'fa-solid fa-infinity', iconColor: '#0078D4', text: 'DevOps & Azure', detail: 'CI/CD, cloud infrastructure' },
+      { icon: 'fa-solid fa-bolt', iconColor: '#0066FF', text: 'Power Automate & Power BI', detail: 'Microsoft Power Platform' },
+      { icon: 'fa-brands fa-git-alt', iconColor: '#F05032', text: 'Git', detail: 'Version control' },
+    ]));
+  }
+
+  // --- Education content ---
+  function renderEducationContent() {
+    clearListArea();
+
+    listArea.appendChild(createResumeListGroup('BTS SIO - SLAM', [
+      { icon: 'fa-solid fa-graduation-cap', iconColor: '#0891B2', text: 'NEXA DIGITAL SCHOOL', detail: '2024 - 2026' },
+      { icon: 'fa-solid fa-location-dot', iconColor: '#6366F1', text: 'Lyon, Auvergne-Rh\u00f4ne-Alpes, France', detail: 'Two-year technical degree in IT \u2014 Software Solutions and Business Applications' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Description', [
+      { icon: 'fa-solid fa-circle-info', iconColor: '#7C3AED', text: 'SLAM Specialization', detail: 'Gained solid experience in software development, databases, web technologies, and project management, with a strong focus on practical, real-world applications.' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Achievements', [
+      { icon: 'fa-solid fa-globe', iconColor: '#059669', text: 'Full-Stack Bill Manager', detail: 'Developed a full-stack bill manager web application.' },
+      { icon: 'fa-solid fa-desktop', iconColor: '#7C3AED', text: 'Winforms Prescription App', detail: 'Developed a winforms application to manage medical prescriptions.' },
+      { icon: 'fa-solid fa-dumbbell', iconColor: '#DC2626', text: 'Gym Social Network', detail: 'Currently building a gym social network platform.' },
+      { icon: 'fa-solid fa-ellipsis', iconColor: '#6B7280', text: 'And More', detail: 'And other less important school projects...' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Key Courses', [
+      { icon: 'fa-brands fa-react', iconColor: '#61DAFB', text: 'React', detail: 'Frontend library' },
+      { icon: 'fa-brands fa-node-js', iconColor: '#339933', text: 'Node.js', detail: 'Backend runtime' },
+      { icon: 'fa-brands fa-aws', iconColor: '#FF9900', text: 'AWS & MongoDB', detail: 'Cloud & NoSQL' },
+      { icon: 'fa-solid fa-shield-halved', iconColor: '#DC2626', text: 'Cybersecurity', detail: 'Security fundamentals' },
+      { icon: 'fa-solid fa-diagram-project', iconColor: '#0891B2', text: 'Software Project Management', detail: 'Agile methodologies' },
+    ]));
+
+    // Separator
+    const sep = document.createElement('div');
+    sep.style.cssText = 'height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0;';
+    listArea.appendChild(sep);
+
+    listArea.appendChild(createResumeListGroup('BAC G\u00e9n\u00e9ral - NSI & AMC (European Section)', [
+      { icon: 'fa-solid fa-graduation-cap', iconColor: '#0891B2', text: 'Lyc\u00e9e Polyvalent Aragon Picasso', detail: '2023 - 2024' },
+      { icon: 'fa-solid fa-location-dot', iconColor: '#6366F1', text: 'Givors, Auvergne-Rh\u00f4ne-Alpes, France', detail: 'General Baccalaur\u00e9at with focus on Computer Science (NSI) and Global English Studies (AMC)' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Achievements', [
+      { icon: 'fa-solid fa-language', iconColor: '#059669', text: 'Self-Taught Languages', detail: 'Mostly self-taught in English and Spanish.' },
+      { icon: 'fa-solid fa-globe', iconColor: '#0078D4', text: 'European Section', detail: 'Improved technical English skills through the European section.' },
+      { icon: 'fa-solid fa-users', iconColor: '#7C3AED', text: 'Team Projects', detail: 'Active participation in school team coding projects.' },
+    ]));
+
+    listArea.appendChild(createResumeListGroup('Key Courses', [
+      { icon: 'fa-solid fa-code', iconColor: '#0891B2', text: 'Programming Fundamentals', detail: 'Core programming concepts' },
+      { icon: 'fa-solid fa-cube', iconColor: '#7C3AED', text: 'Object-Oriented Programming', detail: 'OOP paradigms' },
+      { icon: 'fa-solid fa-database', iconColor: '#003545', text: 'Databases Intro', detail: 'SQL fundamentals' },
+      { icon: 'fa-solid fa-network-wired', iconColor: '#6366F1', text: 'Networks Introduction', detail: 'Networking basics' },
+      { icon: 'fa-solid fa-book', iconColor: '#D97706', text: 'English History & Culture', detail: 'European section coursework' },
+    ]));
+  }
+
+  // Tab switching
+  careerTab.addEventListener('click', () => {
+    careerTab.style.borderBottomColor = '#06B6D4';
+    careerTab.style.color = '#06B6D4';
+    educationTab.style.borderBottomColor = 'transparent';
+    educationTab.style.color = '#888888';
+    renderCareerContent();
+  });
+
+  educationTab.addEventListener('click', () => {
+    educationTab.style.borderBottomColor = '#06B6D4';
+    educationTab.style.color = '#06B6D4';
+    careerTab.style.borderBottomColor = 'transparent';
+    careerTab.style.color = '#888888';
+    renderEducationContent();
+  });
+
+  // Default: show selected tab
+  if (tab === 'education') {
+    educationTab.style.borderBottomColor = '#06B6D4';
+    educationTab.style.color = '#06B6D4';
+    careerTab.style.borderBottomColor = 'transparent';
+    careerTab.style.color = '#888888';
+    renderEducationContent();
+  } else {
+    renderCareerContent();
+  }
+
+  content.appendChild(identity);
+  content.appendChild(tabBar);
+  content.appendChild(listArea);
+
+  resumeWindow.appendChild(topBar);
+  resumeWindow.appendChild(content);
+  document.body.appendChild(resumeWindow);
 }
 
 function openAboutWindow() {
@@ -1246,16 +2395,17 @@ function openAboutWindow() {
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
         newTerminal.style.cssText = `position: fixed; width: 40%; height: 70%; right: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        newTerminal.style.width = 'calc(100% - 64px)';
+        newTerminal.style.height = 'calc(100% - 28px)';
+        newTerminal.style.left = '64px';
+        newTerminal.style.right = '0';
+        newTerminal.style.top = '28px';
+        newTerminal.style.transform = 'none';
+        newTerminal.style.borderRadius = '0';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
@@ -1359,116 +2509,243 @@ function openAboutWindow() {
   setTimeout(() => terminalInput.focus(), 100);
 }
 
-function openClaugerWindow() {
-  const existingNewTerminals = document.querySelectorAll('.new-terminal');
-  const position = existingNewTerminals.length % 2 === 0 ? 'left' : 'right';
+let claugerWindow: HTMLDivElement | null = null;
 
-  const newTerminal = document.createElement('div');
-  newTerminal.className = 'new-terminal';
+function openClaugerWindow() {
+  if (claugerWindow && document.body.contains(claugerWindow)) {
+    bringToFront(claugerWindow);
+    return;
+  }
+
+  claugerWindow = document.createElement('div');
   windowZIndex++;
-  newTerminal.style.cssText = `
-    position: fixed; width: 50%; height: 70%;
-    ${position}: 5%; top: 15%;
-    background: ${command.colors.background};
-    border: 2px solid ${command.colors.border.color};
-    border-radius: 8px 8px 2px 2px;
-    z-index: ${windowZIndex}; display: flex; flex-direction: column;
+  claugerWindow.style.cssText = `
+    position: fixed;
+    width: 750px;
+    height: 620px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #2D2D2D;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    z-index: ${windowZIndex};
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    font-family: 'Ubuntu Sans', sans-serif;
   `;
-  newTerminal.addEventListener('mousedown', () => bringToFront(newTerminal));
+  claugerWindow.addEventListener('mousedown', () => bringToFront(claugerWindow!));
 
   let isWinMax = false;
   const controls = createWindowControls({
-    onMinimize: () => { newTerminal.style.display = 'none'; },
+    onMinimize: () => { if (claugerWindow) claugerWindow.style.display = 'none'; },
     onMaximize: () => {
+      if (!claugerWindow) return;
       const maxBtn = controls.querySelector('.window-btn-maximize');
       if (isWinMax) {
-        newTerminal.style.cssText = `position: fixed; width: 50%; height: 70%; ${position}: 5%; top: 15%; background: ${command.colors.background}; border: 2px solid ${command.colors.border.color}; border-radius: 8px 8px 2px 2px; z-index: ${newTerminal.style.zIndex}; display: flex; flex-direction: column;`;
-        if (maxBtn) maxBtn.textContent = '□';
+        claugerWindow.style.width = '750px';
+        claugerWindow.style.height = '620px';
+        claugerWindow.style.left = '50%';
+        claugerWindow.style.top = '50%';
+        claugerWindow.style.transform = 'translate(-50%, -50%)';
+        claugerWindow.style.borderRadius = '6px';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isWinMax = false;
       } else {
-        newTerminal.style.width = 'calc(95% - 32px)';
-        newTerminal.style.height = '90%';
-        newTerminal.style.left = 'calc(50% + 32px)';
-        newTerminal.style.right = 'auto';
-        newTerminal.style.top = '50%';
-        newTerminal.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        claugerWindow.style.width = 'calc(100% - 64px)';
+        claugerWindow.style.height = 'calc(100% - 28px)';
+        claugerWindow.style.left = '64px';
+        claugerWindow.style.top = '28px';
+        claugerWindow.style.transform = 'none';
+        claugerWindow.style.borderRadius = '0';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isWinMax = true;
       }
     },
-    onClose: () => document.body.removeChild(newTerminal),
+    onClose: () => {
+      if (claugerWindow && document.body.contains(claugerWindow)) {
+        document.body.removeChild(claugerWindow);
+        claugerWindow = null;
+      }
+    },
   });
 
-  const topBar = createTitleBar('visitor@jalmeida17:$ ~/clauger', controls);
-  makeDraggable(newTerminal, topBar, () => isWinMax);
+  const topBar = createTitleBar('Clauger', controls, '/res/logoclauger.png');
+  makeDraggable(claugerWindow, topBar, () => isWinMax);
   topBar.addEventListener('dblclick', () => {
     const maxBtn = controls.querySelector('.window-btn-maximize') as HTMLElement;
     if (maxBtn) maxBtn.click();
   });
 
+  // Content area — GNOME "About" style layout
   const content = document.createElement('div');
-  content.style.cssText = `flex: 1; padding: 20px; color: ${command.colors.foreground}; overflow-y: auto; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 22px;`;
-
-  // Add Clauger content with prompt and logo
-  let claugerHTML = `<p style="animation: none; white-space: normal; overflow: visible;"><span style="color: ${command.colors.prompt.user}">visitor@jalmeida17</span>:$ ~/clauger</p>`;
-
-  // Add logo with white background similar to /about profile image
-  claugerHTML += `
-    <div style="display: flex; justify-content: flex-start; margin: 20px 0;">
-      <img src="/res/logo-clauger.png" style="width: 150px; height: 100px; border-radius: 8px; border: 2px solid ${command.colors.border.color}; object-fit: contain; background: #FFFFFF; padding: 10px;">
-    </div>
+  content.style.cssText = `
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #2D2D2D;
   `;
 
-  CLAUGER.forEach((line) => {
-    if (line === '<br>') {
-      claugerHTML += '<br>';
-    } else {
-      claugerHTML += `<p style="animation: none; white-space: normal; overflow: visible;">${line}</p>`;
-    }
-  });
-
-  content.innerHTML = claugerHTML;
-
-  // Add input for closing
-  const terminalInput = document.createElement('input');
-  terminalInput.type = 'text';
-  terminalInput.style.cssText = `
-    width: 100%;
-    background: ${command.colors.background};
-    color: ${command.colors.foreground};
-    border: none;
-    outline: none;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 16px;
-    margin-top: 10px;
+  // === Identity section (centered logo + name + tagline) ===
+  const identity = document.createElement('div');
+  identity.style.cssText = `
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 32px 28px;
+    gap: 12px;
   `;
-  terminalInput.placeholder = 'Press Enter to close...';
 
-  terminalInput.addEventListener('keypress', (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-    }
-  });
+  const logoWrap = document.createElement('div');
+  logoWrap.style.cssText = `
+    width: 96px;
+    height: 96px;
+    border-radius: 22px;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255,255,255,0.06);
+  `;
 
-  // Global keydown listener for this window
-  const claugerKeydownHandler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (e.key === 'Enter' && document.body.contains(newTerminal) && (target === terminalInput || newTerminal.contains(target))) {
-      e.preventDefault();
-      document.body.removeChild(newTerminal);
-      document.removeEventListener('keydown', claugerKeydownHandler);
-    }
-  };
-  document.addEventListener('keydown', claugerKeydownHandler);
+  const logoImg = document.createElement('img');
+  logoImg.src = '/res/logo-clauger.png';
+  logoImg.alt = 'Clauger';
+  logoImg.style.cssText = 'width: 68px; height: 68px; object-fit: contain;';
+  logoWrap.appendChild(logoImg);
 
-  content.appendChild(terminalInput);
+  const idName = document.createElement('div');
+  idName.textContent = 'Clauger';
+  idName.style.cssText = 'font-size: 24px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px;';
 
-  newTerminal.appendChild(topBar);
-  newTerminal.appendChild(content);
-  document.body.appendChild(newTerminal);
+  const idTag = document.createElement('div');
+  idTag.textContent = 'Industrial Refrigeration & HVAC Solutions';
+  idTag.style.cssText = 'font-size: 13px; color: #999999; font-weight: 400;';
 
-  setTimeout(() => terminalInput.focus(), 100);
+  const idBadge = document.createElement('div');
+  idBadge.style.cssText = `
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 4px 12px;
+    background: rgba(41, 143, 221, 0.12);
+    border-radius: 20px;
+  `;
+  const badgeIcon = document.createElement('i');
+  badgeIcon.className = 'fa-solid fa-globe';
+  badgeIcon.style.cssText = 'font-size: 11px; color: #298FDD;';
+  const badgeText = document.createElement('span');
+  badgeText.textContent = '20+ countries worldwide';
+  badgeText.style.cssText = 'font-size: 12px; color: #298FDD; font-weight: 500;';
+  idBadge.appendChild(badgeIcon);
+  idBadge.appendChild(badgeText);
+
+  identity.appendChild(logoWrap);
+  identity.appendChild(idName);
+  identity.appendChild(idTag);
+  identity.appendChild(idBadge);
+
+  // === Listbox groups (GNOME Settings style) ===
+  const listArea = document.createElement('div');
+  listArea.style.cssText = 'padding: 0 28px 28px; display: flex; flex-direction: column; gap: 20px;';
+
+  // Helper: create a GNOME-style listbox group
+  function createListGroup(label: string, rows: { icon: string; iconColor: string; text: string; detail: string }[]) {
+    const group = document.createElement('div');
+
+    const groupLabel = document.createElement('div');
+    groupLabel.textContent = label;
+    groupLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: #999999; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; padding-left: 4px;';
+    group.appendChild(groupLabel);
+
+    const box = document.createElement('div');
+    box.style.cssText = `
+      background: #363636;
+      border-radius: 10px;
+      overflow: hidden;
+    `;
+
+    rows.forEach((row, i) => {
+      const rowEl = document.createElement('div');
+      rowEl.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 16px;
+        transition: background 0.15s ease;
+        ${i < rows.length - 1 ? 'border-bottom: 1px solid rgba(255,255,255,0.06);' : ''}
+      `;
+      rowEl.addEventListener('mouseenter', () => { rowEl.style.background = 'rgba(255,255,255,0.04)'; });
+      rowEl.addEventListener('mouseleave', () => { rowEl.style.background = 'transparent'; });
+
+      const iconEl = document.createElement('div');
+      iconEl.style.cssText = `
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: ${row.iconColor};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      `;
+      const iconI = document.createElement('i');
+      iconI.className = row.icon;
+      iconI.style.cssText = 'font-size: 14px; color: #FFFFFF;';
+      iconEl.appendChild(iconI);
+
+      const textWrap = document.createElement('div');
+      textWrap.style.cssText = 'flex: 1; min-width: 0;';
+
+      const textMain = document.createElement('div');
+      textMain.textContent = row.text;
+      textMain.style.cssText = 'font-size: 13px; color: #EEEEEE; font-weight: 500; line-height: 1.3;';
+
+      const textSub = document.createElement('div');
+      textSub.textContent = row.detail;
+      textSub.style.cssText = 'font-size: 11px; color: #888888; margin-top: 1px; line-height: 1.3;';
+
+      textWrap.appendChild(textMain);
+      textWrap.appendChild(textSub);
+
+      rowEl.appendChild(iconEl);
+      rowEl.appendChild(textWrap);
+      box.appendChild(rowEl);
+    });
+
+    group.appendChild(box);
+    return group;
+  }
+
+  listArea.appendChild(createListGroup('Core Expertise', [
+    { icon: 'fa-solid fa-snowflake',       iconColor: '#298FDD', text: 'Industrial Refrigeration',       detail: 'Large-scale cooling systems for industrial facilities' },
+    { icon: 'fa-solid fa-warehouse',        iconColor: '#5B7FCC', text: 'Cold Storage',                   detail: 'Temperature-controlled warehousing solutions' },
+    { icon: 'fa-solid fa-leaf',             iconColor: '#48A56A', text: 'Energy Efficiency',              detail: 'Sustainable and eco-friendly cooling technologies' },
+    { icon: 'fa-solid fa-utensils',         iconColor: '#D4763E', text: 'Food & Beverage Processing',    detail: 'Process refrigeration for production lines' },
+  ]));
+
+  listArea.appendChild(createListGroup('Industries', [
+    { icon: 'fa-solid fa-industry',         iconColor: '#7C6DAF', text: 'Food Processing & Production',  detail: 'End-to-end cold chain for food manufacturers' },
+    { icon: 'fa-solid fa-truck-fast',        iconColor: '#CC6B5B', text: 'Cold Chain Logistics',          detail: 'Transport and distribution refrigeration' },
+    { icon: 'fa-solid fa-capsules',          iconColor: '#4CA8A8', text: 'Pharmaceuticals',               detail: 'Precision temperature control for pharma storage' },
+    { icon: 'fa-solid fa-flask',             iconColor: '#A0873C', text: 'Chemical Industry',             detail: 'Specialized cooling for chemical processes' },
+  ]));
+
+  listArea.appendChild(createListGroup('About', [
+    { icon: 'fa-solid fa-location-dot',      iconColor: '#666666', text: 'Headquartered in France',       detail: 'Global operations across Europe, Americas & Asia' },
+    { icon: 'fa-solid fa-clock-rotate-left',  iconColor: '#666666', text: 'Decades of Experience',         detail: 'Engineering excellence since the 20th century' },
+    { icon: 'fa-solid fa-handshake',          iconColor: '#666666', text: 'My Current Employer',           detail: 'Where I work as a Full Stack Developer' },
+  ]));
+
+  content.appendChild(identity);
+  content.appendChild(listArea);
+
+  claugerWindow.appendChild(topBar);
+  claugerWindow.appendChild(content);
+  document.body.appendChild(claugerWindow);
 }
 
 initEventListeners();
@@ -1488,6 +2765,7 @@ if (terminalIcon) {
         USERINPUT.focus();
       } else {
         // Close terminal
+        resetMainTerminalGeometry();
         mainEl.style.display = 'none';
         terminalIcon.classList.remove('active');
       }
@@ -1516,9 +2794,26 @@ if (minimizeButton && mainElement && terminalIcon) {
   });
 }
 
+function resetMainTerminalGeometry() {
+  if (!mainElement || !maximizeButton) return;
+  mainElement.style.width = "50%";
+  mainElement.style.height = "80%";
+  mainElement.style.position = "absolute";
+  mainElement.style.left = "50%";
+  mainElement.style.top = "50%";
+  mainElement.style.transform = "translate(-50%, -50%)";
+  mainElement.style.margin = "";
+  mainElement.style.marginTop = "";
+  mainElement.style.flex = "";
+  mainElement.style.borderRadius = "8px 8px 2px 2px";
+  maximizeButton.replaceChildren(createSvgIcon('maximize'));
+  isMaximized = false;
+}
+
 // Close button functionality
 if (closeButton && mainElement && terminalIcon) {
   closeButton.addEventListener('click', () => {
+    resetMainTerminalGeometry();
     mainElement.style.display = 'none';
     terminalIcon.classList.remove('active');
   });
@@ -1536,19 +2831,21 @@ if (maximizeButton && mainElement) {
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
-      maximizeButton.textContent = "□";
+      mainElement.style.borderRadius = "8px 8px 2px 2px";
+      maximizeButton.replaceChildren(createSvgIcon('maximize'));
       isMaximized = false;
     } else {
-      mainElement.style.width = "95%";
-      mainElement.style.height = "";
-      mainElement.style.position = "";
-      mainElement.style.left = "52%";
-      mainElement.style.top = "50%";
-      mainElement.style.transform = "translate(-50%, -50%)";
+      mainElement.style.width = "calc(100% - 64px)";
+      mainElement.style.height = "calc(100% - 28px)";
+      mainElement.style.position = "fixed";
+      mainElement.style.left = "64px";
+      mainElement.style.top = "28px";
+      mainElement.style.transform = "none";
       mainElement.style.margin = "";
       mainElement.style.marginTop = "";
       mainElement.style.flex = "";
-      maximizeButton.textContent = "❐";
+      mainElement.style.borderRadius = "0";
+      maximizeButton.replaceChildren(createSvgIcon('maximize-restore'));
       isMaximized = true;
     }
   });
@@ -2006,15 +3303,17 @@ function openCalcWindow() {
         calcWindow.style.left = '50%';
         calcWindow.style.top = '50%';
         calcWindow.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '□';
+        calcWindow.style.borderRadius = '6px';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize')); }
         isCalcMaximized = false;
       } else {
-        calcWindow.style.width = 'calc(95% - 32px)';
-        calcWindow.style.height = '90%';
-        calcWindow.style.left = 'calc(50% + 32px)';
-        calcWindow.style.top = '50%';
-        calcWindow.style.transform = 'translate(-50%, -50%)';
-        if (maxBtn) maxBtn.textContent = '❐';
+        calcWindow.style.width = 'calc(100% - 64px)';
+        calcWindow.style.height = 'calc(100% - 28px)';
+        calcWindow.style.left = '64px';
+        calcWindow.style.top = '28px';
+        calcWindow.style.transform = 'none';
+        calcWindow.style.borderRadius = '0';
+        if (maxBtn) { maxBtn.replaceChildren(createSvgIcon('maximize-restore')); }
         isCalcMaximized = true;
       }
     },
@@ -2312,55 +3611,175 @@ function openCalcWindow() {
 }
 
 
-// Desktop context menu functionality
-// Load saved background from localStorage or default to 0
-let currentBackgroundIndex = parseInt(localStorage.getItem('currentBackgroundIndex') || '0', 10);
-const backgrounds = ['ubuntu.jpg', 'ubuntu2.jpg'];
-const contextMenu = document.getElementById('desktop-context-menu');
-const changeBackgroundBtn = document.getElementById('change-background-btn');
+// Set wallpaper
+document.documentElement.style.backgroundImage = `url('/res/ubuntu2.jpg')`;
+document.body.style.backgroundImage = `url('/res/ubuntu2.jpg')`;
 
-// Apply saved background on load
-const savedBackground = backgrounds[currentBackgroundIndex];
-document.documentElement.style.backgroundImage = `url('/res/${savedBackground}')`;
-document.body.style.backgroundImage = `url('/res/${savedBackground}')`;
+// ========== Show Applications Overlay ==========
 
-// Show context menu on right-click
-document.addEventListener('contextmenu', (e: MouseEvent) => {
-  // Only show context menu if clicking on the body/desktop area
-  const target = e.target as HTMLElement;
-  if (target === document.body || target.id === 'desktop-topbar' || target.id === 'desktop-clock') {
-    e.preventDefault();
+const APP_GRID_ITEMS = [
+  { name: 'Terminal',          icon: '/res/terminal-app.png',              action: 'terminal' },
+  { name: 'Rhythmbox',        icon: '/res/Rhythmbox_logo_3.4.4.svg.png', action: 'music' },
+  { name: 'LibreOffice Calc', icon: '/res/excellogo.png',                 action: 'calc' },
+  { name: 'Clauger',          icon: '/res/logoclauger.png',               action: 'clauger' },
+  { name: 'Tech Watch',       icon: '/res/veille-icon.svg',               action: 'veille' },
+  { name: 'Resume',           icon: '/res/resume-icon.svg',               action: 'resume' },
+  { name: 'Skills',           icon: '/res/skills-icon.svg',               action: 'skills' },
+  { name: 'Projects',         icon: '/res/projects-icon.svg',             action: 'projects' },
+];
 
-    if (contextMenu) {
-      contextMenu.style.display = 'block';
-      contextMenu.style.left = `${e.clientX}px`;
-      contextMenu.style.top = `${e.clientY}px`;
-    }
+const showApplicationsBtn = document.getElementById('show-applications');
+let appGridOverlay: HTMLDivElement | null = null;
+
+function appGridKeyHandler(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    closeShowApplications();
   }
-});
+}
 
-// Hide context menu on click outside
-document.addEventListener('click', (e: MouseEvent) => {
-  if (contextMenu && e.target !== changeBackgroundBtn) {
-    contextMenu.style.display = 'none';
+function toggleShowApplications() {
+  if (appGridOverlay && document.body.contains(appGridOverlay)) {
+    closeShowApplications();
+  } else {
+    openShowApplications();
   }
-});
+}
 
-// Change background on menu item click
-if (changeBackgroundBtn) {
-  changeBackgroundBtn.addEventListener('click', () => {
-    currentBackgroundIndex = (currentBackgroundIndex + 1) % backgrounds.length;
-    const newBackground = backgrounds[currentBackgroundIndex];
+function openShowApplications() {
+  if (appGridOverlay && document.body.contains(appGridOverlay)) return;
 
-    // Update background for both html and body
-    document.documentElement.style.backgroundImage = `url('/res/${newBackground}')`;
-    document.body.style.backgroundImage = `url('/res/${newBackground}')`;
+  appGridOverlay = document.createElement('div');
+  appGridOverlay.id = 'app-grid-overlay';
 
-    // Save the current background index to localStorage
-    localStorage.setItem('currentBackgroundIndex', currentBackgroundIndex.toString());
-
-    if (contextMenu) {
-      contextMenu.style.display = 'none';
-    }
+  // Search bar
+  const searchBar = document.createElement('input');
+  searchBar.type = 'text';
+  searchBar.className = 'app-grid-search';
+  searchBar.placeholder = 'Type to search\u2026';
+  searchBar.addEventListener('input', () => {
+    const query = searchBar.value.toLowerCase();
+    const items = appGridOverlay?.querySelectorAll('.app-grid-item');
+    items?.forEach((item) => {
+      const name = item.getAttribute('data-name') || '';
+      item.classList.toggle('hidden', !name.toLowerCase().includes(query));
+    });
   });
+
+  // Desktop image link
+  const desktopLink = document.createElement('img');
+  desktopLink.className = 'app-grid-desktop-link';
+  desktopLink.src = '/res/ubuntu2.jpg';
+  desktopLink.alt = 'Desktop';
+  desktopLink.addEventListener('click', () => closeShowApplications());
+
+  // App grid
+  const grid = document.createElement('div');
+  grid.className = 'app-grid';
+
+  APP_GRID_ITEMS.forEach((app) => {
+    const item = document.createElement('div');
+    item.className = 'app-grid-item';
+    item.setAttribute('data-name', app.name);
+
+    const img = document.createElement('img');
+    img.src = app.icon;
+    img.alt = app.name;
+
+    const label = document.createElement('span');
+    label.textContent = app.name;
+
+    item.appendChild(img);
+    item.appendChild(label);
+
+    item.addEventListener('click', () => {
+      closeShowApplications();
+      executeAppAction(app.action);
+    });
+
+    grid.appendChild(item);
+  });
+
+  appGridOverlay.appendChild(searchBar);
+  appGridOverlay.appendChild(desktopLink);
+  appGridOverlay.appendChild(grid);
+  document.body.appendChild(appGridOverlay);
+
+  // Fade in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      appGridOverlay?.classList.add('visible');
+      searchBar.focus();
+    });
+  });
+
+  document.addEventListener('keydown', appGridKeyHandler);
+}
+
+function closeShowApplications() {
+  if (!appGridOverlay || !document.body.contains(appGridOverlay)) return;
+
+  appGridOverlay.classList.remove('visible');
+  document.removeEventListener('keydown', appGridKeyHandler);
+
+  const overlay = appGridOverlay;
+  appGridOverlay = null;
+
+  setTimeout(() => {
+    if (document.body.contains(overlay)) {
+      document.body.removeChild(overlay);
+    }
+  }, 300);
+}
+
+function executeAppAction(action: string) {
+  switch (action) {
+    case 'terminal': {
+      const mainEl = document.getElementById('main');
+      if (mainEl) {
+        mainEl.style.display = 'flex';
+        mainEl.style.flexDirection = 'column';
+        terminalIcon?.classList.add('active');
+        bringToFront(mainEl);
+        USERINPUT.focus();
+      }
+      break;
+    }
+    case 'music':
+      if (!musicPlayerWindow || !document.body.contains(musicPlayerWindow)) {
+        openMusicPlayer();
+        musicPlayerIcon?.classList.add('active');
+      } else {
+        bringToFront(musicPlayerWindow);
+      }
+      break;
+    case 'calc':
+      if (!calcWindow || !document.body.contains(calcWindow)) {
+        openCalcWindow();
+        excelIcon?.classList.add('active');
+      } else {
+        bringToFront(calcWindow);
+      }
+      break;
+    case 'clauger':
+      openClaugerWindow();
+      break;
+    case 'veille':
+      openVeilleWindow();
+      break;
+    case 'resume':
+      openResumeWindow();
+      break;
+    case 'skills':
+      openSkillsWindow();
+      break;
+    case 'projects':
+      openProjectsWindow();
+      break;
+    case 'noop':
+      break;
+  }
+}
+
+if (showApplicationsBtn) {
+  showApplicationsBtn.addEventListener('click', toggleShowApplications);
 }

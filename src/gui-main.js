@@ -1,21 +1,24 @@
+// ═══════════════════════════════════════════
+// GUI Main — Dark Editorial Portfolio
+// ═══════════════════════════════════════════
+
 // Mobile menu toggle
 const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-const navMenu = document.querySelector('.nav-menu');
+const navMenu = document.getElementById('navMenu');
 
 if (mobileMenuToggle && navMenu) {
   mobileMenuToggle.addEventListener('click', () => {
     navMenu.classList.toggle('active');
     const icon = mobileMenuToggle.querySelector('i');
     if (navMenu.classList.contains('active')) {
-      icon.className = 'fa-solid fa-times';
+      icon.className = 'fa-solid fa-xmark';
     } else {
       icon.className = 'fa-solid fa-bars';
     }
   });
 
   // Close menu when clicking on a link
-  const navLinks = navMenu.querySelectorAll('a');
-  navLinks.forEach(link => {
+  navMenu.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       navMenu.classList.remove('active');
       const icon = mobileMenuToggle.querySelector('i');
@@ -23,6 +26,20 @@ if (mobileMenuToggle && navMenu) {
     });
   });
 }
+
+// Navbar scroll effect
+const navbar = document.getElementById('navbar');
+let lastScroll = 0;
+
+window.addEventListener('scroll', () => {
+  const currentScroll = window.pageYOffset;
+  if (currentScroll > 50) {
+    navbar.classList.add('scrolled');
+  } else {
+    navbar.classList.remove('scrolled');
+  }
+  lastScroll = currentScroll;
+}, { passive: true });
 
 // Smooth scroll with offset for fixed navbar
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -33,8 +50,8 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     e.preventDefault();
     const target = document.querySelector(href);
     if (target) {
-      const navbarHeight = document.querySelector('.navbar').offsetHeight;
-      const targetPosition = target.offsetTop - navbarHeight - 20;
+      const navbarHeight = navbar.offsetHeight;
+      const targetPosition = target.offsetTop - navbarHeight - 24;
       window.scrollTo({
         top: targetPosition,
         behavior: 'smooth'
@@ -43,143 +60,150 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// Add active state to nav links on scroll
+// Active nav link tracking
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-menu a[href^="#"]');
 
 window.addEventListener('scroll', () => {
   let current = '';
-  const navbarHeight = document.querySelector('.navbar').offsetHeight;
+  const navbarHeight = navbar.offsetHeight;
 
   sections.forEach(section => {
     const sectionTop = section.offsetTop - navbarHeight - 100;
-    const sectionHeight = section.clientHeight;
     if (window.pageYOffset >= sectionTop) {
       current = section.getAttribute('id');
     }
   });
 
   navLinks.forEach(link => {
-    link.style.borderBottomColor = 'transparent';
+    link.classList.remove('active');
     if (link.getAttribute('href') === `#${current}`) {
-      link.style.borderBottomColor = 'var(--primary-color)';
+      link.classList.add('active');
     }
   });
-});
+}, { passive: true });
 
-// Intersection Observer for fade-in animations
-const observerOptions = {
-  threshold: 0.1,
-  rootMargin: '0px 0px -100px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
+// Scroll reveal animations
+const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
-      entry.target.style.transform = 'translateY(0)';
+      entry.target.classList.add('visible');
     }
   });
-}, observerOptions);
-
-// Observe elements for animation
-document.querySelectorAll('.project-card, .skill-category, .contact-card, .career-card, .education-card').forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(20px)';
-  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-  observer.observe(el);
+}, {
+  threshold: 0.08,
+  rootMargin: '0px 0px -60px 0px'
 });
 
-// Fetch and display news
-async function fetchNews() {
-  const newsContent = document.getElementById('news-content');
-  if (!newsContent) return;
+document.querySelectorAll('.reveal').forEach(el => {
+  revealObserver.observe(el);
+});
 
-  const feeds = [
-    { category: 'Development', icon: 'fa-solid fa-code', url: 'https://github.blog/feed/' },
-    { category: 'Tech', icon: 'fa-solid fa-microchip', url: 'https://techcrunch.com/feed/' },
-    { category: 'Science', icon: 'fa-solid fa-flask', url: 'https://www.sciencealert.com/rss' },
-    { category: 'AI', icon: 'fa-solid fa-robot', url: 'https://venturebeat.com/feed/' },
-    { category: 'Design', icon: 'fa-solid fa-palette', url: 'https://www.smashingmagazine.com/feed/' }
-  ];
+// Veille syntheses — expand/collapse detail on click
+document.querySelectorAll('.veille-synth-card').forEach(card => {
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('a')) return; // don't toggle when clicking links
+    card.classList.toggle('expanded');
+  });
+});
 
+// Project cards — expand/collapse detail on button click
+document.querySelectorAll('.project-expand-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.closest('.project-card').classList.toggle('expanded');
+  });
+});
+
+// Project images — fetch manifest and inject galleries + lightbox
+(async () => {
   try {
-    let newsHTML = '';
+    const res = await fetch('/res/projects/manifest.json');
+    const manifest = await res.json();
 
-    for (const feed of feeds) {
-      try {
-        const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&api_key=lh7qwvgc9wlodqbp8ouslpcyxrml0ejeyursklsz&count=5`);
-        const data = await response.json();
+    // Create lightbox element using DOM methods
+    const lightbox = document.createElement('div');
+    lightbox.className = 'gui-lightbox';
 
-        if (data.status === 'ok' && data.items && data.items.length > 0) {
-          newsHTML += `
-            <div class="news-category">
-              <h3 class="news-category-title">
-                <i class="${feed.icon}"></i>
-                ${feed.category}
-              </h3>
-          `;
+    const lbClose = document.createElement('button');
+    lbClose.className = 'gui-lightbox-close';
+    const closeIcon = document.createElement('i');
+    closeIcon.className = 'fa-solid fa-xmark';
+    lbClose.appendChild(closeIcon);
 
-          data.items.forEach(item => {
-            const title = item.title.length > 80 ? item.title.substring(0, 80) + '...' : item.title;
+    const lbPrev = document.createElement('button');
+    lbPrev.className = 'gui-lightbox-nav gui-lightbox-prev';
+    const prevIcon = document.createElement('i');
+    prevIcon.className = 'fa-solid fa-chevron-left';
+    lbPrev.appendChild(prevIcon);
 
-            let description = '';
-            if (item.description) {
-              const tempDiv = document.createElement('div');
-              tempDiv.innerHTML = item.description;
-              const textContent = tempDiv.textContent || tempDiv.innerText || '';
-              description = textContent.length > 120 ? textContent.substring(0, 120) + '...' : textContent;
-            }
+    const lbNext = document.createElement('button');
+    lbNext.className = 'gui-lightbox-nav gui-lightbox-next';
+    const nextIcon = document.createElement('i');
+    nextIcon.className = 'fa-solid fa-chevron-right';
+    lbNext.appendChild(nextIcon);
 
-            newsHTML += `
-              <div class="news-item">
-                <div class="news-item-title">
-                  <a href="${item.link}" target="_blank" rel="noopener noreferrer">${title}</a>
-                </div>
-                ${description ? `<p class="news-item-description">${description}</p>` : ''}
-              </div>
-            `;
-          });
+    const lbImg = document.createElement('img');
+    lbImg.src = '';
+    lbImg.alt = 'Project screenshot';
 
-          newsHTML += `</div>`;
-        } else {
-          newsHTML += `
-            <div class="news-category">
-              <h3 class="news-category-title">
-                <i class="${feed.icon}"></i>
-                ${feed.category}
-              </h3>
-              <p style="color: #888;">Unable to fetch news from this source.</p>
-            </div>
-          `;
-        }
-      } catch (err) {
-        newsHTML += `
-          <div class="news-category">
-            <h3 class="news-category-title">
-              <i class="${feed.icon}"></i>
-              ${feed.category}
-            </h3>
-            <p style="color: #888;">Failed to load news.</p>
-          </div>
-        `;
-      }
+    lightbox.appendChild(lbClose);
+    lightbox.appendChild(lbPrev);
+    lightbox.appendChild(lbImg);
+    lightbox.appendChild(lbNext);
+    document.body.appendChild(lightbox);
+
+    let lbSrcs = [];
+    let lbIdx = 0;
+
+    function openLightbox(srcs, idx) {
+      lbSrcs = srcs;
+      lbIdx = idx;
+      lbImg.src = lbSrcs[lbIdx];
+      lbPrev.style.display = lbSrcs.length > 1 ? '' : 'none';
+      lbNext.style.display = lbSrcs.length > 1 ? '' : 'none';
+      lightbox.classList.add('active');
+    }
+    function closeLightbox() { lightbox.classList.remove('active'); }
+    function navLightbox(dir) {
+      lbIdx = (lbIdx + dir + lbSrcs.length) % lbSrcs.length;
+      lbImg.src = lbSrcs[lbIdx];
     }
 
-    newsContent.innerHTML = newsHTML;
-
-    // Observe news categories for animation
-    document.querySelectorAll('.news-category').forEach(el => {
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(20px)';
-      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-      observer.observe(el);
+    lbClose.addEventListener('click', closeLightbox);
+    lbPrev.addEventListener('click', () => navLightbox(-1));
+    lbNext.addEventListener('click', () => navLightbox(1));
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navLightbox(-1);
+      if (e.key === 'ArrowRight') navLightbox(1);
     });
 
-  } catch (error) {
-    newsContent.innerHTML = '<div class="news-error">Failed to fetch news feeds. Please try again later.</div>';
-  }
-}
+    // Inject galleries into project cards
+    document.querySelectorAll('.project-card[data-project]').forEach(card => {
+      const projectId = card.dataset.project;
+      const images = manifest[projectId];
+      if (!images || images.length === 0) return;
 
-// Load news when page loads
-window.addEventListener('load', fetchNews);
+      const srcs = images.map(f => `/res/projects/${projectId}/${f}`);
+      const gallery = document.createElement('div');
+      gallery.className = 'project-gallery';
+
+      srcs.forEach((src, i) => {
+        const img = document.createElement('img');
+        img.className = 'project-gallery-thumb';
+        img.src = src;
+        img.alt = `${projectId} screenshot ${i + 1}`;
+        img.addEventListener('click', () => openLightbox(srcs, i));
+        gallery.appendChild(img);
+      });
+
+      // Insert gallery at the top of .project-detail
+      const detail = card.querySelector('.project-detail');
+      if (detail) detail.insertBefore(gallery, detail.firstChild);
+    });
+  } catch (e) {
+    // Silently fail if manifest not available
+  }
+})();

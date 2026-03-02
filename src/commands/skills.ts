@@ -12,8 +12,8 @@ export const createSkills = () : string[] => {
   
   // Frameworks & Libraries
   skills.push("<span class='command'><u>Frameworks & Libraries</u></span>");
-  skills.push("<i class='fa-brands fa-react'></i> React.js" + SPACE.repeat(4) + "<i class='fa-brands fa-angular'></i> Angular" + SPACE.repeat(4) + "<i class='fa-brands fa-node-js'></i> Node.js");
-  skills.push("<i class='fa-solid fa-code'></i> .NET / ASP.NET" + SPACE.repeat(4) + "<i class='fa-solid fa-layer-group'></i> PrimeNG");
+  skills.push("<i class='fa-brands fa-react'></i> React.js" + SPACE.repeat(4) + "<i class='fa-brands fa-react'></i> Next.js" + SPACE.repeat(4) + "<i class='fa-brands fa-angular'></i> Angular" + SPACE.repeat(4) + "<i class='fa-brands fa-node-js'></i> Node.js");
+  skills.push("<i class='fa-solid fa-code'></i> .NET / ASP.NET" + SPACE.repeat(4) + "<i class='fa-solid fa-layer-group'></i> PrimeNG" + SPACE.repeat(4) + "<i class='fa-solid fa-database'></i> Supabase");
   skills.push("<br>");
   
   // Databases
@@ -25,7 +25,7 @@ export const createSkills = () : string[] => {
   skills.push("<span class='command'><u>Cloud & DevOps</u></span>");
   skills.push("<i class='fa-brands fa-git-alt'></i> Git" + SPACE.repeat(4) + "<i class='fa-brands fa-github'></i> GitHub" + SPACE.repeat(4) + "<i class='fa-brands fa-aws'></i> AWS");
   skills.push("<i class='fa-brands fa-microsoft'></i> Azure" + SPACE.repeat(4) + "<i class='fa-solid fa-bolt'></i> Power Automate" + SPACE.repeat(4) + "<i class='fa-brands fa-windows'></i> Power BI");
-  skills.push("<i class='fa-solid fa-infinity'></i> DevOps");
+  skills.push("<i class='fa-solid fa-infinity'></i> DevOps" + SPACE.repeat(4) + "<i class='fa-solid fa-cloud'></i> Vercel");
   skills.push("<br>");
   
   // Other Tools
