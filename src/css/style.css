@@ -304,8 +304,13 @@ body {
 @media (max-width: 1024px), (pointer: coarse) {
   #mobile-block {
     display: flex !important;
+    z-index: 999999 !important;
   }
-  
+
+  #boot-screen {
+    display: none !important;
+  }
+
   #desktop-topbar,
   #sidebar-dock,
   #main,

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npx vite:*)",
       "WebFetch(domain:www.ascii-art.de)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:coursbtssio.fr)"
     ]
   }
 }

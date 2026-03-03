@@ -6,24 +6,40 @@
 const mobileMenuToggle = document.getElementById('mobileMenuToggle');
 const navMenu = document.getElementById('navMenu');
 
+// Create overlay element
+const menuOverlay = document.createElement('div');
+menuOverlay.className = 'mobile-menu-overlay';
+document.body.appendChild(menuOverlay);
+
+function openMobileMenu() {
+  navMenu.classList.add('active');
+  mobileMenuToggle.classList.add('active');
+  menuOverlay.classList.add('active');
+  mobileMenuToggle.querySelector('i').className = 'fa-solid fa-xmark';
+}
+
+function closeMobileMenu() {
+  navMenu.classList.remove('active');
+  mobileMenuToggle.classList.remove('active');
+  menuOverlay.classList.remove('active');
+  mobileMenuToggle.querySelector('i').className = 'fa-solid fa-bars';
+}
+
 if (mobileMenuToggle && navMenu) {
   mobileMenuToggle.addEventListener('click', () => {
-    navMenu.classList.toggle('active');
-    const icon = mobileMenuToggle.querySelector('i');
     if (navMenu.classList.contains('active')) {
-      icon.className = 'fa-solid fa-xmark';
+      closeMobileMenu();
     } else {
-      icon.className = 'fa-solid fa-bars';
+      openMobileMenu();
     }
   });
 
+  // Close menu when clicking overlay
+  menuOverlay.addEventListener('click', closeMobileMenu);
+
   // Close menu when clicking on a link
   navMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      navMenu.classList.remove('active');
-      const icon = mobileMenuToggle.querySelector('i');
-      icon.className = 'fa-solid fa-bars';
-    });
+    link.addEventListener('click', closeMobileMenu);
   });
 }
 
