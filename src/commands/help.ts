@@ -14,6 +14,7 @@ export const createHelp = () : string[] => {
     ["'cv'", "Download my CV."],
     ["'banner'", "Display the banner."],
     ["'clear'", "Clear the terminal."],
+    ["'gui'", "Switch to the graphical version."],
     ["'sudo'", "???"],
   ];
 

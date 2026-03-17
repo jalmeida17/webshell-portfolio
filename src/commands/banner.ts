@@ -20,6 +20,7 @@ export const createBanner = () : string[] => {
   banner.push("<br>");
   banner.push("Welcome to my Portfolio");
   banner.push("Type <span class='command'>'help'</span> for a list of all available commands.");
+  banner.push("Type <span class='command'>'gui'</span> to switch to the graphical version.");
   banner.push("<br>");
   return banner;
 }
