@@ -3,6 +3,7 @@ import { createHelp } from "./commands/help";
 import { createBanner } from "./commands/banner";
 import { createAbout } from "./commands/about"
 import { createDefault } from "./commands/default";
+import { createLegal } from "./commands/legal";
 import { PROJECT_DETAILS, ProjectData } from "./commands/projects";
 import { runBootSequence } from "./boot";
 import { VEILLE_SOURCES, VEILLE_SYNTHESES, VEILLE_METHODOLOGY } from "./commands/veille";
@@ -21,6 +22,7 @@ const HELP = createHelp();
 const BANNER = createBanner();
 const ABOUT = createAbout();
 const DEFAULT = createDefault();
+const LEGAL = createLegal();
 
 //WRITELINESCOPY is used to during the "clear" command
 const WRITELINESCOPY = mutWriteLines;
@@ -34,7 +36,7 @@ const PRE_USER = document.getElementById("pre-user");
 const HOST = document.getElementById("host");
 const USER = document.getElementById("user");
 const PROMPT = document.getElementById("prompt");
-const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "veille", "cv", "gui", "clauger"];
+const COMMANDS = ["help", "about", "projects", "banner", "clear", "skills", "career", "education", "veille", "cv", "gui", "clauger", "legal", "mentions"];
 const HISTORY : string[] = [];
 const SUDO_PASSWORD = command.password;
 
@@ -275,6 +277,14 @@ function commandHandler(input : string) {
         break;
       }
       openClaugerWindow();
+      break;
+    case 'legal':
+    case 'mentions':
+      if(bareMode) {
+        writeLines(["Nothing to see here.", "<br>"])
+        break;
+      }
+      writeLines(LEGAL);
       break;
     case 'linkedin':
       //add stuff here
