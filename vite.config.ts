@@ -44,7 +44,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        gui: resolve(__dirname, 'gui.html')
+        gui: resolve(__dirname, 'gui.html'),
+        legal: resolve(__dirname, 'mentions-legales.html')
       }
     }
   }
