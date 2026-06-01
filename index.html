@@ -3,106 +3,817 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="stylesheet" href="src/css/css-reset.css">
-  <link rel="stylesheet" href="src/css/style.css">
-  <link rel="icon" type="image/x-png" href="/res/logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-  <title>Joao Almeida</title>
+  <link rel="stylesheet" href="src/css/gui-style.css">
+  <link rel="icon" type="image/svg+xml" href="/res/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,400..500&family=Hanken+Grotesk:wght@300..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/d5effce557.js" crossorigin="anonymous"></script>
+  <title>Joao Almeida - Full Stack Developer</title>
+  <meta name="description" content="Portfolio of Joao Almeida, Full Stack Developer. Explore my projects, skills, and experience.">
 </head>
 
 <body>
-  <div id="boot-screen">
-    <div id="boot-output"></div>
-  </div>
-  <div id="mobile-block">
-    <div id="mobile-message">
-      <i class="fa-solid fa-desktop" style="font-size: 64px; margin-bottom: 20px;"></i>
-      <h1>Desktop Only</h1>
-      <p>This portfolio is optimized for desktop</p>
-      <p>Please visit this website on a PC</p>
-          <a href="gui.html" id="gui-version-btn">GUI Version</a>
-      <p style="margin-top: 24px; font-size: 12px; opacity: 0.6;"><a href="mentions-legales.html" style="color: #FFFFFF; text-decoration: underline;">Mentions légales</a></p>
-    </div>
-  </div>
-  <div id="desktop-topbar">
-    <span id="topbar-activities">Activities</span>
-    <div id="desktop-clock"></div>
-    <span id="topbar-ethernet" title="Wired Connected"><i class="fa-solid fa-ethernet"></i></span>
-    <button id="sound-toggle" title="Toggle Sound"><i class="fa-solid fa-volume-high"></i></button>
-    <button id="power-btn" title="Power Off"><i class="fa-solid fa-power-off"></i></button>
-  </div>
-  <div id="sidebar-dock">
-    <div id="terminal-icon" class="dock-icon">
-      <img src="/res/terminal-app.png" alt="Terminal" style="width: 48px; height: 48px;">
-    </div>
-<div id="excel-icon" class="dock-icon">
-      <img src="/res/excellogo.png" alt="Excel" style="width: 48px; height: auto;">
-    </div>
-    <div id="music-player-icon" class="dock-icon">
-      <img src="/res/Rhythmbox_logo_3.4.4.svg.png" alt="Music Player" style="width: 60px; height: 48px;">
-    </div>
-    <div class="dock-divider"></div>
-    <div class="dock-icon dock-icon-static">
-      <img src="/res/ssd.png" alt="Disk" style="width: 48px; height: 48px;">
-    </div>
-    <div class="dock-icon dock-icon-static">
-      <img src="/res/trashcan.png" alt="Trash" style="width: 48px; height: 48px;">
-    </div>
-    <div id="show-applications" class="dock-icon" title="Show Applications">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect x="1" y="1" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
-        <rect x="11.5" y="1" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
-        <rect x="22" y="1" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
-        <rect x="1" y="11.5" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
-        <rect x="11.5" y="11.5" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
-        <rect x="22" y="11.5" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
-        <rect x="1" y="22" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
-        <rect x="11.5" y="22" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
-        <rect x="22" y="22" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
-      </svg>
-    </div>
-  </div>
-  <div id="desktop-icons">
-    <div class="desktop-icon" id="home-folder-icon">
-      <img src="/res/filemanager-app.png" alt="Home">
-      <span>Home</span>
-    </div>
-  </div>
-  <div id="version-info">
-    <div>V1.2</div>
-    <div>by jalmeida17</div>
-  </div>
-  <main id="main" style="width: 50%; height: 80%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; flex-direction: column;">
-    <div id="bars">
-      <div id="bar-1">visitor@jalmeida17:$ ~<div class="window-controls"><button class="window-btn" id="minimize-window"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="2" y1="6" x2="10" y2="6"/></svg></button><button class="window-btn" id="maximize-window"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="1"/></svg></button><button class="window-btn window-btn-close" id="close-window"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button></div></div>
-    </div>
-    <br>
-    <div id="terminal">
-      <div>
-        <span id="prompt"><span id="pre-user"></span>@<span id="pre-host"></span>:$ ~ </span>
+  <div class="grain" aria-hidden="true"></div>
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <svg class="nav-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M11 11 L6 16 L11 21" />
+          <path d="M21 11 L26 16 L21 21" />
+          <path d="M18 9 L14 23" />
+        </svg>
+        <div class="nav-brand-text">
+          <h1>Joao Almeida</h1>
+          <p class="nav-subtitle">Full Stack Developer</p>
+        </div>
       </div>
-      <!-- command output will be inserted before #write-lines-->
-      <a id="write-lines"></a>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="#about">About</a></li>
+        <li><a href="#career">Career</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#veille">Tech Watch</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li class="nav-terminal-item"><a href="terminal.html" class="terminal-link"><svg class="terminal-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l4 4-4 4"/><path d="M12 16h7"/></svg>Ubuntu</a></li>
+      </ul>
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
     </div>
-    <div id="input-line">
-      <div>
-        <p id="password-input" style="display: none;">Password: <input id="password-field" autocomplete="off"
-            type="password" /></p>
-        <p id="input-hidden">
-          <span id="prompt"><span id="user"></span>@<span id="host"></span>:$ ~
-          </span>
-          <input id="user-input" type="text" enterkeyhint="Enter" spellcheck="false" autocapitalize="none"
-            autocomplete="off" />
-        </p>
-      </div>
-      <br>
-    </div>
-  </main>
-</body>
+  </nav>
 
-<script type="module" src="./src/styles.ts"></script>
-<script type="module" src="./src/main.ts"></script>
+  <!-- Hero -->
+  <section class="hero">
+    <svg class="hero__contour" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M685.9,420.0 L683.0,427.7 L678.0,434.6 L672.0,440.7 L666.1,446.1 L660.5,451.2 L655.2,456.1 L649.6,460.6 L643.3,464.5 L636.2,467.2 L628.5,468.5 L620.8,468.7 L613.4,468.2 L606.6,467.8 L600.0,468.3 L593.1,470.0 L585.3,472.6 L576.4,475.3 L566.5,477.0 L556.7,476.5 L548.1,473.4 L541.9,467.7 L538.7,460.1 L538.4,451.7 L540.1,443.7 L542.3,436.6 L543.7,430.5 L543.3,425.2 L541.1,420.0 L537.7,414.2 L534.4,407.7 L532.3,400.6 L532.4,393.3 L535.0,386.5 L539.6,380.5 L545.7,375.4 L552.4,371.1 L559.4,367.1 L566.7,363.3 L574.3,359.8 L582.5,357.3 L591.2,356.2 L600.0,357.4 L608.1,361.0 L614.9,366.5 L620.0,373.2 L623.7,379.7 L626.8,385.1 L630.5,388.6 L636.0,390.5 L643.7,391.4 L653.4,392.5 L664.0,394.7 L673.9,398.8 L681.4,404.8 L685.5,412.1 L685.9,420.0 Z" stroke-width="2" opacity="1.0"/><path d="M764.4,420.0 L758.9,434.7 L749.3,447.9 L737.9,459.6 L726.6,470.0 L715.9,479.7 L705.6,489.1 L694.9,497.8 L682.8,505.1 L669.2,510.3 L654.6,512.9 L639.8,513.2 L625.7,512.2 L612.6,511.5 L600.0,512.5 L586.8,515.8 L572.0,520.8 L554.8,525.9 L536.0,529.1 L517.1,528.2 L500.6,522.2 L488.7,511.3 L482.6,496.8 L482.1,480.8 L485.3,465.3 L489.5,451.7 L492.2,440.2 L491.5,430.0 L487.3,420.0 L480.8,409.0 L474.4,396.5 L470.5,382.8 L470.6,368.9 L475.5,355.9 L484.4,344.4 L496.0,334.7 L508.9,326.3 L522.4,318.7 L536.2,311.4 L550.9,304.8 L566.6,299.9 L583.2,298.0 L600.0,300.2 L615.5,307.0 L628.5,317.7 L638.2,330.4 L645.3,342.9 L651.2,353.1 L658.4,360.0 L668.8,363.6 L683.6,365.3 L702.2,367.3 L722.5,371.6 L741.4,379.4 L755.8,390.8 L763.7,404.9 L764.4,420.0 Z" stroke-width="1.3" opacity="0.96"/><path d="M842.8,420.0 L834.7,441.7 L820.6,461.3 L803.8,478.5 L787.0,493.8 L771.2,508.2 L756.1,522.0 L740.2,534.9 L722.4,545.8 L702.3,553.5 L680.6,557.3 L658.8,557.7 L637.9,556.2 L618.6,555.2 L600.0,556.7 L580.6,561.5 L558.6,568.9 L533.2,576.5 L505.4,581.1 L477.5,579.9 L453.2,571.0 L435.6,554.8 L426.6,533.4 L425.8,509.8 L430.5,486.9 L436.8,466.8 L440.7,449.8 L439.7,434.8 L433.4,420.0 L423.9,403.7 L414.4,385.3 L408.6,365.1 L408.9,344.5 L416.0,325.2 L429.2,308.3 L446.3,294.0 L465.4,281.6 L485.3,270.3 L505.8,259.6 L527.4,249.8 L550.6,242.5 L575.2,239.7 L600.0,243.0 L622.9,253.0 L642.1,268.8 L656.5,287.6 L666.9,306.1 L675.7,321.2 L686.3,331.3 L701.7,336.6 L723.6,339.2 L751.0,342.2 L781.0,348.5 L808.9,360.1 L830.3,376.9 L841.9,397.7 L842.8,420.0 Z" stroke-width="1.3" opacity="0.92"/><path d="M921.3,420.0 L910.6,448.7 L891.9,474.6 L869.7,497.4 L847.4,517.7 L826.6,536.7 L806.5,555.0 L785.5,572.1 L761.9,586.5 L735.4,596.6 L706.7,601.7 L677.7,602.2 L650.2,600.3 L624.6,599.0 L600.0,600.9 L574.3,607.3 L545.2,617.0 L511.6,627.1 L474.8,633.2 L437.9,631.5 L405.7,619.8 L382.4,598.4 L370.5,570.1 L369.4,538.8 L375.7,508.6 L384.0,482.0 L389.2,459.4 L387.9,439.6 L379.6,420.0 L367.0,398.5 L354.4,374.0 L346.7,347.3 L347.1,320.1 L356.6,294.6 L374.0,272.2 L396.6,253.2 L421.9,236.9 L448.2,221.9 L475.3,207.7 L503.9,194.8 L534.6,185.2 L567.2,181.4 L600.0,185.8 L630.4,199.1 L655.7,219.9 L674.8,244.8 L688.5,269.3 L700.2,289.3 L714.2,302.6 L734.6,309.6 L763.5,313.1 L799.8,317.0 L839.5,325.4 L876.5,340.7 L904.7,363.0 L920.0,390.4 L921.3,420.0 Z" stroke-width="1.3" opacity="0.88"/><path d="M999.8,420.0 L986.5,455.7 L963.2,488.0 L935.5,516.3 L907.9,541.6 L881.9,565.3 L856.9,588.0 L830.8,609.2 L801.5,627.2 L768.4,639.8 L732.8,646.1 L696.7,646.7 L662.4,644.3 L630.6,642.7 L600.0,645.1 L568.0,653.0 L531.8,665.2 L490.0,677.7 L444.2,685.3 L398.3,683.2 L358.2,668.6 L329.3,642.0 L314.5,606.7 L313.1,567.8 L320.9,530.2 L331.3,497.1 L337.7,469.1 L336.1,444.4 L325.8,420.0 L310.0,393.2 L294.4,362.8 L284.8,329.6 L285.3,295.7 L297.1,263.9 L318.7,236.1 L346.9,212.5 L378.4,192.1 L411.2,173.5 L444.9,155.9 L480.4,139.8 L518.7,127.8 L559.2,123.1 L600.0,128.5 L637.8,145.1 L669.3,171.0 L693.0,202.0 L710.1,232.4 L724.6,257.3 L742.0,273.9 L767.5,282.7 L803.4,287.0 L848.7,291.9 L898.0,302.3 L944.0,321.3 L979.1,349.0 L998.2,383.2 L999.8,420.0 Z" stroke-width="1.3" opacity="0.84"/><path d="M1078.3,420.0 L1062.3,462.7 L1034.4,501.3 L1001.4,535.2 L968.3,565.5 L937.3,593.8 L907.4,621.0 L876.1,646.4 L841.0,667.8 L801.5,682.9 L758.8,690.4 L715.7,691.2 L674.7,688.4 L636.6,686.4 L600.0,689.3 L561.7,698.7 L518.4,713.3 L468.4,728.3 L413.6,737.4 L358.7,734.9 L310.8,717.4 L276.1,685.6 L258.4,643.4 L256.8,596.8 L266.1,551.8 L278.5,512.2 L286.2,478.7 L284.2,449.2 L271.9,420.0 L253.1,387.9 L234.5,351.6 L223.0,311.8 L223.5,271.3 L237.7,233.3 L263.5,200.0 L297.2,171.7 L334.9,147.4 L374.1,125.2 L414.4,104.0 L457.0,84.8 L502.7,70.4 L551.2,64.8 L600.0,71.3 L645.2,91.2 L682.9,122.2 L711.3,159.2 L731.8,195.6 L749.1,225.4 L769.9,245.3 L800.3,255.7 L843.4,260.8 L897.5,266.7 L956.5,279.2 L1011.5,301.9 L1053.6,335.1 L1076.4,376.0 L1078.3,420.0 Z" stroke-width="1.3" opacity="0.8"/><path d="M1156.8,420.0 L1138.2,469.7 L1105.7,514.7 L1067.3,554.1 L1028.8,589.3 L992.6,622.3 L957.8,654.0 L921.4,683.5 L880.6,708.5 L834.5,726.1 L784.9,734.8 L734.7,735.7 L687.0,732.4 L642.6,730.1 L600.0,733.4 L555.4,744.5 L505.0,761.4 L446.9,778.9 L383.0,789.5 L319.1,786.5 L263.3,766.2 L223.0,729.2 L202.3,680.0 L200.5,625.9 L211.3,573.5 L225.8,527.4 L234.8,488.4 L232.4,454.0 L218.1,420.0 L196.2,382.7 L174.5,340.4 L161.1,294.1 L161.8,246.9 L178.2,202.7 L208.3,163.9 L247.5,131.0 L291.4,102.7 L337.0,76.8 L384.0,52.2 L433.5,29.8 L486.7,13.1 L543.2,6.5 L600.0,14.1 L652.6,37.2 L696.5,73.3 L729.6,116.4 L753.4,158.8 L773.6,193.5 L797.8,216.6 L833.2,228.8 L883.3,234.7 L946.3,241.6 L1015.0,256.1 L1079.1,282.5 L1128.0,321.2 L1154.6,368.8 L1156.8,420.0 Z" stroke-width="1.3" opacity="0.76"/><path d="M1235.3,420.0 L1214.1,476.7 L1177.0,528.0 L1133.2,573.0 L1089.2,613.2 L1048.0,650.8 L1008.3,687.0 L966.7,720.7 L920.1,749.2 L867.6,769.2 L810.9,779.2 L753.7,780.2 L699.2,776.4 L648.6,773.8 L600.0,777.6 L549.1,790.2 L491.6,809.6 L425.3,829.5 L352.4,841.6 L279.5,838.2 L215.8,815.0 L169.8,772.8 L146.3,716.7 L144.2,654.9 L156.5,595.1 L173.0,542.5 L183.3,498.0 L180.6,458.7 L164.2,420.0 L139.2,377.4 L114.5,329.1 L99.2,276.3 L100.0,222.5 L118.8,172.0 L153.1,127.7 L197.8,90.2 L247.9,57.9 L299.9,28.4 L353.5,0.3 L410.0,-25.2 L470.8,-44.3 L535.2,-51.8 L600.0,-43.1 L660.0,-16.8 L710.1,24.4 L747.8,73.6 L775.0,122.0 L798.0,161.6 L825.7,187.9 L866.1,201.8 L923.3,208.6 L995.1,216.4 L1073.5,233.0 L1146.6,263.2 L1202.4,307.3 L1232.7,361.5 L1235.3,420.0 Z" stroke-width="1.3" opacity="0.72"/><path d="M1313.8,420.0 L1289.9,483.7 L1248.3,541.3 L1199.0,591.9 L1149.7,637.1 L1103.3,679.3 L1058.7,720.0 L1012.0,757.8 L959.7,789.8 L900.7,812.4 L837.0,823.6 L772.7,824.7 L711.5,820.5 L654.6,817.5 L600.0,821.8 L542.8,836.0 L478.2,857.7 L403.7,880.1 L321.8,893.7 L240.0,889.9 L168.4,863.8 L116.7,816.3 L90.2,753.4 L87.8,683.9 L101.8,616.8 L120.3,557.6 L131.8,507.6 L128.8,463.5 L110.4,420.0 L82.3,372.2 L54.5,317.9 L37.3,258.6 L38.2,198.1 L59.3,141.4 L97.9,91.6 L148.2,49.5 L204.4,13.2 L262.9,-20.0 L323.1,-51.5 L386.6,-80.2 L454.8,-101.7 L527.2,-110.1 L600.0,-100.3 L667.4,-70.7 L723.7,-24.5 L766.1,30.8 L796.6,85.2 L822.5,129.6 L853.6,159.3 L899.0,174.8 L963.2,182.5 L1043.9,191.3 L1132.0,209.9 L1214.1,243.8 L1276.9,293.3 L1310.9,354.3 L1313.8,420.0 Z" stroke-width="1.3" opacity="0.68"/></svg>
+    <div class="hero__inner container">
+      <p class="hero__kicker"><span class="dot"></span> Based in Lyon · Full Stack Developer · Available for opportunities</p>
+      <h1 class="hero__title">Hi, I'm <span class="accent">Joao</span>.<br>I build things for the web.</h1>
+      <p class="hero__sub">Full Stack Developer passionate about crafting modern web applications with clean code and great user experiences — currently building internal tools at Clauger.</p>
+      <div class="hero__cta">
+        <a href="#contact" class="btn btn-primary">Get In Touch</a>
+        <a href="/res/cv.pdf" download="CV_Joao_Almeida.pdf" class="btn btn-secondary">
+          <i class="fa-solid fa-arrow-down"></i> Download CV
+        </a>
+        <a href="#projects" class="arrow-link">See the work &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About — split layout with text + stats -->
+  <section id="about" class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-head__index">01 / Introduction</span>
+        <h2 class="section-head__title">About Me</h2>
+      </div>
+      <div class="about">
+        <aside class="about__aside reveal">
+          <div class="portrait">
+            <img src="/res/pfp_portfolio.png" alt="Joao Almeida">
+          </div>
+          <p class="about__coords mono">45.764&deg;N &middot; 4.835&deg;E<br>Lyon, France</p>
+          <div class="about__socials">
+            <a href="mailto:joa.almeidasantos@gmail.com"><i class="fa-solid fa-envelope"></i> Email</a>
+            <a href="https://github.com/jalmeida17" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
+            <a href="https://www.linkedin.com/in/jo%C3%A3o-almeida-santos-315b7b300/" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+          </div>
+        </aside>
+        <div class="about__body reveal reveal-delay-1">
+          <div class="about-text">
+            <p>Hi, I'm Joao! I'm a Full Stack Developer passionate about coding and tech in general. I love building web applications and exploring new technologies that push boundaries.</p>
+            <p>Currently working as a Full Stack Developer Intern at Clauger, where I develop and maintain web applications using Angular, .NET, and more. I'm always eager to learn and take on challenging projects.</p>
+          </div>
+          <div class="about-right">
+            <div class="stat-card">
+              <div class="stat-number">10+</div>
+              <div class="stat-label">Projects</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">2+</div>
+              <div class="stat-label">Year XP</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">10+</div>
+              <div class="stat-label">Technologies</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">4</div>
+              <div class="stat-label">Spoken Languages</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Career — minimal timeline style, no card wrapper -->
+  <section id="career" class="section section-alt">
+    <div class="container container-narrow">
+      <div class="section-head reveal">
+        <span class="section-head__index">02 / Experience</span>
+        <h2 class="section-head__title">Career &amp; Education</h2>
+      </div>
+      <div class="career-entry reveal">
+        <div class="career-meta">
+          <span class="career-date">Aug 2024 &mdash; Present</span>
+          <span class="career-place">Brignais, France</span>
+        </div>
+        <div class="career-body">
+          <h3>Full Stack Developer <span class="career-type">Internship</span></h3>
+          <h4>Clauger</h4>
+          <p>Developing and maintaining internal web applications — transport management, cybersecurity education platform, data automation, and more.</p>
+          <div class="tech-tags">
+            <span class="tech-tag">Angular</span>
+            <span class="tech-tag">.NET</span>
+            <span class="tech-tag">C#</span>
+            <span class="tech-tag">MariaDB</span>
+            <span class="tech-tag">Azure</span>
+            <span class="tech-tag">Docker</span>
+            <span class="tech-tag">Git</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider reveal"></div>
+
+      <!-- Education inline, same section to avoid repetition -->
+      <div class="career-entry reveal">
+        <div class="career-meta">
+          <span class="career-date">2024 &mdash; 2026</span>
+          <span class="career-place">Lyon, France</span>
+        </div>
+        <div class="career-body">
+          <h3>BTS SIO - SLAM <span class="career-type">Degree</span></h3>
+          <h4>Nexa Digital School</h4>
+          <p>Two-year technical degree in Software Solutions and Business Applications. Full-stack web apps, databases, cybersecurity, and project management.</p>
+        </div>
+      </div>
+
+      <div class="career-entry reveal">
+        <div class="career-meta">
+          <span class="career-date">2023 &mdash; 2024</span>
+          <span class="career-place">Givors, France</span>
+        </div>
+        <div class="career-body">
+          <h3>BAC G&eacute;n&eacute;ral - NSI & AMC <span class="career-type">Baccalaur&eacute;at</span></h3>
+          <h4>Lyc&eacute;e Aragon Picasso</h4>
+          <p>General Baccalaur&eacute;at with a focus on Computer Science and Global English Studies (European section).</p>
+        </div>
+      </div>
+
+      <!-- Document download -->
+      <div class="document-row reveal">
+        <img src="/res/excellogo.png" alt="Excel" class="document-icon">
+        <div class="document-info">
+          <strong>E4 - Tableau de synth&egrave;se</strong>
+          <span>BTS SIO 2025 exam document</span>
+        </div>
+        <a href="/excel/BTS SIO 2025 - E4 - Tableau de synthèse - Joao.xlsx" download class="document-dl">
+          <i class="fa-solid fa-arrow-down"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects — cards with expandable E4/E5 detail -->
+  <section id="projects" class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-head__index">03 / Selected Work</span>
+        <h2 class="section-head__title">Projects</h2>
+      </div>
+      <div class="projects-grid">
+
+        <!-- FretClauger -->
+        <div class="project-card project-card--accent reveal" data-project="fretclauger">
+          <div class="project-top">
+            <h3>FretClauger</h3>
+            <div class="project-badges">
+              <span class="badge badge-pro">Clauger</span>
+              <span class="project-year">2024-2025</span>
+            </div>
+          </div>
+          <p class="project-desc">Full-stack transport &amp; freight management system replacing a legacy PHP form. Complete request workflow with carrier coordination, cost allocation, and document generation.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">Angular 19</span>
+              <span class="tech-tag">.NET Core</span>
+              <span class="tech-tag">SQL Server</span>
+              <span class="tech-tag">Docker</span>
+              <span class="tech-tag">Azure Entra ID</span>
+            </div>
+          </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>Clauger</strong> &mdash; International industrial refrigeration and HVAC company operating across 20+ countries.</p>
+              <p><strong>Role:</strong> Full Stack Developer (Internship) &middot; Solo developer with supervisor validation &middot; Oct 2024 - Dec 2025</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>The logistics department relied on an outdated PHP form to manage transport requests. This system was slow, lacked validation, had no tracking capabilities, and couldn't handle multi-site freight coordination. The company needed a modern, centralized platform for creating, tracking, and managing transport requests with carrier coordination, cost allocation, and document generation.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Approach &amp; Methodology</h4>
+              <ul>
+                <li>Conducted needs analysis with logistics staff to map the full transport request lifecycle.</li>
+                <li>Designed a relational database schema (SQL Server) to model transport requests, carriers, contacts, agencies, and cost allocation entities.</li>
+                <li>Developed iteratively with regular supervisor validation: data model &rarr; API endpoints &rarr; UI components.</li>
+                <li>Implemented Azure Entra ID (MSAL) authentication for SSO with Clauger's Microsoft ecosystem.</li>
+                <li>Added i18n support via Transloco from the start for French and English-speaking users.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>Angular 19:</strong> Imposed by Clauger's existing stack. Enterprise-grade framework with strong typing.</li>
+                <li><strong>.NET Core:</strong> Company standard for backend APIs. Native Azure and SQL Server integration.</li>
+                <li><strong>SQL Server:</strong> Company database standard. Relational model fits structured transport data.</li>
+                <li><strong>Azure Entra ID:</strong> Existing SSO infrastructure. MSAL integration for seamless employee authentication.</li>
+                <li><strong>PrimeNG:</strong> Rich Angular UI library for rapid development of tables, forms, and dialogs.</li>
+                <li><strong>Transloco:</strong> Runtime i18n for dynamic language switching.</li>
+                <li><strong>Docker:</strong> Containerized deployment for consistent environments.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Client-server: Angular SPA &harr; .NET Core REST API &harr; SQL Server. Azure Entra ID for authentication. Docker containers for deployment. Swagger for API documentation.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Results &amp; Impact</h4>
+              <ul>
+                <li>Successfully replaced the legacy PHP form with a modern, full-featured platform.</li>
+                <li>Used daily by ~15 logistics and admin staff for transport request management.</li>
+                <li>Reduced request processing errors through form validation and structured workflows.</li>
+                <li>Enabled cost tracking per project/activity, previously impossible with the old system.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Responding to IT service requests &middot; Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#7C3AED">Bloc 2</span> Maintaining local infrastructure &middot; Deploying containerized services</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Designing &amp; prototyping &middot; Secure development &middot; Solution integration</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MonBureauConnecte -->
+        <div class="project-card project-card--accent reveal reveal-delay-1" data-project="monbureaconnecte">
+          <div class="project-top">
+            <h3>MonBureauConnecte</h3>
+            <div class="project-badges">
+              <span class="badge badge-pro">Clauger</span>
+              <span class="project-year">2025</span>
+            </div>
+          </div>
+          <p class="project-desc">IoT smart building control app. Real-time temperature, lighting, occupancy, and window monitoring via industrial automates connected through an OPC service chain.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">Angular</span>
+              <span class="tech-tag">.NET</span>
+              <span class="tech-tag">SQL Server</span>
+              <span class="tech-tag">Docker</span>
+            </div>
+          </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>Clauger</strong> &mdash; International industrial refrigeration and HVAC company.</p>
+              <p><strong>Role:</strong> Full Stack Developer (Internship) &middot; Solo developer (OPC/automate layer pre-configured by infrastructure team) &middot; Jan 2025 - Feb 2025</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>Employees had no way to directly control their office environment without contacting facilities. The company wanted a self-service web interface connected to existing industrial automates (PLCs) via OPC protocol, letting users adjust temperature and lighting from their browser.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Approach &amp; Methodology</h4>
+              <ul>
+                <li>Analyzed the existing OPC data flow: automates write sensor data to SQL Server via an OPC server.</li>
+                <li>Designed .NET API to abstract the database layer with clean REST endpoints for each control type.</li>
+                <li>Built Angular frontend with real-time data display using polling for sensor readings.</li>
+                <li>Focused on UX simplicity: intuitive sliders for temperature, toggles for lights.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Three-tier: Industrial automates &harr; OPC Server &harr; SQL Server &harr; .NET REST API &harr; Angular SPA. The database acts as a shared communication layer between the OPC world and the web application.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Results &amp; Impact</h4>
+              <ul>
+                <li>Delivered a functional prototype for browser-based office environment control.</li>
+                <li>Demonstrated feasibility of bridging web technologies with industrial OPC automation.</li>
+                <li>Improved employee comfort by removing the need to contact facilities for basic adjustments.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Responding to incidents &middot; Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#7C3AED">Bloc 2</span> Administering infrastructure &middot; Maintaining local infrastructure</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Designing &amp; prototyping</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GSB Web App -->
+        <div class="project-card reveal reveal-delay-2" data-project="gsb-webapp">
+          <div class="project-top">
+            <h3>GSB Web App</h3>
+            <span class="project-year">2025</span>
+          </div>
+          <p class="project-desc">Full-stack expense report management app for the fictional pharmaceutical company Galaxy Swiss Bourdin (BTS SIO exam). Angular frontend, Node.js backend, MongoDB, deployed on AWS.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">Angular</span>
+              <span class="tech-tag">Node.js</span>
+              <span class="tech-tag">MongoDB</span>
+              <span class="tech-tag">AWS</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/jalmeida17/bts-gsbfrontend-angular" target="_blank"><i class="fa-brands fa-github"></i></a>
+              <a href="https://github.com/jalmeida17/bts-gsbbackend" target="_blank"><i class="fa-brands fa-github"></i></a>
+            </div>
+          </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>GSB (Galaxy Swiss Bourdin) &mdash; Fictional</strong> &mdash; Standard BTS SIO exam scenario. Pharmaceutical company whose sales representatives submit expense reports for reimbursement.</p>
+              <p><strong>Role:</strong> Solo Developer (BTS SIO exam project) &middot; Jan 2025 - Mar 2025</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>GSB sales representatives travel frequently and submit expense reports. The company needs a web application allowing employees to create and track expense reports, and administrators to review, validate, or reject them with role-based access and business rule validation.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>Angular:</strong> Strong typing, reactive forms ideal for expense report workflows.</li>
+                <li><strong>Node.js/Express:</strong> Lightweight REST API. Shared JS ecosystem with frontend.</li>
+                <li><strong>MongoDB:</strong> Document model suits varied expense report structures.</li>
+                <li><strong>AWS:</strong> Cloud deployment demonstrating infrastructure management skills.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Decoupled client-server: Angular SPA &harr; Node.js/Express REST API &harr; MongoDB. JWT authentication. Deployed on AWS EC2. Two separate Git repositories.</p>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Responding to IT service requests &middot; Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Designing &amp; prototyping &middot; Secure development</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GSB Winform -->
+        <div class="project-card reveal reveal-delay-3" data-project="gsb-winform">
+          <div class="project-top">
+            <h3>GSB Winform</h3>
+            <span class="project-year">2025</span>
+          </div>
+          <p class="project-desc">WinForms desktop app for managing medical prescriptions, patient records, and pharmaceutical databases. SHA2-256 auth, PDF export with iText7, Docker.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">.NET 8.0</span>
+              <span class="tech-tag">C#</span>
+              <span class="tech-tag">MySQL</span>
+              <span class="tech-tag">Docker</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/jalmeida17/bts-gsb-winform" target="_blank"><i class="fa-brands fa-github"></i></a>
+            </div>
+          </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>GSB (Galaxy Swiss Bourdin) &mdash; Fictional</strong> &mdash; Standard BTS SIO exam scenario. Doctors prescribe medications; the system manages prescriptions, patients, and the pharmaceutical catalog.</p>
+              <p><strong>Role:</strong> Solo Developer (BTS SIO exam project) &middot; Nov 2024 - Jan 2025</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>GSB doctors need a desktop application to manage medical prescriptions efficiently: patient records, pharmaceutical database, prescription creation with dosage management, secure authentication, and PDF export for printing and archival.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>.NET 8.0 / C#:</strong> Windows Forms for desktop UI. Mature ecosystem for enterprise desktop apps.</li>
+                <li><strong>MySQL:</strong> Relational database for structured medical data with referential integrity.</li>
+                <li><strong>Docker:</strong> Containerized MySQL for portable, reproducible development environments.</li>
+                <li><strong>iText7:</strong> Professional-grade PDF generation for prescription export.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Two-tier desktop: WinForms UI &harr; MySQL database. Business logic in the application layer with repository pattern. Docker-containerized MySQL instance.</p>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Responding to IT service requests</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#7C3AED">Bloc 2</span> Deploying containerized services</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Secure development</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RAW Fitness -->
+        <div class="project-card reveal" data-project="raw-fitness">
+          <div class="project-top">
+            <h3>RAW - Fitness Tracker</h3>
+            <span class="project-year">2026</span>
+          </div>
+          <p class="project-desc">Full-stack fitness app combining workout tracking, macro nutrition monitoring, progression analytics, and social networking. Live at stayraw.fr.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">Next.js</span>
+              <span class="tech-tag">Supabase</span>
+              <span class="tech-tag">Vercel</span>
+            </div>
+            <div class="project-links">
+              <a href="https://www.stayraw.fr" target="_blank"><i class="fa-solid fa-globe"></i></a>
+            </div>
+          </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>Personal Project</strong> &mdash; Self-initiated to solve a personal need for a unified fitness tracking platform.</p>
+              <p><strong>Role:</strong> Solo Full Stack Developer &middot; Mar 2025 - Present</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>Existing fitness apps either focus on workouts OR nutrition, rarely both. I wanted a single platform to log workouts with progression tracking, monitor daily macros, calculate rep maxes, and share progress with friends.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>Next.js:</strong> React framework with SSR, file-based routing, and API routes for a full-stack app.</li>
+                <li><strong>Supabase:</strong> PostgreSQL-based BaaS with auth, realtime subscriptions, and storage.</li>
+                <li><strong>Vercel:</strong> Native Next.js hosting with automatic deployments and edge functions.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>Architecture</h4>
+              <p>Serverless: Next.js (Vercel) &harr; Supabase (PostgreSQL + Auth + Realtime + Storage). API routes for server-side logic. Supabase handles authentication, database, and real-time subscriptions.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Results &amp; Impact</h4>
+              <ul>
+                <li>Live and functional at stayraw.fr, used personally and by friends.</li>
+                <li>Demonstrates ability to design, build, and deploy a complete SaaS-style application.</li>
+                <li>Showcases modern practices: serverless, BaaS, CI/CD, and real-time features.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Managing project data &middot; Developing business components &middot; Designing &amp; prototyping &middot; Secure development</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WebShell Portfolio -->
+        <div class="project-card reveal reveal-delay-1" data-project="webshell-portfolio">
+          <div class="project-top">
+            <h3>WebShell Portfolio</h3>
+            <span class="project-year">2025</span>
+          </div>
+          <p class="project-desc">Interactive Ubuntu terminal portfolio with working CLI, draggable app windows, GNOME-styled ecosystem, and easter eggs. You might be viewing it right now!</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">TypeScript</span>
+              <span class="tech-tag">HTML5</span>
+              <span class="tech-tag">CSS3</span>
+              <span class="tech-tag">Vite</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/jalmeida17/webshell-portfolio" target="_blank"><i class="fa-brands fa-github"></i></a>
+            </div>
+          </div>
+          <div class="project-expand-btn"><i class="fa-solid fa-chevron-down"></i> Details</div>
+          <div class="project-detail">
+            <div class="detail-section">
+              <h4>Organizational Context</h4>
+              <p><strong>Personal Project</strong> &mdash; Creative portfolio to showcase technical skills through an interactive Ubuntu desktop simulation.</p>
+              <p><strong>Role:</strong> Solo Developer &middot; Nov 2025 - Present</p>
+            </div>
+            <div class="detail-section">
+              <h4>Business Need</h4>
+              <p>Standard portfolio websites are generic and forgettable. I wanted a portfolio that itself demonstrates technical ability &mdash; a pixel-perfect Ubuntu desktop with working terminal, draggable windows, a music player, and a full app ecosystem. The portfolio IS the project.</p>
+            </div>
+            <div class="detail-section">
+              <h4>Technical Choices</h4>
+              <ul>
+                <li><strong>TypeScript:</strong> Strong typing without framework overhead. Pure DOM manipulation showcases core web skills.</li>
+                <li><strong>Vite:</strong> Fast HMR and optimized production builds with minimal config.</li>
+                <li><strong>HTML5/CSS3:</strong> Advanced CSS for pixel-perfect Ubuntu theming: custom scrollbars, backdrop-filter, grid.</li>
+              </ul>
+            </div>
+            <div class="detail-section">
+              <h4>BTS SIO Competencies</h4>
+              <div class="competency-blocs">
+                <div class="competency-bloc"><span class="bloc-label" style="color:#0891B2">Bloc 1</span> Digital presence development</div>
+                <div class="competency-bloc"><span class="bloc-label" style="color:#059669">Bloc 3</span> Developing business components &middot; Designing &amp; prototyping</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Three.js Portfolio -->
+        <div class="project-card reveal reveal-delay-2" data-project="threejs-portfolio">
+          <div class="project-top">
+            <h3>Three.js Portfolio</h3>
+            <div class="project-badges">
+              <span class="badge badge-wip">Unfinished</span>
+              <span class="project-year">2025</span>
+            </div>
+          </div>
+          <p class="project-desc">Experimental 3D portfolio with World of Warcraft assets. Immersive Three.js environments, WoW.tools API integration.</p>
+          <div class="project-bottom">
+            <div class="tech-tags">
+              <span class="tech-tag">React</span>
+              <span class="tech-tag">Three.js</span>
+              <span class="tech-tag">WoW.tools</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/jalmeida17/wow-portfolio" target="_blank"><i class="fa-brands fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills — flat tag cloud, no cards -->
+  <section id="skills" class="section section-alt">
+    <div class="container container-narrow">
+      <div class="section-head reveal">
+        <span class="section-head__index">04 / Toolkit</span>
+        <h2 class="section-head__title">Skills</h2>
+      </div>
+
+      <div class="skills-grid reveal">
+        <div class="skill-col">
+          <h3 class="skill-col__head" data-kind="frontend">Frontend</h3>
+          <ul>
+            <li>Angular</li>
+            <li>React</li>
+            <li>Next.js</li>
+            <li>TypeScript</li>
+            <li>Vite</li>
+            <li>PrimeNG</li>
+          </ul>
+        </div>
+        <div class="skill-col">
+          <h3 class="skill-col__head" data-kind="backend">Backend</h3>
+          <ul>
+            <li>.NET / C#</li>
+            <li>Node.js</li>
+            <li>Python</li>
+            <li>REST APIs</li>
+          </ul>
+        </div>
+        <div class="skill-col">
+          <h3 class="skill-col__head" data-kind="data">Data</h3>
+          <ul>
+            <li>SQL</li>
+            <li>MySQL</li>
+            <li>MariaDB</li>
+            <li>MongoDB</li>
+            <li>Supabase</li>
+          </ul>
+        </div>
+        <div class="skill-col">
+          <h3 class="skill-col__head" data-kind="devops">DevOps &amp; Cloud</h3>
+          <ul>
+            <li>Docker</li>
+            <li>Azure</li>
+            <li>AWS</li>
+            <li>Vercel</li>
+            <li>Git</li>
+          </ul>
+        </div>
+        <div class="skill-col">
+          <h3 class="skill-col__head" data-kind="bi">Automation &amp; BI</h3>
+          <ul>
+            <li>Power Automate</li>
+            <li>Power BI</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="skills-footer reveal">
+        <div class="skills-footer-group">
+          <span class="skills-footer-label">Soft skills</span>
+          <span>Team player &middot; Disciplined &middot; Patient &middot; Easygoing</span>
+        </div>
+        <div class="skills-footer-group">
+          <span class="skills-footer-label">Languages</span>
+          <span>&#127468;&#127463; English &middot; &#127467;&#127479; French &middot; &#127477;&#127481; Portuguese &middot; &#127466;&#127480; Spanish</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Watch (Veille) -->
+  <section id="veille" class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="section-head__index">05 / Tech Watch</span>
+        <h2 class="section-head__title">Tech Watch</h2>
+      </div>
+
+      <!-- Methodology -->
+      <div class="veille-methodology reveal">
+        <div class="veille-method-item">
+          <i class="fa-solid fa-brain" style="color:#7C3AED"></i>
+          <div><strong>Subject</strong><span>Artificial Intelligence &amp; Machine Learning</span></div>
+        </div>
+        <div class="veille-method-item">
+          <i class="fa-solid fa-magnifying-glass" style="color:#6366F1"></i>
+          <div><strong>Objective</strong><span>Tracking advances in AI/ML: new models, frameworks, industrial applications and regulatory landscape.</span></div>
+        </div>
+        <div class="veille-method-item">
+          <i class="fa-solid fa-clock" style="color:#0891B2"></i>
+          <div><strong>Frequency</strong><span>Daily to weekly</span></div>
+        </div>
+        <div class="veille-method-item">
+          <i class="fa-solid fa-screwdriver-wrench" style="color:#059669"></i>
+          <div><strong>Tools</strong><span>Newsletters, YouTube, Reddit, GitHub</span></div>
+        </div>
+      </div>
+
+      <!-- Sources -->
+      <h3 class="veille-subtitle reveal">Sources</h3>
+      <div class="veille-sources reveal">
+        <div class="veille-source-card">
+          <i class="fa-brands fa-youtube" style="color:#FF0000"></i>
+          <strong>YouTube</strong>
+          <span>Fireship, Two Minute Papers, Yannic Kilcher</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-brands fa-reddit-alien" style="color:#FF4500"></i>
+          <strong>Reddit</strong>
+          <span>r/MachineLearning, r/artificial, r/LocalLLaMA</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-brands fa-github" style="color:#6E40C9"></i>
+          <strong>GitHub</strong>
+          <span>Trending repos, Hugging Face, Papers with Code</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-brands fa-x-twitter" style="color:#1DA1F2"></i>
+          <strong>Twitter / X</strong>
+          <span>@AndrewYNg, @ylecun, @OpenAI, @AnthropicAI</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-solid fa-envelope" style="color:#10B981"></i>
+          <strong>TLDR AI</strong>
+          <span>Daily AI digest delivered by email</span>
+        </div>
+        <div class="veille-source-card">
+          <i class="fa-solid fa-code" style="color:#3B82F6"></i>
+          <strong>TLDR Dev</strong>
+          <span>Daily dev &amp; tech news roundup</span>
+        </div>
+      </div>
+
+      <!-- Syntheses -->
+      <h3 class="veille-subtitle reveal">Syntheses</h3>
+      <div class="veille-syntheses reveal">
+        <div class="veille-synth-card" data-synth="open-source-models">
+          <div class="veille-synth-header">
+            <h4>The Rise of Open-Source Models</h4>
+            <span class="veille-synth-meta">Oct 2025 &middot; GitHub / Hugging Face</span>
+          </div>
+          <p class="veille-synth-summary">LLaMA, Mistral, Gemma: how open-source is reshaping the AI landscape.</p>
+          <div class="veille-synth-detail">
+            <p>In 2025, open-source language models reached performance levels that rival proprietary solutions. Meta with LLaMA 3, Mistral AI with its Mixtral models, and Google with Gemma have significantly closed the quality gap with GPT-4 and Claude.</p>
+            <p>The Hugging Face ecosystem plays a central role in this democratization. With over 500,000 hosted models, the platform enables developers to fine-tune and deploy models tailored to their specific needs without relying on expensive proprietary APIs.</p>
+            <p>This trend has a direct impact on software development: companies can now integrate AI capabilities into their products while retaining control over their data and reducing infrastructure costs.</p>
+          </div>
+          <a href="https://huggingface.co/blog" target="_blank" rel="noopener noreferrer" class="veille-synth-link">Read more <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+
+        <div class="veille-synth-card" data-synth="ai-agents">
+          <div class="veille-synth-header">
+            <h4>Autonomous AI Agents</h4>
+            <span class="veille-synth-meta">Nov 2025 &middot; TLDR AI / Twitter</span>
+          </div>
+          <p class="veille-synth-summary">Claude Code, Copilot, Devin: the emergence of agents that can code autonomously.</p>
+          <div class="veille-synth-detail">
+            <p>Autonomous AI agents represent a major evolution from simple chat assistants. Unlike a classic LLM that answers a question, an agent can plan, execute actions, use tools, and iterate on its results to accomplish complex tasks.</p>
+            <p>Anthropic's Claude Code illustrates this trend well: it can navigate a codebase, modify files, run tests, and fix bugs autonomously. GitHub Copilot is evolving in the same direction with its agent mode, while Cognition AI's Devin positions itself as a complete 'AI software engineer'.</p>
+            <p>The ReAct (Reasoning + Acting) pattern is at the heart of these systems: the agent reasons about the task, chooses an action, observes the result, then adjusts its strategy.</p>
+          </div>
+          <a href="https://www.anthropic.com/claude-code" target="_blank" rel="noopener noreferrer" class="veille-synth-link">Read more <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+
+        <div class="veille-synth-card" data-synth="predictive-maintenance">
+          <div class="veille-synth-header">
+            <h4>AI in Industry: Predictive Maintenance</h4>
+            <span class="veille-synth-meta">Dec 2025 &middot; Reddit / YouTube</span>
+          </div>
+          <p class="veille-synth-summary">IoT + ML to anticipate industrial failures — directly tied to my experience at Clauger.</p>
+          <div class="veille-synth-detail">
+            <p>Predictive maintenance combines IoT sensors and machine learning algorithms to anticipate industrial equipment failures before they occur. In the industrial refrigeration sector, where I work at Clauger, this approach is particularly relevant.</p>
+            <p>Compressors, heat exchangers, and refrigeration systems continuously generate temperature, pressure, and vibration data. ML models analyze these streams to detect abnormal patterns and predict failures days in advance.</p>
+            <p>The economic impact is considerable: reducing unplanned downtime by 30 to 50%, extending equipment lifespan, and optimizing maintenance interventions.</p>
+          </div>
+          <a href="https://www.ibm.com/topics/predictive-maintenance" target="_blank" rel="noopener noreferrer" class="veille-synth-link">Read more <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+
+        <div class="veille-synth-card" data-synth="ai-act">
+          <div class="veille-synth-header">
+            <h4>AI Regulation in Europe: The AI Act</h4>
+            <span class="veille-synth-meta">Jan 2026 &middot; TLDR Dev / Twitter</span>
+          </div>
+          <p class="veille-synth-summary">The European legal framework for AI takes effect — implications for developers.</p>
+          <div class="veille-synth-detail">
+            <p>The European AI Act, progressively coming into force since 2024, establishes the world's first comprehensive legal framework for artificial intelligence. Based on a risk-level approach, it classifies AI systems into four categories: unacceptable risk (banned), high risk, limited risk, and minimal risk.</p>
+            <p>For developers, the implications are concrete: high-risk AI systems must meet strict requirements for transparency, technical documentation, training data quality, and human oversight.</p>
+            <p>Foundation models (GPT, Claude, LLaMA) are subject to specific transparency obligations: documentation of capabilities, copyright compliance in training data, and labeling of AI-generated content.</p>
+          </div>
+          <a href="https://artificialintelligenceact.eu/" target="_blank" rel="noopener noreferrer" class="veille-synth-link">Read more <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Contact — horizontal inline -->
+  <section id="contact" class="section section-alt">
+    <div class="container container-narrow">
+      <div class="section-head reveal">
+        <span class="section-head__index">06 / Contact</span>
+        <h2 class="section-head__title">Get In Touch</h2>
+      </div>
+      <div class="contact reveal">
+        <p class="contact-lead">The fastest way to reach me is email&nbsp;</p>
+        <a class="contact-email" href="mailto:joa.almeidasantos@gmail.com">joa.almeidasantos@gmail.com</a>
+        <div class="contact-channels">
+          <a href="https://github.com/jalmeida17" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
+          <a href="https://www.linkedin.com/in/jo%C3%A3o-almeida-santos-315b7b300/" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+          <a href="tel:+33767392800"><i class="fa-solid fa-phone"></i> +33 7 67 39 28 00</a>
+          <a href="https://steamcommunity.com/profiles/76561198876096005" target="_blank"><i class="fa-brands fa-steam"></i> Steam</a>
+          <span><i class="fa-brands fa-discord"></i> yazh17#6007</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <svg class="footer__mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M11 11 L6 16 L11 21" />
+          <path d="M21 11 L26 16 L21 21" />
+          <path d="M18 9 L14 23" />
+        </svg>
+        <p class="footer__tag">Full Stack Developer crafting clean, considered web applications.</p>
+      </div>
+      <div class="footer__cols">
+        <nav class="footer__col">
+          <span class="footer__head">Navigate</span>
+          <a href="#about">About</a>
+          <a href="#projects">Projects</a>
+          <a href="#skills">Skills</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <div class="footer__col">
+          <span class="footer__head">Elsewhere</span>
+          <a href="https://github.com/jalmeida17" target="_blank">GitHub</a>
+          <a href="https://www.linkedin.com/in/jo%C3%A3o-almeida-santos-315b7b300/" target="_blank">LinkedIn</a>
+          <a href="mailto:joa.almeidasantos@gmail.com">Email</a>
+          <a href="terminal.html" class="footer-terminal-link"><svg class="terminal-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l4 4-4 4"/><path d="M12 16h7"/></svg>Ubuntu mode</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__base">
+      <span class="mono">&copy; 2025 Joao Almeida &middot; Lyon, France</span>
+      <span class="mono"><a href="https://github.com/jalmeida17/webshell-portfolio" target="_blank">Source</a> &middot; <a href="mentions-legales.html">Mentions légales</a></span>
+    </div>
+  </footer>
+
+  <script type="module" src="./src/gui-main.js"></script>
+</body>
 
 </html>

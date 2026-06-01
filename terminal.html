@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="src/css/css-reset.css">
+  <link rel="stylesheet" href="src/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="/res/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <title>Joao Almeida</title>
+</head>
+
+<body>
+  <div id="boot-screen">
+    <div id="boot-output"></div>
+  </div>
+  <div id="mobile-block">
+    <div id="mobile-message">
+      <i class="fa-solid fa-desktop" style="font-size: 64px; margin-bottom: 20px;"></i>
+      <h1>Desktop Only</h1>
+      <p>This portfolio is optimized for desktop</p>
+      <p>Please visit this website on a PC</p>
+          <a href="/" id="gui-version-btn">GUI Version</a>
+      <p style="margin-top: 24px; font-size: 12px; opacity: 0.6;"><a href="mentions-legales.html" style="color: #FFFFFF; text-decoration: underline;">Mentions légales</a></p>
+    </div>
+  </div>
+  <div id="desktop-topbar">
+    <span id="topbar-activities">Activities</span>
+    <div id="desktop-clock"></div>
+    <span id="topbar-ethernet" title="Wired Connected"><i class="fa-solid fa-ethernet"></i></span>
+    <button id="sound-toggle" title="Toggle Sound"><i class="fa-solid fa-volume-high"></i></button>
+    <button id="power-btn" title="Power Off"><i class="fa-solid fa-power-off"></i></button>
+  </div>
+  <div id="sidebar-dock">
+    <div id="terminal-icon" class="dock-icon">
+      <img src="/res/terminal-app.png" alt="Terminal" style="width: 48px; height: 48px;">
+    </div>
+<div id="excel-icon" class="dock-icon">
+      <img src="/res/excellogo.png" alt="Excel" style="width: 48px; height: auto;">
+    </div>
+    <div id="music-player-icon" class="dock-icon">
+      <img src="/res/Rhythmbox_logo_3.4.4.svg.png" alt="Music Player" style="width: 60px; height: 48px;">
+    </div>
+    <div class="dock-divider"></div>
+    <div class="dock-icon dock-icon-static">
+      <img src="/res/ssd.png" alt="Disk" style="width: 48px; height: 48px;">
+    </div>
+    <div class="dock-icon dock-icon-static">
+      <img src="/res/trashcan.png" alt="Trash" style="width: 48px; height: 48px;">
+    </div>
+    <div id="show-applications" class="dock-icon" title="Show Applications">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect x="1" y="1" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
+        <rect x="11.5" y="1" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
+        <rect x="22" y="1" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
+        <rect x="1" y="11.5" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
+        <rect x="11.5" y="11.5" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
+        <rect x="22" y="11.5" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
+        <rect x="1" y="22" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
+        <rect x="11.5" y="22" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
+        <rect x="22" y="22" width="5" height="5" rx="1.2" fill="#FFFFFF"/>
+      </svg>
+    </div>
+  </div>
+  <div id="desktop-icons">
+    <div class="desktop-icon" id="home-folder-icon">
+      <img src="/res/filemanager-app.png" alt="Home">
+      <span>Home</span>
+    </div>
+  </div>
+  <div id="version-info">
+    <div>V1.2</div>
+    <div>by jalmeida17</div>
+  </div>
+  <main id="main" style="width: 50%; height: 80%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none; flex-direction: column;">
+    <div id="bars">
+      <div id="bar-1">visitor@jalmeida17:$ ~<div class="window-controls"><button class="window-btn" id="minimize-window"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="2" y1="6" x2="10" y2="6"/></svg></button><button class="window-btn" id="maximize-window"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="1"/></svg></button><button class="window-btn window-btn-close" id="close-window"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg></button></div></div>
+    </div>
+    <br>
+    <div id="terminal">
+      <div>
+        <span id="prompt"><span id="pre-user"></span>@<span id="pre-host"></span>:$ ~ </span>
+      </div>
+      <!-- command output will be inserted before #write-lines-->
+      <a id="write-lines"></a>
+    </div>
+    <div id="input-line">
+      <div>
+        <p id="password-input" style="display: none;">Password: <input id="password-field" autocomplete="off"
+            type="password" /></p>
+        <p id="input-hidden">
+          <span id="prompt"><span id="user"></span>@<span id="host"></span>:$ ~
+          </span>
+          <input id="user-input" type="text" enterkeyhint="Enter" spellcheck="false" autocapitalize="none"
+            autocomplete="off" />
+        </p>
+      </div>
+      <br>
+    </div>
+  </main>
+</body>
+
+<script type="module" src="./src/styles.ts"></script>
+<script type="module" src="./src/main.ts"></script>
+
+</html>

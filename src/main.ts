@@ -269,7 +269,7 @@ function commandHandler(input : string) {
         writeLines(["No GUI for you.", "<br>"])
         break;
       }
-      window.location.href = 'gui.html';
+      window.location.href = '/';
       break;
     case 'clauger':
       if(bareMode) {
